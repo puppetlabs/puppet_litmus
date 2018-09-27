@@ -21,3 +21,7 @@ bundle exec install
 ## Technologies used
 Just enough rake goodness to bind puppet code and bolt tasks to our will. 
 Leveraging as content from the forge and existing test frameworks
+
+## Other Resources
+
+* [Is it Worth the Time?](https://xkcd.com/1205/)
