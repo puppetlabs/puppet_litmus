@@ -1,4 +1,6 @@
+# frozen_string_literal: true
+
 # version of this gem
-class SolidWaffle
-  VERSION ||= '0.0.1'.freeze
+module SolidWaffle
+  VERSION ||= '0.0.1'
 end
