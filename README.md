@@ -4,9 +4,30 @@
 Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.
 
 ## How-to
-### Install
-Add the following gems to your gemfile
-bundle exec install 
+### Using it in a module
+gemfile
+```
+gem 'solid_waffle', git: 'git@github.com:puppetlabs/solid-waffle.git'
+```
+Rakefile
+```
+require 'solid_waffle/rake_tasks'
+```
+spec/spec_helper_acceptance.rb
+```
+require 'serverspec'
+require 'solid_waffle'
+include SolidWaffle
+
+set :backend, :ssh
+
+options = Net::SSH::Config.for(host)
+options[:user] = 'root'
+host = ENV['HOSTY']
+
+set :host,        options[:host_name] || host
+set :ssh_options, options
+```
 
 ### Steps (each step is optional)
 
