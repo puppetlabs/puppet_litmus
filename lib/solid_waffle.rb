@@ -7,16 +7,28 @@ require 'bolt_spec/run'
 module SolidWaffle
   include BoltSpec::Run
   def apply_manifest(manifest, _fuckit)
-    config_data = {
-      'ssh' =>  { 'host-key-check' => false },
-      'winrm' => { 'ssl' => false },
-    }
-    host = ENV['HOSTY']
-    result = run_command("/opt/puppetlabs/puppet/bin/puppet apply -e '#{manifest}'", host, config: config_data)
+    inventory_hash = load_inventory_hash
+    targets = find_targets(nil, inventory_hash)
+    host = targets.first.to_s
+    result = run_command("/opt/puppetlabs/puppet/bin/puppet apply -e '#{manifest}'", host, config: nil, inventory: inventory_hash)
     result
   end
 
-  def akimbo
-    puts 'akimbo'
+  def load_inventory_hash
+    filename = 'inventory.yaml'
+    raise 'There is no inventory file' unless File.exist?(filename)
+
+    inventory_hash = YAML.load_file(filename)
+    inventory_hash
+  end
+
+  def find_targets(targets, inventory_hash)
+    if targets.nil?
+      inventory = Bolt::Inventory.new(inventory_hash, nil)
+      targets = inventory.node_names.to_a
+    else
+      targets = [targets]
+    end
+    targets
   end
 end

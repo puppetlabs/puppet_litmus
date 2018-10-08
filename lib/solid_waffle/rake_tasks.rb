@@ -2,12 +2,9 @@
 
 require 'solid_waffle'
 require 'bolt_spec/run'
+include SolidWaffle
 
 namespace :waffle do
-  desc 'kittens in mittens'
-  task :wtf do
-    puts 'oi oi savaloy'
-  end
   desc "provision machines - vmpooler eg `bundle exec rake 'provision[ubuntu-1604-x86_64]`"
   task :provision, [:platform] do |_task, args|
     platform = if args[:platform].nil?
@@ -26,26 +23,32 @@ namespace :waffle do
 
     hostname = "#{data[platform]['hostname']}.#{data['domain']}"
     puts "reserved #{hostname} in vmpooler"
+    inventory_hash = { 'groups' =>
+  [{ 'name' => 'ssh_nodes',
+     'groups' => [{ 'name' => 'default', 'nodes' => [hostname] }],
+     'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }] }
+    File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
+
   desc 'pre_setup - disable apt / configure firewall'
   task :pre_setup do
     puts 'pre_setup'
   end
+
   desc 'install puppet - PE / FOSS / Bolt'
   task :install_puppet, [:hostname] do |_task, args|
     puts 'install_puppet'
-    config_data = {
-      'ssh' =>  { 'host-key-check' => false },
-      'winrm' => { 'ssl' => false },
-    }
     include BoltSpec::Run
-    result = run_command('wget https://apt.puppetlabs.com/puppet5-release-xenial.deb', args[:hostname], config: config_data)
+    inventory_hash = load_inventory_hash
+    targets = find_targets(args[:hostname], inventory_hash)
+
+    result = run_command('wget https://apt.puppetlabs.com/puppet5-release-xenial.deb', targets, config: nil, inventory: inventory_hash)
     puts result
-    result = run_command('dpkg -i puppet5-release-xenial.deb', args[:hostname], config: config_data)
+    result = run_command('dpkg -i puppet5-release-xenial.deb', targets, config: nil, inventory: inventory_hash)
     puts result
-    result = run_command('apt update', args[:hostname], config: config_data)
+    result = run_command('apt update', targets, config: nil, inventory: inventory_hash)
     puts result
-    result = run_command('apt-get install puppet-agent -y', args[:hostname], config: config_data)
+    result = run_command('apt-get install puppet-agent -y', targets, config: nil, inventory: inventory_hash)
     puts result
   end
 
@@ -55,14 +58,17 @@ namespace :waffle do
     include BoltSpec::Run
     `pdk build  --force`
     puts 'built'
-    config_data = {
-      'ssh' =>  { 'host-key-check' => false },
-      'winrm' => { 'ssl' => false },
-    }
-    `scp pkg/puppetlabs-motd-2.0.0.tar.gz root@#{args[:hostname]}:/tmp`
-    result = run_command('/opt/puppetlabs/puppet/bin/puppet module install /tmp/puppetlabs-motd-2.0.0.tar.gz', args[:hostname], config: config_data)
+    inventory_hash = load_inventory_hash
+    targets = find_targets(args[:hostname], inventory_hash)
+    if targets.is_a?(Array)
+      targets.each do |target|
+        `scp pkg/puppetlabs-motd-2.0.0.tar.gz root@#{target}:/tmp`
+      end
+    end
+    result = run_command('/opt/puppetlabs/puppet/bin/puppet module install /tmp/puppetlabs-motd-2.0.0.tar.gz', targets, config: nil, inventory: inventory_hash)
     puts result
   end
+
   desc 'snapshot - allow rollbacks in vmpooler / vagrant'
   task :snapshot do
     puts 'snapshot'
