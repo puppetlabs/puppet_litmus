@@ -60,12 +60,13 @@ namespace :waffle do
     puts 'built'
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
+    module_tar = Dir.glob("pkg/*.tar.gz").max_by {|f| File.mtime(f)}
     if targets.is_a?(Array)
       targets.each do |target|
-        `scp pkg/puppetlabs-motd-2.0.0.tar.gz root@#{target}:/tmp`
+        `scp #{module_tar} root@#{target}:/tmp`
       end
     end
-    result = run_command('/opt/puppetlabs/puppet/bin/puppet module install /tmp/puppetlabs-motd-2.0.0.tar.gz', targets, config: nil, inventory: inventory_hash)
+    result = run_command("/opt/puppetlabs/puppet/bin/puppet module install /tmp/#{File.basename(module_tar)}", targets, config: nil, inventory: inventory_hash)
     puts result
   end
 
