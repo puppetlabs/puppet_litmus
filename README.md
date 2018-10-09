@@ -41,7 +41,7 @@ set :ssh_options, options
 
 ## Technologies used
 Just enough rake goodness to bind puppet code and bolt tasks to our will. 
-Leveraging as content from the forge and existing test frameworks
+Leveraging content from the forge and existing test frameworks.
 
 ## Other Resources
 
