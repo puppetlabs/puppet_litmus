@@ -63,11 +63,8 @@ namespace :waffle do
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
     module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
-    if targets.is_a?(Array)
-      targets.each do |target|
-        `scp #{module_tar} root@#{target}:/tmp`
-      end
-    end
+    result = `bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes ssh_nodes --no-host-key-check --inventoryfile inventory.yaml`
+    puts result
     result = run_command("/opt/puppetlabs/puppet/bin/puppet module install /tmp/#{File.basename(module_tar)}", targets, config: nil, inventory: inventory_hash)
     puts result
   end
