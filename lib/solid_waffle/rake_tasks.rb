@@ -35,20 +35,22 @@ namespace :waffle do
     puts 'pre_setup'
   end
 
-  desc 'install puppet - PE / FOSS / Bolt'
-  task :install_puppet, [:hostname] do |_task, args|
+  desc 'install puppet agent, [:hostname, :collection]'
+  task :install_puppet, [:hostname, :collection] do |_task, args|
     puts 'install_puppet'
     include BoltSpec::Run
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
+    Rake::Task['spec_prep'].invoke
+    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+    params = if args[:collection].nil?
+               nil
+             else
+               "collection=#{args[:collection]}"
+             end
+    raise "puppet_agent was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'puppet_agent'))
 
-    result = run_command('wget https://apt.puppetlabs.com/puppet5-release-xenial.deb', targets, config: nil, inventory: inventory_hash)
-    puts result
-    result = run_command('dpkg -i puppet5-release-xenial.deb', targets, config: nil, inventory: inventory_hash)
-    puts result
-    result = run_command('apt update', targets, config: nil, inventory: inventory_hash)
-    puts result
-    result = run_command('apt-get install puppet-agent -y', targets, config: nil, inventory: inventory_hash)
+    result = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
     puts result
   end
 
@@ -60,7 +62,7 @@ namespace :waffle do
     puts 'built'
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
-    module_tar = Dir.glob("pkg/*.tar.gz").max_by {|f| File.mtime(f)}
+    module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     if targets.is_a?(Array)
       targets.each do |target|
         `scp #{module_tar} root@#{target}:/tmp`
