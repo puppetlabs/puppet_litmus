@@ -8,8 +8,7 @@ module SolidWaffle
   include BoltSpec::Run
   def apply_manifest(manifest, _fuckit)
     inventory_hash = load_inventory_hash
-    targets = find_targets(nil, inventory_hash)
-    host = targets.first.to_s
+    host = ENV['TARGET_HOST']
     result = run_command("/opt/puppetlabs/puppet/bin/puppet apply -e '#{manifest}'", host, config: nil, inventory: inventory_hash)
     result
   end
