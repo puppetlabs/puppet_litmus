@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'rspec/core/rake_task'
 require 'solid_waffle'
 require 'bolt_spec/run'
 include SolidWaffle
@@ -23,10 +24,16 @@ namespace :waffle do
 
     hostname = "#{data[platform]['hostname']}.#{data['domain']}"
     puts "reserved #{hostname} in vmpooler"
-    inventory_hash = { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'groups' => [{ 'name' => 'default', 'nodes' => [hostname] }],
-     'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }] }
+    if File.file?('inventory.yaml')
+      puts 'adding'
+      inventory_hash = load_inventory_hash
+      inventory_hash['groups'].first['groups'].first['nodes'].push(hostname)
+    else
+      inventory_hash = { 'groups' =>
+    [{ 'name' => 'ssh_nodes',
+       'groups' => [{ 'name' => 'default', 'nodes' => [hostname] }],
+       'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }] }
+    end
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 
@@ -80,5 +87,27 @@ namespace :waffle do
   desc 'tear-down - decommission machines'
   task :tear_down do
     puts 'tear_down'
+    inventory_hash = load_inventory_hash
+    hosts = find_targets(nil, inventory_hash)
+    hosts.each do |host|
+      result = `curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{host}`
+      puts result
+    end
+  end
+end
+
+if File.file?('inventory.yaml')
+  namespace :serverspec do
+    inventory_hash = load_inventory_hash
+    hosts = find_targets(nil, inventory_hash)
+    desc 'Run serverspec against all hosts'
+    task all: hosts
+    hosts.each do |host|
+      desc "Run serverspec against #{host}"
+      RSpec::Core::RakeTask.new(host.to_sym) do |t|
+        t.pattern = 'spec/acceptance/**{,/*/**}/motd_spec.rb'
+        ENV['TARGET_HOST'] = host
+      end
+    end
   end
 end
