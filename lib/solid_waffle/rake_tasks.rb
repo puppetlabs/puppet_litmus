@@ -5,6 +5,44 @@ require 'solid_waffle'
 require 'bolt_spec/run'
 include SolidWaffle
 
+def vmpooler_platform_uses_ssh(platform)
+  uses_ssh = if platform !~ %r{win-}
+               true
+             else
+               false
+             end
+  uses_ssh
+end
+
+def vmpooler_inventory_add_group(platform, hostname)
+  inventory_hash = if vmpooler_platform_uses_ssh(platform)
+                     { 'name' => 'ssh_nodes',
+                       'groups' => [{ 'name' => 'ssh_agents', 'nodes' => [hostname] }],
+                       'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }
+                   else
+                     { 'name' => 'win_rm',
+                       'groups' => [{ 'name' => 'win_agents', 'nodes' => [hostname] }],
+                       'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } } }
+                   end
+  inventory_hash
+end
+
+def vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
+  group_found = false
+  group_name = if vmpooler_platform_uses_ssh(platform)
+                 'ssh_nodes'
+               else
+                 'win_rm'
+               end
+  inventory_hash['groups'].each do |group|
+    if group['name'] == group_name
+      group['groups'].first['nodes'].push(hostname)
+      group_found = true
+    end
+  end
+  inventory_hash['groups'].push(vmpooler_inventory_add_group(platform, hostname)) unless group_found
+end
+
 namespace :waffle do
   desc "provision machines - vmpooler eg `bundle exec rake 'provision[ubuntu-1604-x86_64]`"
   task :provision, [:platform] do |_task, args|
@@ -27,12 +65,9 @@ namespace :waffle do
     if File.file?('inventory.yaml')
       puts 'adding'
       inventory_hash = load_inventory_hash
-      inventory_hash['groups'].first['groups'].first['nodes'].push(hostname)
+      vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
     else
-      inventory_hash = { 'groups' =>
-    [{ 'name' => 'ssh_nodes',
-       'groups' => [{ 'name' => 'default', 'nodes' => [hostname] }],
-       'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }] }
+      inventory_hash = { 'groups' => [vmpooler_inventory_add_group(platform, hostname)] }
     end
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
@@ -59,10 +94,12 @@ namespace :waffle do
 
     result = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
     puts result
+    # fix the path on ssh_nodes
+    result = run_command('sed -i \'s!^\(\s*PATH=\)[^"]*"!\1"/opt/puppetlabs/puppet/bin:!\' /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
   end
 
-  desc 'pre-test - build and install module'
-  task :pre_test, [:hostname] do |_task, args|
+  desc 'install_module - build and install module'
+  task :install_module, [:hostname] do |_task, args|
     puts 'pre_test'
     include BoltSpec::Run
     `pdk build  --force`
@@ -70,9 +107,9 @@ namespace :waffle do
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
     module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
-    result = `bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes ssh_nodes --no-host-key-check --inventoryfile inventory.yaml`
+    result = `bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml`
     puts result
-    result = run_command("/opt/puppetlabs/puppet/bin/puppet module install /tmp/#{File.basename(module_tar)}", targets, config: nil, inventory: inventory_hash)
+    result = run_command("puppet module install /tmp/#{File.basename(module_tar)}", targets, config: nil, inventory: inventory_hash)
     puts result
   end
 
@@ -105,7 +142,7 @@ if File.file?('inventory.yaml')
     hosts.each do |host|
       desc "Run serverspec against #{host}"
       RSpec::Core::RakeTask.new(host.to_sym) do |t|
-        t.pattern = 'spec/acceptance/**{,/*/**}/motd_spec.rb'
+        t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
         ENV['TARGET_HOST'] = host
       end
     end
