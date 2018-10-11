@@ -30,4 +30,14 @@ module SolidWaffle
     end
     targets
   end
+
+  def host_in_group(inventory_hash, host, group_name)
+    exists = false
+    inventory_hash['groups'].each do |group|
+      if group['name'] == group_name
+        exists = true if group['groups'].first['nodes'].include?(host)
+      end
+    end
+    exists
+  end
 end
