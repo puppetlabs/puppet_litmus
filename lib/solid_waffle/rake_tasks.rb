@@ -20,7 +20,7 @@ def vmpooler_inventory_add_group(platform, hostname)
                        'groups' => [{ 'name' => 'ssh_agents', 'nodes' => [hostname] }],
                        'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }
                    else
-                     { 'name' => 'win_rm',
+                     { 'name' => 'win_rm_nodes',
                        'groups' => [{ 'name' => 'win_agents', 'nodes' => [hostname] }],
                        'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } } }
                    end
@@ -32,7 +32,7 @@ def vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
   group_name = if vmpooler_platform_uses_ssh(platform)
                  'ssh_nodes'
                else
-                 'win_rm'
+                 'win_rm_nodes'
                end
   inventory_hash['groups'].each do |group|
     if group['name'] == group_name
@@ -95,7 +95,7 @@ namespace :waffle do
     result = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
     puts result
     # fix the path on ssh_nodes
-    result = run_command('sed -i \'s!^\(\s*PATH=\)[^"]*"!\1"/opt/puppetlabs/puppet/bin:!\' /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
+    run_command('sed -i \'s!^\(\s*PATH=\)[^"]*"!\1"/opt/puppetlabs/puppet/bin:!\' /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
   end
 
   desc 'install_module - build and install module'
