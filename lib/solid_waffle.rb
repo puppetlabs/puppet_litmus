@@ -6,10 +6,20 @@ require 'bolt_spec/run'
 # Helper methods for testing puppet content
 module SolidWaffle
   include BoltSpec::Run
-  def apply_manifest(manifest, _fuckit)
+  def apply_manifest(manifest, opts = {})
     inventory_hash = load_inventory_hash
     host = ENV['TARGET_HOST']
-    result = run_command("/opt/puppetlabs/puppet/bin/puppet apply -e '#{manifest}'", host, config: nil, inventory: inventory_hash)
+
+    file = Tempfile.new('foo')
+    file.write(manifest)
+    file.close
+    `bundle exec bolt file upload #{file.path} /tmp/#{File.basename(file)} --nodes #{host} --inventoryfile inventory.yaml`
+    # result = run_command("puppet apply -e 'include motd'", host, config: nil, inventory: inventory_hash)
+    command_to_run = "puppet apply /tmp/#{File.basename(file)}"
+    command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
+    result = run_command(command_to_run, host, config: nil, inventory: inventory_hash)
+
+    raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
     result
   end
 

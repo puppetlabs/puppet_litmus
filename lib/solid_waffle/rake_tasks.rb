@@ -3,7 +3,6 @@
 require 'rspec/core/rake_task'
 require 'solid_waffle'
 require 'bolt_spec/run'
-include SolidWaffle
 
 def vmpooler_platform_uses_ssh(platform)
   uses_ssh = if platform !~ %r{win-}
@@ -63,7 +62,6 @@ namespace :waffle do
     hostname = "#{data[platform]['hostname']}.#{data['domain']}"
     puts "reserved #{hostname} in vmpooler"
     if File.file?('inventory.yaml')
-      puts 'adding'
       inventory_hash = load_inventory_hash
       vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
     else
@@ -78,8 +76,8 @@ namespace :waffle do
   end
 
   desc 'install puppet agent, [:hostname, :collection]'
-  task :install_puppet, [:hostname, :collection] do |_task, args|
-    puts 'install_puppet'
+  task :install_agent, [:hostname, :collection] do |_task, args|
+    puts 'install_agent'
     include BoltSpec::Run
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
@@ -134,7 +132,8 @@ namespace :waffle do
 end
 
 if File.file?('inventory.yaml')
-  namespace :serverspec do
+  namespace :acceptance do
+    include SolidWaffle
     inventory_hash = load_inventory_hash
     hosts = find_targets(nil, inventory_hash)
     desc 'Run serverspec against all hosts'
