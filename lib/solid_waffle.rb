@@ -20,6 +20,7 @@ module SolidWaffle
     result = run_command(command_to_run, host, config: nil, inventory: inventory_hash)
 
     raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
+
     result
   end
 
