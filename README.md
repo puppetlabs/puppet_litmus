@@ -46,3 +46,19 @@ Leveraging content from the forge and existing test frameworks.
 ## Other Resources
 
 * [Is it Worth the Time?](https://xkcd.com/1205/)
+
+# Real world example & steps
+
+Needs the pdk installed, to build the module. 'bundle exec rake --tasks' is your friend.
+
+```
+git clone git@github.com:puppetlabs/puppetlabs-motd.git
+git remote add tphoney git@github.com:tphoney/puppetlabs-motd.git
+git rebase tphoney/solid-waffle
+bundle install --path .bundle/gems/
+bundle exec rake 'waffle:provision[vmpooler, centos-7-x86_64]'
+bundle exec rake 'waffle:provision[vmpooler, win-2012r2-x86_64]'
+bundle exec rake waffle:install_agent
+bundle exec rake waffle:install_module
+bundle exec rake acceptance:all -j10 -m
+```
