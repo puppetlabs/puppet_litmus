@@ -50,6 +50,7 @@ Leveraging content from the forge and existing test frameworks.
 # Real world example & steps
 
 Needs the pdk installed, to build the module. 'bundle exec rake --tasks' is your friend.
+DOCKER IS WIP
 
 ```
 git clone git@github.com:puppetlabs/puppetlabs-motd.git
@@ -59,7 +60,13 @@ git rebase tphoney/solid-waffle
 bundle install --path .bundle/gems/
 bundle exec rake 'waffle:provision[vmpooler, centos-7-x86_64]'
 bundle exec rake 'waffle:provision[vmpooler, win-2012r2-x86_64]'
+
 bundle exec rake waffle:install_agent
 bundle exec rake waffle:install_module
-bundle exec rake acceptance:all -j10 -m
+
+# run tests in parallel
+bundle exec rake acceptance:all -j10 -m 
+
+# return images to pool
+bundle exec rake waffle:tear_down
 ```
