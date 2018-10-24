@@ -53,6 +53,7 @@ Needs the pdk installed, to build the module. 'bundle exec rake --tasks' is your
 
 ```
 git clone git@github.com:puppetlabs/puppetlabs-motd.git
+cd puppetlabs-motd
 git remote add tphoney git@github.com:tphoney/puppetlabs-motd.git
 git rebase tphoney/solid-waffle
 bundle install --path .bundle/gems/
