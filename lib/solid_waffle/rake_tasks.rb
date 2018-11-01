@@ -4,52 +4,6 @@ require 'rspec/core/rake_task'
 require 'solid_waffle'
 require 'bolt_spec/run'
 
-def platform_uses_ssh(platform)
-  uses_ssh = if platform !~ %r{win-}
-               true
-             else
-               false
-             end
-  uses_ssh
-end
-
-def vmpooler_inventory_add_group(platform, hostname)
-  inventory_hash = if platform_uses_ssh(platform)
-                     { 'name' => 'ssh_nodes',
-                       'groups' => [{ 'name' => 'ssh_agents', 'nodes' => [hostname] }],
-                       'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }
-                   else
-                     { 'name' => 'win_rm_nodes',
-                       'groups' => [{ 'name' => 'win_agents', 'nodes' => [hostname] }],
-                       'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } } }
-                   end
-  inventory_hash
-end
-
-def vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
-  group_found = false
-  group_name = if platform_uses_ssh(platform)
-                 'ssh_nodes'
-               else
-                 'win_rm_nodes'
-               end
-  inventory_hash['groups'].each do |group|
-    if group['name'] == group_name
-      group['groups'].first['nodes'].push(hostname)
-      group_found = true
-    end
-  end
-  inventory_hash['groups'].push(vmpooler_inventory_add_group(platform, hostname)) unless group_found
-end
-
-def docker_inventory_add_group(_platform, hostname)
-  inventory_hash =
-    { 'name' => 'ssh_nodes',
-      'groups' => [{ 'name' => 'ssh_agents', 'nodes' => [hostname] }],
-      'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => 2222, 'host-key-check' => false } } }
-  inventory_hash
-end
-
 def install_ssh_components(platform, container)
   case platform
   when %r{ubuntu}, %r{debian}
@@ -96,9 +50,24 @@ def fix_ssh(container)
   `docker exec #{container} service ssh restart`
 end
 
+def platform_uses_ssh(platform)
+  uses_ssh = if platform !~ %r{win-}
+               true
+             else
+               false
+             end
+  uses_ssh
+end
+
 namespace :waffle do
   desc "provision machines - vmpooler eg `bundle exec rake 'provision[ubuntu-1604-x86_64]`"
   task :provision, [:provisioner, :platform] do |_task, args|
+    include SolidWaffle
+    inventory_hash = if File.file?('inventory.yaml')
+                       load_inventory_hash
+                     else
+                       { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }] }
+                     end
     if args[:provisioner] == 'vmpooler'
       # vmpooler
       platform = if args[:platform].nil?
@@ -117,11 +86,12 @@ namespace :waffle do
 
       hostname = "#{data[platform]['hostname']}.#{data['domain']}"
       puts "reserved #{hostname} in vmpooler"
-      if File.file?('inventory.yaml')
-        inventory_hash = load_inventory_hash
-        vmpooler_add_to_inventory_hash(inventory_hash, platform, hostname)
+      if platform_uses_ssh(platform)
+        node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }
+        group_name = 'ssh_nodes'
       else
-        inventory_hash = { 'groups' => [vmpooler_inventory_add_group(platform, hostname)] }
+        node = { 'name' => hostname, 'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } } }
+        group_name = 'winrm_nodes'
       end
     elsif args[:provisioner] == 'docker'
       warn '!!!! Only supports a single container, because mac :( !!!! RE https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds'
@@ -130,10 +100,13 @@ namespace :waffle do
       install_ssh_components(platform, 'grego')
       fix_ssh('grego')
       hostname = 'localhost'
-      inventory_hash = { 'groups' => [docker_inventory_add_group(platform, hostname)] }
+      node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => 2222, 'host-key-check' => false } } }
+      group_name = 'ssh_nodes'
+      inventory_hash
     else
       raise "Unknown provisioner '#{args[:provisioner]}', try docker/vmpooler"
     end
+    add_node_to_group(inventory_hash, node, group_name)
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 

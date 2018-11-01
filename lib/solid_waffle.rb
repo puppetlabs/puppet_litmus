@@ -45,10 +45,21 @@ module SolidWaffle
   def host_in_group(inventory_hash, host, group_name)
     exists = false
     inventory_hash['groups'].each do |group|
-      if group['name'] == group_name
-        exists = true if group['groups'].first['nodes'].include?(host)
+      next unless group['name'] == group_name
+
+      group['nodes'].each do |node|
+        exists = true if node['name'] == host
       end
     end
     exists
+  end
+
+  def add_node_to_group(inventory_hash, node, group_name)
+    inventory_hash['groups'].each do |group|
+      if group['name'] == group_name
+        group['nodes'].push node
+      end
+    end
+    inventory_hash
   end
 end
