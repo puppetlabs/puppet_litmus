@@ -54,6 +54,17 @@ module SolidWaffle
     exists
   end
 
+  def config_from_node(inventory_hash, host)
+    inventory_hash['groups'].each do |group|
+      group['nodes'].each do |node|
+        if node['name'] == host
+          return node['config']
+        end
+      end
+    end
+    raise "No config was found for #{host}"
+  end
+
   def add_node_to_group(inventory_hash, node, group_name)
     inventory_hash['groups'].each do |group|
       if group['name'] == group_name
