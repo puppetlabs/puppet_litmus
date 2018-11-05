@@ -3,6 +3,7 @@
 require 'rspec/core/rake_task'
 require 'solid_waffle'
 require 'bolt_spec/run'
+require 'open3'
 
 def install_ssh_components(platform, container)
   case platform
@@ -94,13 +95,23 @@ namespace :waffle do
         group_name = 'winrm_nodes'
       end
     elsif args[:provisioner] == 'docker'
-      warn '!!!! Only supports a single container, because mac :( !!!! RE https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds'
-      platform = args[:platform].split(',').first
-      `docker run -d -it -p 2222:22 --name grego #{args[:platform]}`
-      install_ssh_components(platform, 'grego')
-      fix_ssh('grego')
+      warn '!!! Using private port forwarding!!!'
+      platform, version = args[:platform].split(':')
+      front_facing_port = 2222
+      full_container_name = "#{platform}_#{version}-#{front_facing_port}"
+      (front_facing_port..2230).each do |i|
+        front_facing_port = i
+        full_container_name = "#{platform}_#{version}-#{front_facing_port}"
+        _stdout, stderr, _status = Open3.capture3("docker port #{full_container_name}")
+        break unless (stderr =~ %r{No such container}i).nil?
+        raise 'All front facing ports are in use.' if front_facing_port == 2230
+      end
+      puts "Provisioning #{full_container_name}"
+      _stdout, _stderr, _status = Open3.capture3("docker run -d -it -p #{front_facing_port}:22 --name #{full_container_name} #{args[:platform]}")
+      install_ssh_components(platform, full_container_name)
+      fix_ssh(full_container_name)
       hostname = 'localhost'
-      node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => 2222, 'host-key-check' => false } } }
+      node = { 'name' => "#{hostname}:#{front_facing_port}", 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } } }
       group_name = 'ssh_nodes'
       inventory_hash
     else
