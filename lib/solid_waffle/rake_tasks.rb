@@ -149,7 +149,6 @@ namespace :waffle do
 
   desc 'install_module - build and install module'
   task :install_module, [:hostname] do |_task, args|
-    puts 'pre_test'
     include BoltSpec::Run
     `pdk build  --force`
     puts 'built'
