@@ -150,7 +150,7 @@ namespace :waffle do
   desc 'install_module - build and install module'
   task :install_module, [:hostname] do |_task, args|
     include BoltSpec::Run
-    `pdk build  --force`
+    `bundle exec pdk build  --force`
     puts 'built'
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
