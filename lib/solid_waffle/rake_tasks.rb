@@ -152,7 +152,6 @@ namespace :waffle do
     include BoltSpec::Run
     pdk_build_command = 'bundle exec pdk build  --force'
     stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    binding.pry
     raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
 
     puts 'built'
