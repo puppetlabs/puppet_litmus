@@ -45,11 +45,18 @@ def install_ssh_components(platform, container)
   `docker exec #{container} bash -c 'echo root:root | /usr/sbin/chpasswd'`
 end
 
-def fix_ssh(container)
+def fix_ssh(platform, container)
   `docker exec #{container} sed -ri 's/^#?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config`
   `docker exec #{container} sed -ri 's/^#?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config`
   `docker exec #{container} sed -ri 's/^#?UseDNS .*/UseDNS no/' /etc/ssh/sshd_config`
-  `docker exec #{container} service ssh restart`
+  case platform
+  when %r{ubuntu}, %r{debian}
+    `docker exec #{container} service ssh restart`
+  when  %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
+    `docker exec #{container} service sshd restart`
+  else
+    raise "platform #{platform} not yet supported on docker"
+  end
 end
 
 def platform_uses_ssh(platform)
@@ -110,7 +117,7 @@ namespace :waffle do
       puts "Provisioning #{full_container_name}"
       _stdout, _stderr, _status = Open3.capture3("docker run -d -it -p #{front_facing_port}:22 --name #{full_container_name} #{args[:platform]}")
       install_ssh_components(platform, full_container_name)
-      fix_ssh(full_container_name)
+      fix_ssh(platform, full_container_name)
       hostname = 'localhost'
       node = { 'name' => "#{hostname}:#{front_facing_port}", 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } } }
       group_name = 'ssh_nodes'
