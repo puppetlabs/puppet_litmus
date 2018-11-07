@@ -4,6 +4,7 @@ require 'rspec/core/rake_task'
 require 'solid_waffle'
 require 'bolt_spec/run'
 require 'open3'
+require 'pdk'
 
 def install_ssh_components(platform, container)
   case platform
@@ -150,14 +151,20 @@ namespace :waffle do
   desc 'install_module - build and install module'
   task :install_module, [:hostname] do |_task, args|
     include BoltSpec::Run
-    pdk_build_command = 'bundle exec pdk build  --force'
-    stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
+    # old cli_way
+    #pdk_build_command = 'bundle exec pdk build  --force'
+    #stdout, stderr, _status = Open3.capture3(pdk_build_command)
+    #raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
+    require 'pdk/module/build'
+    opts = {}
+    opts[:force] = true
+    builder = PDK::Module::Build.new(opts)
+    module_tar = builder.build
 
     puts 'built'
     inventory_hash = load_inventory_hash
     targets = find_targets(args[:hostname], inventory_hash)
-    module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
+    # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
     result = `bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml`
     puts result
