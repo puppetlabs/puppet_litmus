@@ -31,13 +31,10 @@ set :ssh_options, options
 
 ### Steps (each step is optional)
 
-1. provision machines - specify number of machines / and OS, along with the mechanism eg azure / docker / vmpooler
-2. pre-setup - disable apt / configure firewall 
-3. install puppet - PE / FOSS / Bolt
-4. pre-test - build and install module
-5. snapshot - allow rollbacks in vmpooler / vagrant
-6. test - run rspec / inspec / serverspec / puppet code as tests
-7. tear-down - decommission machines
+1. waffle:provision - specify number of machines / and OS, along with the mechanism eg azure / docker / vmpooler
+2. waffle:install_agent 
+3. install_module 
+4. acceptance:all
 
 ## Technologies used
 Just enough rake goodness to bind puppet code and bolt tasks to our will. 
@@ -46,6 +43,13 @@ Leveraging content from the forge and existing test frameworks.
 ## Other Resources
 
 * [Is it Worth the Time?](https://xkcd.com/1205/)
+
+## issues
+
+* only supports puppet 5 and 6
+* bolt and pdk gems do not play well because of CRI, 'https://github.com/tphoney/pdk.git', branch: 'pin_cri'
+* docker only provisions linux images well
+* docker provisioning is limited due to the mac, uses port forwarding
 
 # Real world example & steps
 
