@@ -48,8 +48,9 @@ Leveraging content from the forge and existing test frameworks.
 
 * only supports puppet 5 and 6
 * bolt and pdk gems do not play well because of CRI, 'https://github.com/tphoney/pdk.git', branch: 'pin_cri'
-* docker only provisions linux images well
+* docker only provisions linux images for now
 * docker provisioning is limited due to the mac, uses port forwarding
+* tear_down doesnt work well
 
 # Real world example & steps
 
