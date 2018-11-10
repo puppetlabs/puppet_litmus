@@ -195,15 +195,17 @@ namespace :waffle do
   end
 
   desc 'tear-down - decommission machines'
-  task :tear_down, [:provisioner, :platform] do |_task, _args|
-    puts 'tear_down'
+  task :tear_down, [:target] do |_task, args|
     inventory_hash = load_inventory_hash
-    hosts = find_targets(nil, inventory_hash)
-    hosts.each do |host|
-      # remove node from inventory
-      remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{host}"
-      run_local_command(remove_from_vmpooler)
+    targets = find_targets(args[:target], inventory_hash)
+    targets.each do |node_name|
+      remove_node(inventory_hash, node_name)
+      # how do we know what provisioner to use
+      remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
+      #run_local_command(remove_from_vmpooler)
+      puts "Removed #{node_name}"
     end
+    File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 end
 

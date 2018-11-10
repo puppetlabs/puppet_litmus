@@ -65,11 +65,9 @@ module SolidWaffle
     raise "No config was found for #{host}"
   end
 
-  def add_node_to_group(inventory_hash, node, group_name)
+  def remove_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
-      if group['name'] == group_name
-        group['nodes'].push node
-      end
+      group['nodes'].delete_if {|i| i['name'] == node_name}
     end
     inventory_hash
   end
