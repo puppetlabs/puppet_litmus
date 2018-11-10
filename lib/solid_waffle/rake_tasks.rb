@@ -80,7 +80,7 @@ namespace :waffle do
   task :provision, [:provisioner, :platform] do |_task, args|
     include SolidWaffle
     inventory_hash = if File.file?('inventory.yaml')
-                       load_inventory_hash
+                       inventory_hash_from_inventory_file
                      else
                        { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }] }
                      end
@@ -141,7 +141,7 @@ namespace :waffle do
   task :install_agent, [:hostname, :collection] do |_task, args|
     puts 'install_agent'
     include BoltSpec::Run
-    inventory_hash = load_inventory_hash
+    inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(args[:hostname], inventory_hash)
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
@@ -172,7 +172,7 @@ namespace :waffle do
     module_tar = builder.build
     puts 'built'
 
-    inventory_hash = load_inventory_hash
+    inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(args[:target_node_name], inventory_hash)
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
@@ -196,7 +196,7 @@ namespace :waffle do
 
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
-    inventory_hash = load_inventory_hash
+    inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(args[:target], inventory_hash)
     targets.each do |node_name|
       remove_node(inventory_hash, node_name)
@@ -212,7 +212,7 @@ end
 if File.file?('inventory.yaml')
   namespace :acceptance do
     include SolidWaffle
-    inventory_hash = load_inventory_hash
+    inventory_hash = inventory_hash_from_inventory_file
     hosts = find_targets(nil, inventory_hash)
     desc 'Run serverspec against all hosts'
     task all: hosts
