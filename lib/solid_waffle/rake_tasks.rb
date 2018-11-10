@@ -8,7 +8,7 @@ require 'pdk'
 
 def run_local_command(command)
   stdout, stderr, status = Open3.capture3(command)
-  error_message = "#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
+  error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
   raise error_message unless status.to_i.zero?
   stdout
 end
@@ -137,11 +137,6 @@ namespace :waffle do
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 
-  desc 'pre_setup - disable apt / configure firewall'
-  task :pre_setup do
-    puts 'pre_setup'
-  end
-
   desc 'install puppet agent, [:hostname, :collection]'
   task :install_agent, [:hostname, :collection] do |_task, args|
     puts 'install_agent'
@@ -164,7 +159,7 @@ namespace :waffle do
   end
 
   desc 'install_module - build and install module'
-  task :install_module, [:hostname] do |_task, args|
+  task :install_module, [:target_node_name] do |_task, args|
     include BoltSpec::Run
     # old cli_way
     #pdk_build_command = 'bundle exec pdk build  --force'
@@ -175,15 +170,20 @@ namespace :waffle do
     opts[:force] = true
     builder = PDK::Module::Build.new(opts)
     module_tar = builder.build
-
     puts 'built'
+
     inventory_hash = load_inventory_hash
-    targets = find_targets(args[:hostname], inventory_hash)
+    target_nodes = find_targets(args[:target_node_name], inventory_hash)
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
-    run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml")
+    target_string = if args[:target_node_name].nil?
+              'all'
+            else
+              args[:target_node_name]
+            end
+    run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    result = run_command(install_module_command, targets, config: nil, inventory: inventory_hash)
+    result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
     if result.is_a?(Array)
       result.each do |node|
         puts "#{node['node']} failed #{node['result'].to_s}" if node['status'] != "success"
