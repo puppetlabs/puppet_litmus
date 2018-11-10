@@ -142,7 +142,7 @@ namespace :waffle do
     puts 'install_agent'
     include BoltSpec::Run
     inventory_hash = inventory_hash_from_inventory_file
-    targets = find_targets(args[:hostname], inventory_hash)
+    targets = find_targets(inventory_hash, args[:hostname])
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     params = if args[:collection].nil?
@@ -173,7 +173,7 @@ namespace :waffle do
     puts 'built'
 
     inventory_hash = inventory_hash_from_inventory_file
-    target_nodes = find_targets(args[:target_node_name], inventory_hash)
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
     target_string = if args[:target_node_name].nil?
@@ -197,7 +197,7 @@ namespace :waffle do
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
-    targets = find_targets(args[:target], inventory_hash)
+    targets = find_targets(inventory_hash, args[:target])
     targets.each do |node_name|
       remove_node(inventory_hash, node_name)
       # how do we know what provisioner to use
@@ -213,7 +213,7 @@ if File.file?('inventory.yaml')
   namespace :acceptance do
     include SolidWaffle
     inventory_hash = inventory_hash_from_inventory_file
-    hosts = find_targets(nil, inventory_hash)
+    hosts = find_targets(inventory_hash, nil)
     desc 'Run serverspec against all hosts'
     task all: hosts
     hosts.each do |host|

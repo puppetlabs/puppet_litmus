@@ -36,7 +36,7 @@ module SolidWaffle
     inventory_hash
   end
 
-  def find_targets(targets, inventory_hash)
+  def find_targets(inventory_hash, targets)
     if targets.nil?
       inventory = Bolt::Inventory.new(inventory_hash, nil)
       targets = inventory.node_names.to_a
@@ -46,22 +46,22 @@ module SolidWaffle
     targets
   end
 
-  def host_in_group(inventory_hash, host, group_name)
+  def target_in_group(inventory_hash, node_name, group_name)
     exists = false
     inventory_hash['groups'].each do |group|
       next unless group['name'] == group_name
 
       group['nodes'].each do |node|
-        exists = true if node['name'] == host
+        exists = true if node['name'] == node_name
       end
     end
     exists
   end
 
-  def config_from_node(inventory_hash, host)
+  def config_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
       group['nodes'].each do |node|
-        if node['name'] == host
+        if node['name'] == node_name
           return node['config']
         end
       end
