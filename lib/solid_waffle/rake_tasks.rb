@@ -10,6 +10,7 @@ def run_local_command(command)
   stdout, stderr, status = Open3.capture3(command)
   error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
   raise error_message unless status.to_i.zero?
+
   stdout
 end
 
@@ -59,7 +60,7 @@ def fix_ssh(platform, container)
   case platform
   when %r{ubuntu}, %r{debian}
     run_local_command("docker exec #{container} service ssh restart")
-  when  %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
+  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
     run_local_command("docker exec #{container} service sshd restart")
   else
     raise "platform #{platform} not yet supported on docker"
@@ -162,9 +163,9 @@ namespace :waffle do
   task :install_module, [:target_node_name] do |_task, args|
     include BoltSpec::Run
     # old cli_way
-    #pdk_build_command = 'bundle exec pdk build  --force'
-    #stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    #raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
+    # pdk_build_command = 'bundle exec pdk build  --force'
+    # stdout, stderr, _status = Open3.capture3(pdk_build_command)
+    # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
     require 'pdk/module/build'
     opts = {}
     opts[:force] = true
@@ -176,22 +177,23 @@ namespace :waffle do
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
+
     target_string = if args[:target_node_name].nil?
-              'all'
-            else
-              args[:target_node_name]
-            end
+                      'all'
+                    else
+                      args[:target_node_name]
+                    end
     run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
     if result.is_a?(Array)
       result.each do |node|
-        puts "#{node['node']} failed #{node['result'].to_s}" if node['status'] != "success"
+        puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
       end
     else
-       raise "Failed trying to run '#{install_module_command}' against inventory."
+      raise "Failed trying to run '#{install_module_command}' against inventory."
     end
-    puts "Installed"
+    puts 'Installed'
   end
 
   desc 'tear-down - decommission machines'
@@ -202,7 +204,7 @@ namespace :waffle do
       remove_node(inventory_hash, node_name)
       # how do we know what provisioner to use
       remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
-      #run_local_command(remove_from_vmpooler)
+      # run_local_command(remove_from_vmpooler)
       puts "Removed #{node_name}"
     end
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
