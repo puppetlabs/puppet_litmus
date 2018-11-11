@@ -18,7 +18,7 @@ def install_ssh_components(platform, container)
   case platform
   when %r{ubuntu}, %r{debian}
     run_local_command("docker exec #{container} apt-get update")
-    run_local_command("docker exec #{container} apt-get install -y openssh-server openssh-client vim")
+    run_local_command("docker exec #{container} apt-get install -y openssh-server openssh-client")
   when %r{cumulus}
     run_local_command("docker exec #{container} apt-get update")
     run_local_command("docker exec #{container} apt-get install -y openssh-server openssh-client")
@@ -57,11 +57,16 @@ def fix_ssh(platform, container)
   run_local_command("docker exec #{container} sed -ri 's/^#?PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config")
   run_local_command("docker exec #{container} sed -ri 's/^#?PasswordAuthentication .*/PasswordAuthentication yes/' /etc/ssh/sshd_config")
   run_local_command("docker exec #{container} sed -ri 's/^#?UseDNS .*/UseDNS no/' /etc/ssh/sshd_config")
+  run_local_command("docker exec #{container} sed -e '/HostKey.*ssh_host_e.*_key/ s/^#*/#/' -ri /etc/ssh/sshd_config")
   case platform
   when %r{ubuntu}, %r{debian}
     run_local_command("docker exec #{container} service ssh restart")
   when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
-    run_local_command("docker exec #{container} service sshd restart")
+    if container !~ %r{centos_7}
+      run_local_command("docker exec #{container} service sshd restart")
+    else
+      run_local_command("docker exec -d #{container} /usr/sbin/sshd -D")
+    end
   else
     raise "platform #{platform} not yet supported on docker"
   end
@@ -204,7 +209,9 @@ namespace :waffle do
       remove_node(inventory_hash, node_name)
       # how do we know what provisioner to use
       remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
-      # run_local_command(remove_from_vmpooler)
+      #      run_local_command(remove_from_vmpooler)
+      #      remove_docker = " docker rm -f #{node_name}"
+      #      run_local_command(remove_docker)
       puts "Removed #{node_name}"
     end
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
