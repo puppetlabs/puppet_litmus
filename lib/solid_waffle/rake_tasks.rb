@@ -27,7 +27,7 @@ def install_ssh_components(platform, container)
     run_local_command("docker exec #{container} dnf install -y sudo openssh-server openssh-clients")
     run_local_command("docker exec #{container} ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key")
     run_local_command("docker exec #{container} ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key")
-  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
+  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}, %r{oracle}
     run_local_command("docker exec #{container} yum clean all")
     run_local_command("docker exec #{container} yum install -y sudo openssh-server openssh-clients")
     run_local_command("docker exec #{container} ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''")
@@ -61,8 +61,8 @@ def fix_ssh(platform, container)
   case platform
   when %r{ubuntu}, %r{debian}
     run_local_command("docker exec #{container} service ssh restart")
-  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}
-    if container !~ %r{centos_7}
+  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}, %r{oracle}
+    if container !~ %r{7}
       run_local_command("docker exec #{container} service sshd restart")
     else
       run_local_command("docker exec -d #{container} /usr/sbin/sshd -D")
