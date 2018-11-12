@@ -16,7 +16,7 @@ end
 
 def install_ssh_components(platform, container)
   case platform
-  when %r{ubuntu}, %r{debian}
+  when %r{debian}, %r{ubuntu}
     run_local_command("docker exec #{container} apt-get update")
     run_local_command("docker exec #{container} apt-get install -y openssh-server openssh-client")
   when %r{cumulus}
@@ -27,7 +27,7 @@ def install_ssh_components(platform, container)
     run_local_command("docker exec #{container} dnf install -y sudo openssh-server openssh-clients")
     run_local_command("docker exec #{container} ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key")
     run_local_command("docker exec #{container} ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key")
-  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}, %r{oracle}
+  when %r{centos}, %r{^el-}, %r{eos}, %r{fedora}, %r{oracle}, %r{redhat}, %r{scientific}
     run_local_command("docker exec #{container} yum clean all")
     run_local_command("docker exec #{container} yum install -y sudo openssh-server openssh-clients")
     run_local_command("docker exec #{container} ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''")
@@ -59,9 +59,9 @@ def fix_ssh(platform, container)
   run_local_command("docker exec #{container} sed -ri 's/^#?UseDNS .*/UseDNS no/' /etc/ssh/sshd_config")
   run_local_command("docker exec #{container} sed -e '/HostKey.*ssh_host_e.*_key/ s/^#*/#/' -ri /etc/ssh/sshd_config")
   case platform
-  when %r{ubuntu}, %r{debian}
+  when %r{debian}, %r{ubuntu}
     run_local_command("docker exec #{container} service ssh restart")
-  when %r{^el-}, %r{centos}, %r{fedora}, %r{redhat}, %r{eos}, %r{oracle}
+  when %r{centos}, %r{^el-}, %r{eos}, %r{fedora}, %r{oracle}, %r{redhat}, %r{scientific}
     if container !~ %r{7}
       run_local_command("docker exec #{container} service sshd restart")
     else
@@ -119,6 +119,7 @@ namespace :waffle do
       warn '!!! Using private port forwarding!!!'
       platform, version = args[:platform].split(':')
       front_facing_port = 2222
+      platform = platform.sub(%r{/}, '_')
       full_container_name = "#{platform}_#{version}-#{front_facing_port}"
       (front_facing_port..2230).each do |i|
         front_facing_port = i
