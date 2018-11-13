@@ -109,10 +109,10 @@ namespace :waffle do
       hostname = "#{data[platform]['hostname']}.#{data['domain']}"
       puts "reserved #{hostname} in vmpooler"
       if platform_uses_ssh(platform)
-        node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } } }
+        node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } }, 'facts' => { 'provisioner' => 'vmpooler' } }
         group_name = 'ssh_nodes'
       else
-        node = { 'name' => hostname, 'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } } }
+        node = { 'name' => hostname, 'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } }, 'facts' => { 'provisioner' => 'vmpooler' } }
         group_name = 'winrm_nodes'
       end
     elsif args[:provisioner] == 'docker'
@@ -134,7 +134,7 @@ namespace :waffle do
       install_ssh_components(platform, full_container_name)
       fix_ssh(platform, full_container_name)
       hostname = 'localhost'
-      node = { 'name' => "#{hostname}:#{front_facing_port}", 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } } }
+      node = { 'name' => "#{hostname}:#{front_facing_port}", 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } }, 'facts' => { 'provisioner' => 'docker', 'container_name' => full_container_name } }
       group_name = 'ssh_nodes'
       inventory_hash
     else
@@ -177,7 +177,7 @@ namespace :waffle do
     opts[:force] = true
     builder = PDK::Module::Build.new(opts)
     module_tar = builder.build
-    puts 'built'
+    puts 'Built'
 
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
@@ -207,12 +207,18 @@ namespace :waffle do
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target])
     targets.each do |node_name|
-      remove_node(inventory_hash, node_name)
       # how do we know what provisioner to use
-      remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
-      #      run_local_command(remove_from_vmpooler)
-      #      remove_docker = " docker rm -f #{node_name}"
-      #      run_local_command(remove_docker)
+      node_facts = facts_from_node(inventory_hash, node_name)
+
+      case node_facts['provisioner']
+      when %r{vmpooler}
+        remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
+        run_local_command(remove_from_vmpooler)
+      when %r{docker}
+        remove_docker = "docker rm -f #{node_facts['container_name']}"
+        run_local_command(remove_docker)
+      end
+      remove_node(inventory_hash, node_name)
       puts "Removed #{node_name}"
     end
     File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }

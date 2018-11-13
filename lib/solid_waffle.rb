@@ -66,7 +66,18 @@ module SolidWaffle
         end
       end
     end
-    raise "No config was found for #{host}"
+    raise "No config was found for #{node_name}"
+  end
+
+  def facts_from_node(inventory_hash, node_name)
+    inventory_hash['groups'].each do |group|
+      group['nodes'].each do |node|
+        if node['name'] == node_name
+          return node['facts']
+        end
+      end
+    end
+    raise "No config was found for #{node_name}"
   end
 
   def add_node_to_group(inventory_hash, node_name, group_name)
