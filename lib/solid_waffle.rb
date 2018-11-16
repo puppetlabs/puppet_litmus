@@ -34,14 +34,19 @@ module SolidWaffle
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
+
     result
   end
 
-  def inventory_hash_from_inventory_file
-    filename = 'inventory.yaml'
-    raise 'There is no inventory file' unless File.exist?(filename)
+  def inventory_hash_from_inventory_file(inventory_full_path = nil)
+    inventory_full_path = if inventory_full_path.nil?
+                            'inventory.yaml'
+                          else
+                            inventory_full_path
+                          end
+    raise 'There is no inventory file' unless File.exist?(inventory_full_path)
 
-    inventory_hash = YAML.load_file(filename)
+    inventory_hash = YAML.load_file(inventory_full_path)
     inventory_hash
   end
 
