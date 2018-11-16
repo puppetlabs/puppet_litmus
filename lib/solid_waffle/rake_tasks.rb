@@ -109,10 +109,16 @@ namespace :waffle do
       hostname = "#{data[platform]['hostname']}.#{data['domain']}"
       puts "reserved #{hostname} in vmpooler"
       if platform_uses_ssh(platform)
-        node = { 'name' => hostname, 'config' => { 'transport' => 'ssh', 'ssh' => { 'host-key-check' => false } }, 'facts' => { 'provisioner' => 'vmpooler' } }
+        node = { 'name' => hostname,
+                 'config' => { 'transport' => 'ssh',
+                               'ssh' => { 'host-key-check' => false } },
+                 'facts' => { 'provisioner' => 'vmpooler' } }
         group_name = 'ssh_nodes'
       else
-        node = { 'name' => hostname, 'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } }, 'facts' => { 'provisioner' => 'vmpooler' } }
+        node = { 'name' => hostname,
+                 'config' => { 'transport' => 'winrm',
+                               'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } },
+                 'facts' => { 'provisioner' => 'vmpooler' } }
         group_name = 'winrm_nodes'
       end
     elsif args[:provisioner] == 'docker'
@@ -134,7 +140,10 @@ namespace :waffle do
       install_ssh_components(platform, full_container_name)
       fix_ssh(platform, full_container_name)
       hostname = 'localhost'
-      node = { 'name' => "#{hostname}:#{front_facing_port}", 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } }, 'facts' => { 'provisioner' => 'docker', 'container_name' => full_container_name } }
+      node = { 'name' => "#{hostname}:#{front_facing_port}",
+               'config' => { 'transport' => 'ssh',
+                             'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } },
+               'facts' => { 'provisioner' => 'docker', 'container_name' => full_container_name } }
       group_name = 'ssh_nodes'
       inventory_hash
     else
