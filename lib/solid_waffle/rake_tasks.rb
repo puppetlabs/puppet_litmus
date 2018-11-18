@@ -72,56 +72,25 @@ def fix_ssh(platform, container)
   end
 end
 
-def platform_uses_ssh(platform)
-  uses_ssh = if platform !~ %r{win-}
-               true
-             else
-               false
-             end
-  uses_ssh
-end
-
 namespace :waffle do
   desc "provision machines - vmpooler eg 'bundle exec rake 'provision[ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
-    include SolidWaffle
-    inventory_hash = if File.file?('inventory.yaml')
-                       inventory_hash_from_inventory_file
-                     else
-                       { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }] }
-                     end
+    Rake::Task['spec_prep'].invoke
     if args[:provisioner] == 'vmpooler'
       # vmpooler
-      platform = if args[:platform].nil?
-                   'ubuntu-1604-x86_64'
-                 else
-                   args[:platform]
-                 end
-      puts "Using VMPooler for #{platform}"
-      vmpooler = Net::HTTP.start(ENV['VMPOOLER_HOST'] || 'vmpooler.delivery.puppetlabs.net')
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
 
-      reply = vmpooler.post("/api/v1/vm/#{platform}", '')
-      raise "Error: #{reply}: #{reply.message}" unless reply.is_a?(Net::HTTPSuccess)
-
-      data = JSON.parse(reply.body)
-      raise "VMPooler is not ok: #{data.inspect}" unless data['ok'] == true
-
-      hostname = "#{data[platform]['hostname']}.#{data['domain']}"
-      puts "reserved #{hostname} in vmpooler"
-      if platform_uses_ssh(platform)
-        node = { 'name' => hostname,
-                 'config' => { 'transport' => 'ssh',
-                               'ssh' => { 'host-key-check' => false } },
-                 'facts' => { 'provisioner' => 'vmpooler' } }
-        group_name = 'ssh_nodes'
-      else
-        node = { 'name' => hostname,
-                 'config' => { 'transport' => 'winrm',
-                               'winrm' => { 'user' => 'Administrator', 'password' => 'Qu@lity!', 'ssl' => false } },
-                 'facts' => { 'provisioner' => 'vmpooler' } }
-        group_name = 'winrm_nodes'
-      end
+      params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+      result = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
+      puts result
     elsif args[:provisioner] == 'docker'
+      include SolidWaffle
+      inventory_hash = if File.file?('inventory.yaml')
+                         inventory_hash_from_inventory_file
+                       else
+                         { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }] }
+                       end
       warn '!!! Using private port forwarding!!!'
       platform, version = args[:platform].split(':')
       front_facing_port = 2222
@@ -145,12 +114,11 @@ namespace :waffle do
                              'ssh' => { 'user' => 'root', 'password' => 'root', 'port' => front_facing_port, 'host-key-check' => false } },
                'facts' => { 'provisioner' => 'docker', 'container_name' => full_container_name } }
       group_name = 'ssh_nodes'
-      inventory_hash
+      add_node_to_group(inventory_hash, node, group_name)
+      File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
     else
       raise "Unknown provisioner '#{args[:provisioner]}', try docker/vmpooler"
     end
-    add_node_to_group(inventory_hash, node, group_name)
-    File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 
   desc 'install puppet agent, [:hostname, :collection]'
@@ -213,24 +181,28 @@ namespace :waffle do
 
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
+    Rake::Task['spec_prep'].invoke
+    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+    raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
+
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target])
     targets.each do |node_name|
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
-
       case node_facts['provisioner']
       when %r{vmpooler}
-        remove_from_vmpooler = "curl -X DELETE --url http://vcloud.delivery.puppetlabs.net/vm/#{node_name}"
-        run_local_command(remove_from_vmpooler)
+        params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
+        result = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
+        puts result
       when %r{docker}
         remove_docker = "docker rm -f #{node_facts['container_name']}"
         run_local_command(remove_docker)
+        remove_node(inventory_hash, node_name)
+        puts "Removed #{node_name}"
+        File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
       end
-      remove_node(inventory_hash, node_name)
-      puts "Removed #{node_name}"
     end
-    File.open('inventory.yaml', 'w') { |f| f.write inventory_hash.to_yaml }
   end
 end
 
