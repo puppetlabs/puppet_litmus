@@ -5,28 +5,76 @@ Providing a simple command line tool for puppet content creators, to enable simp
 
 ## How-to
 ### Using it in a module
+
+.fixtures.yml
+```
+facts: 'git://github.com/puppetlabs/puppetlabs-facts.git'
+puppet_agent: 'git://github.com/puppetlabs/puppetlabs-puppet_agent.git'
+waffle_provision: 'git@github.com:puppetlabs/waffle_provision.git'
+```
+
 gemfile
+
 ```
 gem 'solid_waffle', git: 'git@github.com:puppetlabs/solid-waffle.git'
 ```
+
 Rakefile
+
 ```
 require 'solid_waffle/rake_tasks'
 ```
+
 spec/spec_helper_acceptance.rb
+
 ```
+# frozen_string_literal: true
+
 require 'serverspec'
 require 'solid_waffle'
 include SolidWaffle
 
-set :backend, :ssh
+if ENV['TARGET_HOST'].nil?
+  puts 'Running tests against this machine !'
+else
+  puts "TARGET_HOST #{ENV['TARGET_HOST']}"
+  # load inventory
+  inventory_hash = inventory_hash_from_inventory_file
+  node_config = config_from_node(inventory_hash, ENV['TARGET_HOST'])
 
-options = Net::SSH::Config.for(host)
-options[:user] = 'root'
-host = ENV['HOSTY']
+  if target_in_group(inventory_hash, ENV['TARGET_HOST'], 'ssh_nodes')
+    set :backend, :ssh
+    options = Net::SSH::Config.for(host)
+    options[:user] = node_config.dig('ssh', 'user') unless node_config.dig('ssh', 'user').nil?
+    options[:port] = node_config.dig('ssh', 'port') unless node_config.dig('ssh', 'port').nil?
+    options[:password] = node_config.dig('ssh', 'password') unless node_config.dig('ssh', 'password').nil?
+    host = if ENV['TARGET_HOST'].include?(':')
+             ENV['TARGET_HOST'].split(':').first
+           else
+             ENV['TARGET_HOST']
+           end
+    set :host,        options[:host_name] || host
+    set :ssh_options, options
+  elsif target_in_group(inventory_hash, ENV['TARGET_HOST'], 'winrm_nodes')
+    require 'winrm'
 
-set :host,        options[:host_name] || host
-set :ssh_options, options
+    set :backend, :winrm
+    set :os, family: 'windows'
+    user = node_config.dig('winrm', 'user') unless node_config.dig('winrm', 'user').nil?
+    pass = node_config.dig('winrm', 'password') unless node_config.dig('winrm', 'password').nil?
+    endpoint = "http://#{ENV['TARGET_HOST']}:5985/wsman"
+
+    opts = {
+      user: user,
+      password: pass,
+      endpoint: endpoint,
+      operation_timeout: 300,
+    }
+
+    winrm = WinRM::Connection.new opts
+    Specinfra.configuration.winrm = winrm
+  end
+end
 ```
 
 ### Steps (each step is optional)
