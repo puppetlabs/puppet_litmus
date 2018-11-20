@@ -44,7 +44,7 @@ module SolidWaffle
                           else
                             inventory_full_path
                           end
-    raise 'There is no inventory file' unless File.exist?(inventory_full_path)
+    raise "There is no inventory file at '#{inventory_full_path}'" unless File.exist?(inventory_full_path)
 
     inventory_hash = YAML.load_file(inventory_full_path)
     inventory_hash
