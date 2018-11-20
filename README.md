@@ -1,7 +1,7 @@
 # solid-waffle
 
 ## Overview
-Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.
+Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments. It uses https://github.com/puppetlabs/waffle_provision for provisioning
 
 ## How-to
 ### Using it in a module
@@ -98,12 +98,10 @@ Leveraging content from the forge and existing test frameworks.
 * bolt and pdk gems do not play well because of CRI, 'https://github.com/tphoney/pdk.git', branch: 'pin_cri'
 * docker only provisions linux images for now
 * docker provisioning is limited due to the mac, uses port forwarding
-* tear_down doesnt work well
 
 # Real world example & steps
 
-Needs the pdk installed, to build the module. 'bundle exec rake --tasks' is your friend.
-DOCKER IS WIP
+'bundle exec rake --tasks' is your friend.
 
 ```
 git clone git@github.com:puppetlabs/puppetlabs-motd.git
