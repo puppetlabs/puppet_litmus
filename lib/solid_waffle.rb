@@ -9,8 +9,7 @@ module SolidWaffle
   def apply_manifest(manifest, opts = {})
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST']
-
-    manifest_file = Tempfile.new('foo')
+    manifest_file = Tempfile.new(['manifest_', '.pp'])
     manifest_file.write(manifest)
     manifest_file.close
     command = "bundle exec bolt file upload #{manifest_file.path} /tmp/#{File.basename(manifest_file)} --nodes #{target_node_name} --inventoryfile inventory.yaml"
