@@ -17,6 +17,7 @@ gemfile
 
 ```
 gem 'solid_waffle', git: 'git@github.com:puppetlabs/solid-waffle.git'
+gem 'pdk', git: 'https://github.com/tphoney/pdk.git', branch: 'pin_cri'
 ```
 
 Rakefile
