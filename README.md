@@ -7,13 +7,17 @@ Providing a simple command line tool for puppet content creators, to enable simp
 ### Using it in a module
 
 .fixtures.yml
+
 ```
-facts: 'git://github.com/puppetlabs/puppetlabs-facts.git'
-puppet_agent: 'git://github.com/puppetlabs/puppetlabs-puppet_agent.git'
-waffle_provision: 'git@github.com:puppetlabs/waffle_provision.git'
+---
+fixtures:
+  repositories:
+    facts: 'git://github.com/puppetlabs/puppetlabs-facts.git'
+    puppet_agent: 'git://github.com/puppetlabs/puppetlabs-puppet_agent.git'
+    waffle_provision: 'git@github.com:puppetlabs/waffle_provision.git'
 ```
 
-gemfile
+Gemfile
 
 ```
 gem 'solid_waffle', git: 'git@github.com:puppetlabs/solid-waffle.git'
