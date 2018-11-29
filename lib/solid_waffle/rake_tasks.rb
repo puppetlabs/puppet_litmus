@@ -53,7 +53,7 @@ namespace :waffle do
     result = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
     puts result
     # fix the path on ssh_nodes
-    run_command('sed -i \'s!^\(\s*PATH=\)[^"]*"!\1"/opt/puppetlabs/puppet/bin:!\' /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
+    run_command('sed -i \'s!^\(\s*PATH=\)[^"]*"!\1"/opt/puppetlabs/puppet/bin:!\' /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero? # rubocop:disable Metrics/LineLength
   end
 
   desc 'install_module - build and install module'
@@ -83,6 +83,7 @@ namespace :waffle do
     run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    # rubocop:disable Style/GuardClause
     if result.is_a?(Array)
       result.each do |node|
         puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
@@ -90,6 +91,7 @@ namespace :waffle do
     else
       raise "Failed trying to run '#{install_module_command}' against inventory."
     end
+    # rubocop:enable Style/GuardClause
     puts 'Installed'
   end
 

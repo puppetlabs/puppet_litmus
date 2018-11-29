@@ -112,12 +112,12 @@ module SolidWaffle
   # Runs a selected task against the target host. Parameters should be passed in with a hash format.
   def task_run(task_name, params)
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    inventory_hash = inventory_hash_from_inventory_file
-    target_node_name = ENV['TARGET_HOST'] if target_node_name == nil
+    target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: nil)
 
     raise "task failed\n`#{task_name}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
+
     result
   end
 end
