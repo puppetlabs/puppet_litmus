@@ -12,17 +12,24 @@ module SolidWaffle
     manifest_file = Tempfile.new(['manifest_', '.pp'])
     manifest_file.write(manifest)
     manifest_file.close
-    command = "bundle exec bolt file upload #{manifest_file.path} /tmp/#{File.basename(manifest_file)} --nodes #{target_node_name} --inventoryfile inventory.yaml"
-    stdout, stderr, status = Open3.capture3(command)
-    error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-    raise error_message unless status.to_i.zero?
+    if target_node_name.nil? || target_node_name == 'localhost'
+      # no need for an inventory file or transfering
+      manifest_file_location = manifest_file.path
+      inventory_hash = nil
+    else
+      command = "bundle exec bolt file upload #{manifest_file.path} /tmp/#{File.basename(manifest_file)} --nodes #{target_node_name} --inventoryfile inventory.yaml"
+      stdout, stderr, status = Open3.capture3(command)
+      error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
+      raise error_message unless status.to_i.zero?
 
-    # result = run_command("puppet apply -e 'include motd'", host, config: nil, inventory: inventory_hash)
-    command_to_run = "puppet apply /tmp/#{File.basename(manifest_file)}"
+      manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
+    end
+    command_to_run = "puppet apply #{manifest_file_location}"
+    command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
-    raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
+    raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result
   end
