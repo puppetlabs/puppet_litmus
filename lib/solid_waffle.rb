@@ -7,7 +7,6 @@ require 'bolt_spec/run'
 module SolidWaffle
   include BoltSpec::Run
   def apply_manifest(manifest, opts = {})
-    inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST']
     manifest_file = Tempfile.new(['manifest_', '.pp'])
     manifest_file.write(manifest)
@@ -17,6 +16,7 @@ module SolidWaffle
       manifest_file_location = manifest_file.path
       inventory_hash = nil
     else
+      inventory_hash = inventory_hash_from_inventory_file
       command = "bundle exec bolt file upload #{manifest_file.path} /tmp/#{File.basename(manifest_file)} --nodes #{target_node_name} --inventoryfile inventory.yaml"
       stdout, stderr, status = Open3.capture3(command)
       error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
@@ -27,7 +27,18 @@ module SolidWaffle
     command_to_run = "puppet apply #{manifest_file_location}"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
-    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    # BOLT-608
+    if Gem.win_platform?
+      stdout, stderr, status = Open3.capture3(command_to_run)
+      status_text = if status.to_i.zero?
+                      'success'
+                    else
+                      'failure'
+                    end
+      result = [{ 'node' => 'localhost', 'status' => status_text, 'result' => { 'exit_code' => status.to_i, 'stderr' => stderr, 'stdout' => stdout } }]
+    else
+      result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    end
 
     raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 

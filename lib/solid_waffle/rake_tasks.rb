@@ -120,9 +120,9 @@ namespace :waffle do
   end
 end
 
-if File.file?('inventory.yaml')
-  namespace :acceptance do
-    include SolidWaffle
+namespace :acceptance do
+  include SolidWaffle
+  if File.file?('inventory.yaml')
     inventory_hash = inventory_hash_from_inventory_file
     hosts = find_targets(inventory_hash, nil)
     desc 'Run serverspec against all hosts'
@@ -134,5 +134,12 @@ if File.file?('inventory.yaml')
         ENV['TARGET_HOST'] = host
       end
     end
+  end
+  # add localhost separately
+  desc 'Run serverspec against localhost'
+  host = 'localhost'
+  RSpec::Core::RakeTask.new(host.to_sym) do |t|
+    t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+    ENV['TARGET_HOST'] = host
   end
 end
