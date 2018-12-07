@@ -45,12 +45,12 @@ module SolidWaffle
     result
   end
 
-  def run_shell(command_to_run)
+  def run_shell(command_to_run, opts = {})
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST']
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
-    raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0
+    raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result
   end
