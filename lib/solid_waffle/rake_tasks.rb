@@ -35,18 +35,18 @@ namespace :waffle do
     end
   end
 
-  desc 'install puppet agent, [:hostname, :collection]'
-  task :install_agent, [:hostname, :collection] do |_task, args|
+  desc 'install puppet agent, [:collection, :target_node_name]'
+  task :install_agent, [:collection, :target_node_name] do |_task, args|
     puts 'install_agent'
     include BoltSpec::Run
     inventory_hash = inventory_hash_from_inventory_file
-    targets = find_targets(inventory_hash, args[:hostname])
+    targets = find_targets(inventory_hash, args[:target_node_name])
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     params = if args[:collection].nil?
                nil
              else
-               "collection=#{args[:collection]}"
+               {'collection' => args[:collection]}
              end
     raise "puppet_agent was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'puppet_agent'))
 
