@@ -24,12 +24,24 @@ namespace :waffle do
 
     if args[:provisioner] == 'vmpooler'
       params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      result = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
-      puts result
+      results = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
+      results.each do |result|
+        if result['status'] != 'success'
+          puts "Failed on #{result['node']}\n#{result}"
+        else
+          puts "Provisioned #{result['result']['node_name']}"
+        end
+      end
     elsif args[:provisioner] == 'docker'
       params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      result = run_task('waffle_provision::docker', 'localhost', params, config: config_data, inventory: nil)
-      puts result
+      results = run_task('waffle_provision::docker', 'localhost', params, config: config_data, inventory: nil)
+      results.each do |result|
+        if result['status'] != 'success'
+          puts "Failed on #{result['node']}\n#{result}"
+        else
+          puts result['result']['_output']
+        end
+      end
     else
       raise "Unknown provisioner '#{args[:provisioner]}', try docker/vmpooler"
     end
@@ -46,14 +58,24 @@ namespace :waffle do
     params = if args[:collection].nil?
                nil
              else
-               {'collection' => args[:collection]}
+               { 'collection' => args[:collection] }
              end
     raise "puppet_agent was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'puppet_agent'))
 
-    result = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
-    puts result
+    results = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
+    results.each do |result|
+      if result['status'] != 'success'
+        puts "Failed on #{result['node']}\n#{result}"
+      end
+    end
+
     # fix the path on ssh_nodes
-    run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero? # rubocop:disable Metrics/LineLength
+    results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero? # rubocop:disable Metrics/LineLength
+    results.each do |result|
+      if result['status'] != 'success'
+        puts "Failed on #{result['node']}\n#{result}"
+      end
+    end
   end
 
   desc 'install_module - build and install module'
