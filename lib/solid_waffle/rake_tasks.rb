@@ -22,9 +22,9 @@ namespace :waffle do
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
 
-    if args[:provisioner] == 'vmpooler'
+    if %w[abs vmpooler].include?(args[:provisioner])
       params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      results = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
+      results = run_task("waffle_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
           puts "Failed on #{result['node']}\n#{result}"
@@ -43,7 +43,7 @@ namespace :waffle do
         end
       end
     else
-      raise "Unknown provisioner '#{args[:provisioner]}', try docker/vmpooler"
+      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vmpooler"
     end
   end
 
@@ -128,16 +128,11 @@ namespace :waffle do
     targets.each do |node_name|
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
-      case node_facts['provisioner']
-      when %r{vmpooler}
-        params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-        result = run_task('waffle_provision::vmpooler', 'localhost', params, config: config_data, inventory: nil)
-        puts result
-      when %r{docker}
-        params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-        result = run_task('waffle_provision::docker', 'localhost', params, config: config_data, inventory: nil)
-        puts result
-      end
+      next unless %w[abs docker vmpooler].include?(node_facts['provisioner'])
+
+      params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
+      result = run_task("waffle_provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
+      puts result
     end
   end
 end
