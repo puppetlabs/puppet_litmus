@@ -201,7 +201,7 @@ namespace :acceptance do
         t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
         # screen output gets noisy if running against more than 3 hosts
         t.fail_on_error = false if hosts.size > 1 && ARGV[0] == 'acceptance:all'
-        t.rspec_opts = "--format html --out #{host}.html --format progress" if hosts.size > 3 && ARGV[0] == 'acceptance:all'
+        t.rspec_opts = "--format html --out html/#{host}.html --format RspecJunitFormatter --out junit/#{host}.xml --format progress" if hosts.size > 3 && ARGV[0] == 'acceptance:all'
         ENV['TARGET_HOST'] = host
       end
     end
