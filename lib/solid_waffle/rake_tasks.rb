@@ -5,6 +5,7 @@ require 'solid_waffle'
 require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
+require 'json'
 
 def run_local_command(command)
   stdout, stderr, status = Open3.capture3(command)
@@ -15,7 +16,57 @@ def run_local_command(command)
 end
 
 namespace :waffle do
-  desc "provision machines - vmpooler eg 'bundle exec rake 'provision[ubuntu-1604-x86_64]'"
+  desc "provision all supported OSes on with abs eg 'bundle exec rake 'provision_from_metadata'"
+  task :provision_from_metadata, [:provisioner] do |_task, _args|
+    file = File.read('metadata.json')
+    metadata = JSON.parse(file)
+    if metadata.is_a?(Hash) && !metadata.empty?
+      metadata_string = metadata['operatingsystem_support']
+      unsupported = %w[Amazon Archlinux AIX OSX]
+      metadata_string.each do |os_info|
+        os_name = os_info['operatingsystem']
+        next if unsupported.include? os_name
+
+        os_info['operatingsystemrelease'].each do |os_version|
+          os_and_version = +"#{os_name.downcase}-#{os_version}-x86_64"
+          case os_name
+          when 'OracleLinux'
+            os_and_version = os_and_version.sub!('linux', '')
+          when 'Ubuntu'
+            os_and_version = os_and_version.sub!('.', '')
+          when 'SLES'
+            os_and_version = os_and_version.sub!(' SP1', '') if os_and_version.include? ' SP1'
+            os_and_version = os_and_version.sub!(' SP4', '') if os_and_version.include? ' SP4'
+          when 'OSX'
+            os_and_version = os_and_version.sub!('.', '')
+          when 'Windows'
+            os_and_version = os_and_version.delete('.') if os_and_version.include? 'windows8.1'
+            os_and_version = os_and_version.sub!('Server', '').delete(' ') if os_and_version.include? 'Server'
+            os_and_version = os_and_version.sub!('10', '10-pro') if os_and_version.include? '10'
+            os_and_version = os_and_version.sub!('windows', 'win')
+          end
+          os_and_version = os_and_version.downcase.delete(' ')
+          puts os_and_version.to_s
+          include SolidWaffle
+          Rake::Task['spec_prep'].invoke
+          config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+          raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
+
+          params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
+          results = run_task('waffle_provision::abs', 'localhost', params, config: config_data, inventory: nil)
+          results.each do |result|
+            if result['status'] != 'success'
+              puts "Failed on #{result['node']}\n#{result}"
+            else
+              puts "Provisioned #{result['result']['node_name']}"
+            end
+          end
+        end
+      end
+    end
+  end
+
+  desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include SolidWaffle
     Rake::Task['spec_prep'].invoke
@@ -148,12 +199,15 @@ namespace :acceptance do
       desc "Run serverspec against #{host}"
       RSpec::Core::RakeTask.new(host.to_sym) do |t|
         t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+        # screen output gets noisy if running against more than 3 hosts
+        t.fail_on_error = false if hosts.size > 1 && ARGV[0] == 'acceptance:all'
+        t.rspec_opts = "--format html --out #{host}.html --format progress" if hosts.size > 3 && ARGV[0] == 'acceptance:all'
         ENV['TARGET_HOST'] = host
       end
     end
   end
   # add localhost separately
-  desc 'Run serverspec against localhost'
+  desc 'Run serverspec against localhost, THIS IS DANGEROUS'
   host = 'localhost'
   RSpec::Core::RakeTask.new(host.to_sym) do |t|
     t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
