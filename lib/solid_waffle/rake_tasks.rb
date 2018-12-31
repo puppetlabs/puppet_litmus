@@ -201,7 +201,13 @@ namespace :waffle do
       results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
         _stdout, _stderr, _status = Open3.capture3(test)
       end
+      # if any result is nonzero, there were test failures
+      failures = false
+      results.each do |result|
+        failures = true unless result.last.to_i.zero?
+      end
       puts results
+      return 1 if failures
     end
   end
 end
