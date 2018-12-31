@@ -6,6 +6,7 @@ require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
 require 'json'
+require 'parallel'
 
 def run_local_command(command)
   stdout, stderr, status = Open3.capture3(command)
@@ -184,6 +185,23 @@ namespace :waffle do
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       result = run_task("waffle_provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
       puts result
+    end
+  end
+
+  desc 'Run tests in parallel against all machines in the inventory file'
+  task :parallel, [:target] do |_task, args|
+    include SolidWaffle
+    if File.file?('inventory.yaml')
+      inventory_hash = inventory_hash_from_inventory_file
+      hosts = find_targets(inventory_hash, nil)
+      args = []
+      hosts.each do |host|
+        args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format html --out html/#{host}.html --format RspecJunitFormatter --out junit/#{host}.xml --format progress"
+      end
+      results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
+        _stdout, _stderr, _status = Open3.capture3(test)
+      end
+      puts results
     end
   end
 end
