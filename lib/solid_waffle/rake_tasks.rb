@@ -18,7 +18,7 @@ end
 
 namespace :waffle do
   desc "provision all supported OSes on with abs eg 'bundle exec rake 'provision_from_metadata'"
-  task :provision_from_metadata, [:provisioner] do |_task, _args|
+  task :provision_from_metadata, [:provisioner] do |_task, args|
     file = File.read('metadata.json')
     metadata = JSON.parse(file)
     if metadata.is_a?(Hash) && !metadata.empty?
@@ -54,7 +54,7 @@ namespace :waffle do
           raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
 
           params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
-          results = run_task('waffle_provision::abs', 'localhost', params, config: config_data, inventory: nil)
+          results = run_task("waffle_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
           results.each do |result|
             if result['status'] != 'success'
               puts "Failed on #{result['node']}\n#{result}"
