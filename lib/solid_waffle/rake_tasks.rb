@@ -188,53 +188,44 @@ namespace :waffle do
     end
   end
 
-  desc 'Run tests in parallel against all machines in the inventory file'
-  task :parallel, [:target] do |_task, args|
-    include SolidWaffle
+  namespace :acceptance do
+    include SolidWaffle    
     if File.file?('inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
       hosts = find_targets(inventory_hash, nil)
-      args = []
-      hosts.each do |host|
-        args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format html --out html/#{host}.html --format RspecJunitFormatter --out junit/#{host}.xml --format progress"
-      end
-      results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
-        _stdout, _stderr, _status = Open3.capture3(test)
-      end
-      # if any result is nonzero, there were test failures
-      failures = false
-      results.each do |result|
-        failures = true unless result.last.to_i.zero?
-      end
-      puts results
-      return 1 if failures
-    end
-  end
-end
 
-namespace :acceptance do
-  include SolidWaffle
-  if File.file?('inventory.yaml')
-    inventory_hash = inventory_hash_from_inventory_file
-    hosts = find_targets(inventory_hash, nil)
-    desc 'Run serverspec against all hosts'
-    task all: hosts
-    hosts.each do |host|
-      desc "Run serverspec against #{host}"
+      desc 'Run tests in parallel against all machines in the inventory file'
+      task :parallel do |_task, args|
+        args = []
+        hosts.each do |host|
+          args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress"
+        end
+        results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
+          _stdout, _stderr, _status = Open3.capture3(test)
+        end
+        # if any result is nonzero, there were test failures
+        failures = false
+        results.each do |result|
+          failures = true unless result.last.to_i.zero?
+          puts result      
+        end
+        1 if failures
+      end
+
+      hosts.each do |host|
+        desc "Run serverspec against #{host}"
+        RSpec::Core::RakeTask.new(host.to_sym) do |t|
+          t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+          ENV['TARGET_HOST'] = host
+        end
+      end
+      # add localhost separately
+      desc 'Run serverspec against localhost, USE WITH CAUTION, this action can be potentially dangerous.'
+      host = 'localhost'
       RSpec::Core::RakeTask.new(host.to_sym) do |t|
         t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
-        # screen output gets noisy if running against more than 3 hosts
-        t.fail_on_error = false if hosts.size > 1 && ARGV[0] == 'acceptance:all'
-        t.rspec_opts = "--format html --out html/#{host}.html --format RspecJunitFormatter --out junit/#{host}.xml --format progress" if hosts.size > 3 && ARGV[0] == 'acceptance:all'
         ENV['TARGET_HOST'] = host
       end
     end
-  end
-  # add localhost separately
-  desc 'Run serverspec against localhost, THIS IS DANGEROUS'
-  host = 'localhost'
-  RSpec::Core::RakeTask.new(host.to_sym) do |t|
-    t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
-    ENV['TARGET_HOST'] = host
   end
 end
