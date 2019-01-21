@@ -189,13 +189,13 @@ namespace :waffle do
   end
 
   namespace :acceptance do
-    include SolidWaffle    
+    include SolidWaffle
     if File.file?('inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
       hosts = find_targets(inventory_hash, nil)
 
       desc 'Run tests in parallel against all machines in the inventory file'
-      task :parallel do |_task, args|
+      task :parallel do
         args = []
         hosts.each do |host|
           args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress"
@@ -207,7 +207,7 @@ namespace :waffle do
         failures = false
         results.each do |result|
           failures = true unless result.last.to_i.zero?
-          puts result      
+          puts result
         end
         1 if failures
       end
