@@ -198,7 +198,7 @@ namespace :waffle do
       task :parallel do
         args = []
         hosts.each do |host|
-          args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress"
+          args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{host}.html"
         end
         results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
           _stdout, _stderr, _status = Open3.capture3(test)
