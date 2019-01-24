@@ -219,13 +219,13 @@ namespace :waffle do
           ENV['TARGET_HOST'] = host
         end
       end
-      # add localhost separately
-      desc 'Run serverspec against localhost, USE WITH CAUTION, this action can be potentially dangerous.'
-      host = 'localhost'
-      RSpec::Core::RakeTask.new(host.to_sym) do |t|
-        t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
-        ENV['TARGET_HOST'] = host
-      end
+    end
+    # add localhost separately
+    desc 'Run serverspec against localhost, USE WITH CAUTION, this action can be potentially dangerous.'
+    host = 'localhost'
+    RSpec::Core::RakeTask.new(host.to_sym) do |t|
+      t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+      ENV['TARGET_HOST'] = host
     end
   end
 end
