@@ -1,11 +1,11 @@
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'solid_waffle/version'
+require 'puppet_fuse/version'
 
 Gem::Specification.new do |spec|
-  spec.name = 'solid_waffle'
-  spec.version     = SolidWaffle::VERSION
-  spec.homepage    = 'https://github.com/puppetlabs/solid-waffle'
+  spec.name = 'puppet_fuse'
+  spec.version     = PuppetFuse::VERSION
+  spec.homepage    = 'https://github.com/puppetlabs/puppet_fuse'
   spec.license     = 'Apache-2.0'
   spec.authors     = ['Puppet, Inc.']
   spec.email       = ['info@puppet.com']

@@ -4,7 +4,7 @@ require 'pry'
 require 'bolt_spec/run'
 
 # Helper methods for testing puppet content
-module SolidWaffle
+module PuppetFuse
   include BoltSpec::Run
   def apply_manifest(manifest, opts = {}, manifest_file_location = nil)
     target_node_name = ENV['TARGET_HOST']
