@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rspec/core/rake_task'
-require 'solid_waffle'
+require 'puppet_litmus'
 require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
@@ -16,7 +16,7 @@ def run_local_command(command)
   stdout
 end
 
-namespace :waffle do
+namespace :litmus do
   desc "provision all supported OSes on with abs eg 'bundle exec rake 'provision_from_metadata'"
   task :provision_from_metadata, [:provisioner] do |_task, args|
     file = File.read('metadata.json')
@@ -48,13 +48,13 @@ namespace :waffle do
           end
           os_and_version = os_and_version.downcase.delete(' ')
           puts os_and_version.to_s
-          include SolidWaffle
+          include PuppetLitmus
           Rake::Task['spec_prep'].invoke
           config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-          raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
+          raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
           params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
-          results = run_task("waffle_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+          results = run_task("litmus_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
           results.each do |result|
             if result['status'] != 'success'
               puts "Failed on #{result['node']}\n#{result}"
@@ -69,14 +69,14 @@ namespace :waffle do
 
   desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
-    include SolidWaffle
+    include PuppetLitmus
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
+    raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
     if %w[abs vmpooler].include?(args[:provisioner])
       params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      results = run_task("waffle_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+      results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
           puts "Failed on #{result['node']}\n#{result}"
@@ -86,7 +86,7 @@ namespace :waffle do
       end
     elsif args[:provisioner] == 'docker'
       params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      results = run_task('waffle_provision::docker', 'localhost', params, config: config_data, inventory: nil)
+      results = run_task('provision::docker', 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
           puts "Failed on #{result['node']}\n#{result}"
@@ -108,7 +108,7 @@ namespace :waffle do
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     params = if args[:collection].nil?
-               nil
+               {}
              else
                { 'collection' => args[:collection] }
              end
@@ -173,7 +173,7 @@ namespace :waffle do
   task :tear_down, [:target] do |_task, args|
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    raise "waffle_provision was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'waffle_provision'))
+    raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target])
@@ -183,13 +183,13 @@ namespace :waffle do
       next unless %w[abs docker vmpooler].include?(node_facts['provisioner'])
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-      result = run_task("waffle_provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
+      result = run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
       puts result
     end
   end
 
   namespace :acceptance do
-    include SolidWaffle
+    include PuppetLitmus
     if File.file?('inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
       hosts = find_targets(inventory_hash, nil)
