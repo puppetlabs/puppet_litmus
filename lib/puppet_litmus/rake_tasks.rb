@@ -17,7 +17,7 @@ def run_local_command(command)
 end
 
 namespace :litmus do
-  desc "provision all supported OSes on with abs eg 'bundle exec rake 'provision_from_metadata'"
+  desc "provision all supported OSes on with abs eg 'bundle exec rake 'litmus:provision_from_metadata'"
   task :provision_from_metadata, [:provisioner] do |_task, args|
     file = File.read('metadata.json')
     metadata = JSON.parse(file)
@@ -67,7 +67,7 @@ namespace :litmus do
     end
   end
 
-  desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'provision[vmpooler, ubuntu-1604-x86_64]'"
+  desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include PuppetLitmus
     Rake::Task['spec_prep'].invoke
