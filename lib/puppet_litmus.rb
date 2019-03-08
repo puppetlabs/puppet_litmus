@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'pry'
 require 'bolt_spec/run'
 
 # Helper methods for testing puppet content
