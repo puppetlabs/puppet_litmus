@@ -72,7 +72,7 @@ namespace :litmus do
       raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
       params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
-      results = run_task("litmus_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+      results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
           puts "Failed on #{result['node']}\n#{result}"
