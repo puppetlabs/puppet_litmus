@@ -8,6 +8,42 @@ require 'pdk'
 require 'json'
 require 'parallel'
 
+def get_metadata_operating_systems(metadata)
+  return unless metadata.is_a?(Hash)
+  return unless metadata['operatingsystem_support'].is_a?(Array)
+
+  metadata['operatingsystem_support'].each do |os_info|
+    next unless os_info['operatingsystem'] && os_info['operatingsystemrelease']
+
+    os_name = case os_info['operatingsystem']
+              when 'Amazon', 'Archlinux', 'AIX', 'OSX'
+                next
+              when 'OracleLinux'
+                'oracle'
+              when 'Windows'
+                'win'
+              else
+                os_info['operatingsystem'].downcase
+              end
+
+    os_info['operatingsystemrelease'].each do |release|
+      version = case os_name
+                when 'ubuntu', 'osx'
+                  release.sub('.', '')
+                when 'sles'
+                  release.gsub(%r{ SP[14]}, '')
+                when 'win'
+                  release = release.delete('.') if release.include? '8.1'
+                  release.sub('Server', '').sub('10', '10-pro')
+                else
+                  release
+                end
+
+      yield "#{os_name}-#{version.downcase}-x86_64".delete(' ')
+    end
+  end
+end
+
 def run_local_command(command)
   stdout, stderr, status = Open3.capture3(command)
   error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
@@ -17,51 +53,31 @@ def run_local_command(command)
 end
 
 namespace :litmus do
+  desc 'print all supported OSes from metadata'
+  task :metadata do
+    metadata = JSON.parse(File.read('metadata.json'))
+    get_metadata_operating_systems(metadata) do |os_and_version|
+      puts os_and_version
+    end
+  end
+
   desc "provision all supported OSes on with abs eg 'bundle exec rake 'litmus:provision_from_metadata'"
   task :provision_from_metadata, [:provisioner] do |_task, args|
-    file = File.read('metadata.json')
-    metadata = JSON.parse(file)
-    if metadata.is_a?(Hash) && !metadata.empty?
-      metadata_string = metadata['operatingsystem_support']
-      unsupported = %w[Amazon Archlinux AIX OSX]
-      metadata_string.each do |os_info|
-        os_name = os_info['operatingsystem']
-        next if unsupported.include? os_name
+    metadata = JSON.parse(File.read('metadata.json'))
+    get_metadata_operating_systems(metadata) do |os_and_version|
+      puts os_and_version
+      include PuppetLitmus
+      Rake::Task['spec_prep'].invoke
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
-        os_info['operatingsystemrelease'].each do |os_version|
-          os_and_version = +"#{os_name.downcase}-#{os_version}-x86_64"
-          case os_name
-          when 'OracleLinux'
-            os_and_version = os_and_version.sub('linux', '')
-          when 'Ubuntu'
-            os_and_version = os_and_version.sub('.', '')
-          when 'SLES'
-            os_and_version = os_and_version.sub(' SP1', '') if os_and_version.include? ' SP1'
-            os_and_version = os_and_version.sub(' SP4', '') if os_and_version.include? ' SP4'
-          when 'OSX'
-            os_and_version = os_and_version.sub('.', '')
-          when 'Windows'
-            os_and_version = os_and_version.delete('.') if os_and_version.include? 'windows8.1'
-            os_and_version = os_and_version.sub('Server', '').delete(' ') if os_and_version.include? 'Server'
-            os_and_version = os_and_version.sub('10', '10-pro') if os_and_version.include? '10'
-            os_and_version = os_and_version.sub('windows', 'win')
-          end
-          os_and_version = os_and_version.downcase.delete(' ')
-          puts os_and_version.to_s
-          include PuppetLitmus
-          Rake::Task['spec_prep'].invoke
-          config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-          raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
-
-          params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
-          results = run_task("litmus_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
-          results.each do |result|
-            if result['status'] != 'success'
-              puts "Failed on #{result['node']}\n#{result}"
-            else
-              puts "Provisioned #{result['result']['node_name']}"
-            end
-          end
+      params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
+      results = run_task("litmus_provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+      results.each do |result|
+        if result['status'] != 'success'
+          puts "Failed on #{result['node']}\n#{result}"
+        else
+          puts "Provisioned #{result['result']['node_name']}"
         end
       end
     end
