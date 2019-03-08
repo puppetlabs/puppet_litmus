@@ -20,5 +20,5 @@ Gem::Specification.new do |spec|
     Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.
   EOF
   spec.summary = 'Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.'
-  spec.add_runtime_dependency 'bolt',  ['>= 0.20.0', '< 2.0.0']
+  spec.add_runtime_dependency 'bolt',  ['>= 0.21.4', '< 2.0.0']
 end
