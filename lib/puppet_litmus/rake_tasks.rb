@@ -32,19 +32,19 @@ namespace :litmus do
           os_and_version = +"#{os_name.downcase}-#{os_version}-x86_64"
           case os_name
           when 'OracleLinux'
-            os_and_version = os_and_version.sub!('linux', '')
+            os_and_version = os_and_version.sub('linux', '')
           when 'Ubuntu'
-            os_and_version = os_and_version.sub!('.', '')
+            os_and_version = os_and_version.sub('.', '')
           when 'SLES'
-            os_and_version = os_and_version.sub!(' SP1', '') if os_and_version.include? ' SP1'
-            os_and_version = os_and_version.sub!(' SP4', '') if os_and_version.include? ' SP4'
+            os_and_version = os_and_version.sub(' SP1', '') if os_and_version.include? ' SP1'
+            os_and_version = os_and_version.sub(' SP4', '') if os_and_version.include? ' SP4'
           when 'OSX'
-            os_and_version = os_and_version.sub!('.', '')
+            os_and_version = os_and_version.sub('.', '')
           when 'Windows'
             os_and_version = os_and_version.delete('.') if os_and_version.include? 'windows8.1'
-            os_and_version = os_and_version.sub!('Server', '').delete(' ') if os_and_version.include? 'Server'
-            os_and_version = os_and_version.sub!('10', '10-pro') if os_and_version.include? '10'
-            os_and_version = os_and_version.sub!('windows', 'win')
+            os_and_version = os_and_version.sub('Server', '').delete(' ') if os_and_version.include? 'Server'
+            os_and_version = os_and_version.sub('10', '10-pro') if os_and_version.include? '10'
+            os_and_version = os_and_version.sub('windows', 'win')
           end
           os_and_version = os_and_version.downcase.delete(' ')
           puts os_and_version.to_s
