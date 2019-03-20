@@ -28,6 +28,7 @@ All our documentation is currently available in the [Wiki](https://github.com/pu
 We are actively working towards the point that where we declare our gem dependencies for PDK and Bolt gems in the puppet_litmus gemspec file [here](https://github.com/puppetlabs/puppet_litmus/blame/master/puppet_litmus.gemspec#L23)
 
 Bolt has a hard dependency on Puppet 6, and CRI 2.15.1 which is ruby version specific
+
 PDK depends on CRI 2.10.0 which is ruby version specific
 
 We have work in progress to create a pathway through this. A fix is up for PDK, which allows CRI 2.15 and 2.10 to be used (here)[https://github.com/puppetlabs/pdk/pull/638]. This also allows the use of multiple ruby versions.
