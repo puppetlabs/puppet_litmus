@@ -222,10 +222,10 @@ namespace :litmus do
         # if any result is nonzero, there were test failures
         failures = false
         results.each do |result|
-          failures = true unless result.last.to_i.zero?
+          failures = true unless result.last.exitstatus.zero?
           puts result
         end
-        1 if failures
+        exit 1 if failures
       end
 
       hosts.each do |host|
