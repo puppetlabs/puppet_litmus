@@ -5,11 +5,12 @@ require 'bolt_spec/run'
 # Helper methods for testing puppet content
 module PuppetLitmus
   include BoltSpec::Run
-  def apply_manifest(manifest, opts = {}, manifest_file_location = nil)
+  def apply_manifest(manifest, opts = {})
     target_node_name = ENV['TARGET_HOST']
-    raise 'manifest and manifest_file_location are mutually exclusive arguments, pick one' if !manifest.nil? && !manifest_file_location.nil?
+    raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
+    raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
 
-    manifest_file_location = create_manifest_file(manifest) if !manifest.nil? && manifest_file_location.nil?
+    manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
     inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
                        nil
                      else
@@ -59,8 +60,8 @@ module PuppetLitmus
 
   def apply_manifest_and_idempotent(manifest)
     manifest_file_location = create_manifest_file(manifest)
-    apply_manifest(nil, { catch_failures: true }, manifest_file_location)
-    apply_manifest(nil, { catch_changes: true }, manifest_file_location)
+    apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
+    apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
   end
 
   def run_shell(command_to_run, opts = {})
