@@ -193,6 +193,7 @@ namespace :litmus do
 
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target])
+    bad_results = []
     targets.each do |node_name|
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
@@ -200,6 +201,16 @@ namespace :litmus do
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       result = run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
+      if result.first['status'] != 'success'
+        bad_results << "#{node_name}, #{result.first['result']['_error']['msg']}"
+      else
+        print "#{node_name}, "
+      end
+    end
+    puts ''
+    # output the things that went wrong, after the successes
+    puts 'something went wrong:' unless bad_results.size.zero?
+    bad_results.each do |result|
       puts result
     end
   end
