@@ -83,6 +83,28 @@ namespace :litmus do
     end
   end
 
+  desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
+  task :provision_list, [:key] do |_task, args|
+    provision_hash = YAML.load_file('./provision.yaml')
+    provisioner = provision_hash['default']['provisioner']
+    provision_hash[args[:key]]['images'].each do |image|
+      include PuppetLitmus
+      Rake::Task['spec_prep'].invoke
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
+
+      params = { 'action' => 'provision', 'platform' => image, 'inventory' => Dir.pwd }
+      results = run_task("provision::#{provisioner}", 'localhost', params, config: config_data, inventory: nil)
+      results.each do |result|
+        if result['status'] != 'success'
+          puts "Failed on #{result['node']}\n#{result}"
+        else
+          puts "Provisioned #{result['result']['node_name']}"
+        end
+      end
+    end
+  end
+
   desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include PuppetLitmus
@@ -173,15 +195,12 @@ namespace :litmus do
     run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
-    # rubocop:disable Style/GuardClause
-    if result.is_a?(Array)
-      result.each do |node|
-        puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
-      end
-    else
-      raise "Failed trying to run '#{install_module_command}' against inventory."
+    raise "Failed trying to run '#{install_module_command}' against inventory." unless result.is_a?(Array)
+
+    result.each do |node|
+      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
     end
-    # rubocop:enable Style/GuardClause
+
     puts 'Installed'
   end
 
