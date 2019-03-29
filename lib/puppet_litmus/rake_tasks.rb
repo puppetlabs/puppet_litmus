@@ -86,7 +86,7 @@ namespace :litmus do
   desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
   task :provision_list, [:key] do |_task, args|
     provision_hash = YAML.load_file('./provision.yaml')
-    provisioner = provision_hash['default']['provisioner']
+    provisioner = provision_hash[args[:key]]['provisioner']
     provision_hash[args[:key]]['images'].each do |image|
       include PuppetLitmus
       Rake::Task['spec_prep'].invoke
