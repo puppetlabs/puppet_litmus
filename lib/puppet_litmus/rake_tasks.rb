@@ -107,7 +107,7 @@ namespace :litmus do
         if result['status'] != 'success'
           puts "Failed #{result['node']}\n#{result}"
         else
-          puts "#{result['result']['node_name']}, "
+          puts "#{result['result']['node_name']}, #{args[:platform]}"
         end
       end
     elsif args[:provisioner] == 'docker'
@@ -117,7 +117,7 @@ namespace :litmus do
         if result['status'] != 'success'
           puts "Failed #{result['node']}\n#{result}"
         else
-          puts result['result']['_output']
+          puts "#{result['result']['node_name']}, #{args[:platform]}"
         end
       end
     else
