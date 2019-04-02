@@ -83,6 +83,16 @@ namespace :litmus do
     end
   end
 
+  desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
+  task :provision_list, [:key] do |_task, args|
+    provision_hash = YAML.load_file('./provision.yaml')
+    provisioner = provision_hash[args[:key]]['provisioner']
+    provision_hash[args[:key]]['images'].each do |image|
+      Rake::Task['litmus:provision'].invoke(provisioner, image)
+      Rake::Task['litmus:provision'].reenable
+    end
+  end
+
   desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include PuppetLitmus
@@ -95,9 +105,9 @@ namespace :litmus do
       results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
-          puts "Failed on #{result['node']}\n#{result}"
+          puts "Failed #{result['node']}\n#{result}"
         else
-          puts "Provisioned #{result['result']['node_name']}"
+          puts "#{result['result']['node_name']}, "
         end
       end
     elsif args[:provisioner] == 'docker'
@@ -105,7 +115,7 @@ namespace :litmus do
       results = run_task('provision::docker', 'localhost', params, config: config_data, inventory: nil)
       results.each do |result|
         if result['status'] != 'success'
-          puts "Failed on #{result['node']}\n#{result}"
+          puts "Failed #{result['node']}\n#{result}"
         else
           puts result['result']['_output']
         end
