@@ -235,10 +235,11 @@ namespace :litmus do
       task :parallel do
         args = []
         hosts.each do |host|
-          args << "TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{host}.html"
+          args << ["TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{host}.html", host]
         end
-        results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test|
-          _stdout, _stderr, _status = Open3.capture3(test)
+        results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test, host|
+          stdout, stderr, status = Open3.capture3(test)
+          ["================\n#{host}\n", stdout, stderr, status]
         end
         # if any result is nonzero, there were test failures
         failures = false
