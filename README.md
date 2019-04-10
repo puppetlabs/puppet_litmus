@@ -20,7 +20,7 @@ All our documentation is currently available in the [Wiki](https://github.com/pu
 * [Architecture](https://github.com/puppetlabs/puppet_litmus/wiki/Architecture-of-puppet-litmus) with an explanation of what's going on under the hood
 * [Step-by-step guide](https://github.com/puppetlabs/puppet_litmus/wiki/Tutorial:-use-Litmus-to-execute-acceptance-tests-with-a-sample-module-(MoTD)) of how to use Litmus with the popular and simple [MoTD Puppet module](https://forge.puppet.com/puppetlabs/motd).
 * [How to guide](https://github.com/puppetlabs/puppet_litmus/wiki/Converting-a-module-to-use-Litmus) walking through how to use Litmus in a module
-
+* [Helper functions](https://github.com/puppetlabs/puppet_litmus/wiki/Helper-Functions-for-Litmus) a guide to the various helper functions within Litmus.
 ## Known issues
 
 ## Other Resources
