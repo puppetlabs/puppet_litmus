@@ -1,5 +1,12 @@
 # Litmus
 
+<div name="logo">
+  <img src="resources/litmus-dark-RGB.png"
+  style="display: block; margin-left: auto; margin-right: auto;"
+  width="50%"
+  alt="litmus logo">
+</div>
+
 ## Overview
 Litmus provides a simple command line tool for Puppet content creators, to enable both simple and complex test deployments against specifically configured target systems. It is available as a gem, and can be installed by running ```gem install puppet_litmus```.
 
