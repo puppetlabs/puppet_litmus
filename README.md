@@ -1,7 +1,7 @@
 # Litmus
 
 ## Overview
-Litmus provides a simple command line tool for Puppet content creators, to enable both simple and complex test deployments against specifically configured target systems. It is available as a gem, and can be installed by running ```gem install puppet-litmus```.
+Litmus provides a simple command line tool for Puppet content creators, to enable both simple and complex test deployments against specifically configured target systems. It is available as a gem, and can be installed by running ```gem install puppet_litmus```.
 
 Litmus allows Puppet module developers to:
 * provision targets to test against,
