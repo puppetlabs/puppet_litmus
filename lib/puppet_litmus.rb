@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'bolt_spec/run'
+require 'puppet_litmus/inventory_manipulation'
 
 # Helper methods for testing puppet content
 module PuppetLitmus
   include BoltSpec::Run
+  include PuppetLitmus::InventoryManipulation
   def apply_manifest(manifest, opts = {})
     target_node_name = ENV['TARGET_HOST']
     raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
@@ -72,78 +74,6 @@ module PuppetLitmus
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result
-  end
-
-  def inventory_hash_from_inventory_file(inventory_full_path = nil)
-    inventory_full_path = if inventory_full_path.nil?
-                            'inventory.yaml'
-                          else
-                            inventory_full_path
-                          end
-    raise "There is no inventory file at '#{inventory_full_path}'" unless File.exist?(inventory_full_path)
-
-    inventory_hash = YAML.load_file(inventory_full_path)
-    inventory_hash
-  end
-
-  def find_targets(inventory_hash, targets)
-    if targets.nil?
-      inventory = Bolt::Inventory.new(inventory_hash, nil)
-      targets = inventory.node_names.to_a
-    else
-      targets = [targets]
-    end
-    targets
-  end
-
-  def target_in_group(inventory_hash, node_name, group_name)
-    exists = false
-    inventory_hash['groups'].each do |group|
-      next unless group['name'] == group_name
-
-      group['nodes'].each do |node|
-        exists = true if node['name'] == node_name
-      end
-    end
-    exists
-  end
-
-  def config_from_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name
-          return node['config']
-        end
-      end
-    end
-    raise "No config was found for #{node_name}"
-  end
-
-  def facts_from_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name
-          return node['facts']
-        end
-      end
-    end
-    raise "No config was found for #{node_name}"
-  end
-
-  def add_node_to_group(inventory_hash, node_name, group_name)
-    inventory_hash['groups'].each do |group|
-      if group['name'] == group_name
-        group['nodes'].push node_name
-      end
-    end
-    inventory_hash
-  end
-
-  def remove_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['nodes'].delete_if { |i| i['name'] == node_name }
-    end
-    inventory_hash
   end
 
   # Runs a selected task against the target host. Parameters should be passed in with a hash format.
