@@ -66,7 +66,7 @@ namespace :litmus do
     metadata = JSON.parse(File.read('metadata.json'))
     get_metadata_operating_systems(metadata) do |os_and_version|
       puts os_and_version
-      include PuppetLitmus
+      include BoltSpec::Run
       Rake::Task['spec_prep'].invoke
       config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
       raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -95,7 +95,7 @@ namespace :litmus do
 
   desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
-    include PuppetLitmus
+    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -197,6 +197,7 @@ namespace :litmus do
 
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
+    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -226,7 +227,7 @@ namespace :litmus do
   end
 
   namespace :acceptance do
-    include PuppetLitmus
+    include PuppetLitmus::InventoryManipulation
     if File.file?('inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
       hosts = find_targets(inventory_hash, nil)

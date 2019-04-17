@@ -2,3 +2,4 @@
 /vendor/gems/
 /Gemfile.lock
 *.gem
+*~
