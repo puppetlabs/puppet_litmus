@@ -1,6 +1,7 @@
 require 'rubocop/rake_task'
 require 'github_changelog_generator/task'
 require 'puppet_litmus/version'
+require 'rspec/core/rake_task'
 
 GitHubChangelogGenerator::RakeTask.new :changelog do |config|
   config.user = 'puppetlabs'
@@ -31,3 +32,6 @@ end
 RuboCop::RakeTask.new(:rubocop) do |task|
   task.options = %w[-D -S -E]
 end
+
+RSpec::Core::RakeTask.new(:spec)
+task :default => :spec
