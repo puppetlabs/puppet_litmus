@@ -1,3 +1,4 @@
+require 'puppet_litmus/rake_tasks'
 require 'rubocop/rake_task'
 require 'github_changelog_generator/task'
 require 'puppet_litmus/version'
