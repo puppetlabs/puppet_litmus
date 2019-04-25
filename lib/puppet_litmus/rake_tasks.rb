@@ -100,28 +100,18 @@ namespace :litmus do
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
-    if %w[abs vmpooler].include?(args[:provisioner])
-      params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
-      results.each do |result|
-        if result['status'] != 'success'
-          puts "Failed #{result['node']}\n#{result}"
-        else
-          puts "#{result['result']['node_name']}, #{args[:platform]}"
-        end
+    unless %w[abs vmpooler docker vagrant].include?(args[:provisioner])
+      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vmpooler/vagrant"
+    end
+
+    params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+    results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+    results.each do |result|
+      if result['status'] != 'success'
+        puts "Failed #{result['node']}\n#{result}"
+      else
+        puts "#{result['result']['node_name']}, #{args[:platform]}"
       end
-    elsif args[:provisioner] == 'docker'
-      params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-      results = run_task('provision::docker', 'localhost', params, config: config_data, inventory: nil)
-      results.each do |result|
-        if result['status'] != 'success'
-          puts "Failed #{result['node']}\n#{result}"
-        else
-          puts "#{result['result']['node_name']}, #{args[:platform]}"
-        end
-      end
-    else
-      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vmpooler"
     end
   end
 
@@ -208,7 +198,7 @@ namespace :litmus do
     targets.each do |node_name|
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
-      next unless %w[abs docker vmpooler].include?(node_facts['provisioner'])
+      next unless %w[abs docker vmpooler vagrant].include?(node_facts['provisioner'])
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       result = run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
