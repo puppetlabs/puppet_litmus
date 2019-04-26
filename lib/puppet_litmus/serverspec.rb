@@ -37,7 +37,7 @@ module PuppetLitmus::Serverspec
 
     raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
-    result
+    result.first
   end
 
   # creates a temp manifest file locally & remote depending on target
