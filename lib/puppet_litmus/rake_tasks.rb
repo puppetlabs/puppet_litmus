@@ -87,10 +87,20 @@ namespace :litmus do
   task :provision_list, [:key] do |_task, args|
     provision_hash = YAML.load_file('./provision.yaml')
     provisioner = provision_hash[args[:key]]['provisioner']
+    failed_image_message = ''
     provision_hash[args[:key]]['images'].each do |image|
+      # this is the only way to capture the stdout from the rake task, it will affect pry
+      capture_rake_output = StringIO.new
+      $stdout = capture_rake_output
       Rake::Task['litmus:provision'].invoke(provisioner, image)
+      if $stdout.string =~ %r{.status.=>.failure}
+        failed_image_message += "=====\n#{image}\n#{$stdout.string}\n"
+      else
+        STDOUT.puts $stdout.string
+      end
       Rake::Task['litmus:provision'].reenable
     end
+    raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?
   end
 
   desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
