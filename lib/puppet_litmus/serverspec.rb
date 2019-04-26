@@ -70,7 +70,7 @@ module PuppetLitmus::Serverspec
   end
 
   # Runs a selected task against the target host. Parameters should be passed in with a hash format.
-  def run_bolt_task(task_name, params)
+  def run_bolt_task(task_name, params = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
