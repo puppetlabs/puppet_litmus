@@ -15,4 +15,5 @@ group :development do
   # TODO: Use gem instead of git. Section mapping is merged into master, but not yet released
   gem 'github_changelog_generator', git: 'https://github.com/skywinder/github-changelog-generator.git', ref: '20ee04ba1234e9e83eb2ffb5056e23d641c7a018'
   gem 'pry'
+  gem 'yard'
 end

@@ -1,14 +1,29 @@
 # frozen_string_literal: true
 
-# helper functions for running puppet commands, and helpers
+# helper functions for running puppet commands. They execute a target system specified by ENV['TARGET_HOST']
 module PuppetLitmus::Serverspec
+  # Applies a manifest twice. First checking for errors. Secondly to make sure no changes occur.
+  #
+  # @param manifest [String] puppet manifest code to be applied.
+  # @return [Boolean] The result of the 2 apply manifests.
   def idempotent_apply(manifest)
     manifest_file_location = create_manifest_file(manifest)
     apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
     apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
   end
 
+  # rubocop:disable Layout/TrailingWhitespace
+
+  # Applies a manifest. returning the result of that apply. Mimics the apply_manifest from beaker
+  #
+  # @param manifest [String] puppet manifest code to be applied.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
+  #  :catch_changes [Boolean] exit status of 1 if there were changes.  
+  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
+  #  :manifest_file_location [Path] The place on the target system.
+  # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
+    # rubocop:enable Layout/TrailingWhitespace
     target_node_name = ENV['TARGET_HOST']
     raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
     raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
@@ -40,7 +55,10 @@ module PuppetLitmus::Serverspec
     result.first
   end
 
-  # creates a temp manifest file locally & remote depending on target
+  # Creates a manifest file locally, if running against localhost create in a temp location. Or create it on the target system.
+  #
+  # @param manifest [String] puppet manifest code.
+  # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest)
     target_node_name = ENV['TARGET_HOST']
     manifest_file = Tempfile.new(['manifest_', '.pp'])
@@ -59,6 +77,11 @@ module PuppetLitmus::Serverspec
     manifest_file_location
   end
 
+  # Runs a command against the target system
+  #
+  # @param command_to_run [String] The command to execute.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST']
@@ -69,7 +92,11 @@ module PuppetLitmus::Serverspec
     result
   end
 
-  # Runs a selected task against the target host. Parameters should be passed in with a hash format.
+  # Runs a task against the target system.
+  #
+  # @param task_name [String] The name of the task to run.
+  # @param params [Hash] key : value pairs to be passed to the task.
+  # @return [Object] A result object from the task.
   def run_bolt_task(task_name, params = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     inventory_hash = inventory_hash_from_inventory_file
