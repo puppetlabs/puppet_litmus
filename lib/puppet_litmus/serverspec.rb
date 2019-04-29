@@ -2,7 +2,7 @@
 
 # helper functions for running puppet commands, and helpers
 module PuppetLitmus::Serverspec
-  def apply_manifest_and_idempotent(manifest)
+  def idempotent_apply(manifest)
     manifest_file_location = create_manifest_file(manifest)
     apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
     apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
@@ -37,7 +37,7 @@ module PuppetLitmus::Serverspec
 
     raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
-    result
+    result.first
   end
 
   # creates a temp manifest file locally & remote depending on target
@@ -51,12 +51,10 @@ module PuppetLitmus::Serverspec
       manifest_file_location = manifest_file.path
     else
       # transfer to TARGET_HOST
-      command = "bundle exec bolt file upload #{manifest_file.path} /tmp/#{File.basename(manifest_file)} --nodes #{target_node_name} --inventoryfile inventory.yaml"
-      stdout, stderr, status = Open3.capture3(command)
-      error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-      raise error_message unless status.to_i.zero?
-
+      inventory_hash = inventory_hash_from_inventory_file
       manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
+      result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+      raise result.first['result'].to_s unless result.first['status'] == 'success'
     end
     manifest_file_location
   end
@@ -72,7 +70,7 @@ module PuppetLitmus::Serverspec
   end
 
   # Runs a selected task against the target host. Parameters should be passed in with a hash format.
-  def task_run(task_name, params)
+  def run_bolt_task(task_name, params = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
