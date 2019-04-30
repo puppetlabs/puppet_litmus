@@ -50,7 +50,7 @@ module PuppetLitmus::Serverspec
       result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     end
 
-    raise "apply mainfest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+    raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result.first
   end
