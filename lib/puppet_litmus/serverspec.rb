@@ -61,6 +61,8 @@ module PuppetLitmus::Serverspec
   # @param manifest [String] puppet manifest code.
   # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest)
+    require 'tempfile'
+
     target_node_name = ENV['TARGET_HOST']
     manifest_file = Tempfile.new(['manifest_', '.pp'])
     manifest_file.write(manifest)
