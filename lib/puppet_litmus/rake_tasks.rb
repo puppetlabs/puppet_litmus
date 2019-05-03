@@ -240,19 +240,46 @@ namespace :litmus do
     include PuppetLitmus::InventoryManipulation
     if File.file?('inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
-      hosts = find_targets(inventory_hash, nil)
+      targets = find_targets(inventory_hash, nil)
 
       desc 'Run tests in parallel against all machines in the inventory file'
       task :parallel do
-        args = []
-        hosts.each do |host|
-          args << ["TARGET_HOST=#{host} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{host}.html", host]
+        spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
+        payloads = []
+        targets.each do |target|
+          test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{target}.html"
+          payloads << [target, test]
         end
-        results = Parallel.map(args, progress: "Running against #{hosts.size} machines") do |test, host|
-          stdout, stderr, status = Open3.capture3(test)
-          ["================\n#{host}\n", stdout, stderr, status]
+
+        results = []
+        if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+          # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
+          puts "Running against #{targets.size} targets.\n"
+          spinner = TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
+          spinner.auto_spin
+          results = Parallel.map(payloads) do |title, test|
+            stdout, stderr, status = Open3.capture3(test)
+            ["================\n#{title}\n", stdout, stderr, status]
+          end
+          spinner.success
+        else
+          spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
+          payloads.each do |title, test|
+            spinners.register("[:spinner] #{title}") do |sp|
+              stdout, stderr, status = Open3.capture3(test)
+              if status.to_i.zero?
+                sp.success
+              else
+                sp.error
+              end
+              results.push(["================\n#{title}\n", stdout, stderr, status])
+            end
+          end
+          spinners.auto_spin
+          # if any result is nonzero, there were test failures
+          spinners.success
         end
-        # if any result is nonzero, there were test failures
+
         failures = false
         results.each do |result|
           failures = true unless result.last.exitstatus.zero?
@@ -261,11 +288,11 @@ namespace :litmus do
         exit 1 if failures
       end
 
-      hosts.each do |host|
-        desc "Run serverspec against #{host}"
-        RSpec::Core::RakeTask.new(host.to_sym) do |t|
+      targets.each do |target|
+        desc "Run serverspec against #{target}"
+        RSpec::Core::RakeTask.new(target.to_sym) do |t|
           t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
-          ENV['TARGET_HOST'] = host
+          ENV['TARGET_HOST'] = target
         end
       end
     end
