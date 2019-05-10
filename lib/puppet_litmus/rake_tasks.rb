@@ -6,7 +6,6 @@ require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
 require 'json'
-require 'parallel'
 
 def get_metadata_operating_systems(metadata)
   return unless metadata.is_a?(Hash)
@@ -248,7 +247,8 @@ namespace :litmus do
         payloads = []
         targets.each do |target|
           test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress"
-          payloads << [target, test]
+          title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
+          payloads << [title, test]
         end
 
         results = []
