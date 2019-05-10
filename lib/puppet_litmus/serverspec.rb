@@ -22,6 +22,8 @@ module PuppetLitmus::Serverspec
   #  :catch_changes [Boolean] exit status of 1 if there were changes.  
   #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
   #  :manifest_file_location [Path] The place on the target system.
+  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja';".
+  # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
     # rubocop:enable Layout/TrailingWhitespace
@@ -35,7 +37,7 @@ module PuppetLitmus::Serverspec
                      else
                        inventory_hash_from_inventory_file
                      end
-    command_to_run = "puppet apply #{manifest_file_location}"
+    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     # BOLT-608
@@ -53,7 +55,11 @@ module PuppetLitmus::Serverspec
 
     raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
-    result.first
+    result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                            stdout: result.first['result']['stdout'],
+                            stderr: result.first['result']['stderr'])
+    yield result if block_given?
+    result
   end
 
   # Creates a manifest file locally, if running against localhost create in a temp location. Or create it on the target system.
