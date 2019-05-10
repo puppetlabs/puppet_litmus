@@ -247,7 +247,7 @@ namespace :litmus do
         spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
         payloads = []
         targets.each do |target|
-          test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress --format html --out html/#{target}.html"
+          test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress"
           payloads << [target, test]
         end
 
