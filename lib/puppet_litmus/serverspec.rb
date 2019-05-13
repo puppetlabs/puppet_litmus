@@ -23,6 +23,7 @@ module PuppetLitmus::Serverspec
   #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
   #  :manifest_file_location [Path] The place on the target system.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja';".
+  #  :debug [Boolean] run puppet apply with the debug flag.
   # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
@@ -40,6 +41,7 @@ module PuppetLitmus::Serverspec
     command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
+    command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     # BOLT-608
     if Gem.win_platform?
       stdout, stderr, status = Open3.capture3(command_to_run)
