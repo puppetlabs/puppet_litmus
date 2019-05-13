@@ -92,6 +92,7 @@ module PuppetLitmus::Serverspec
   #
   # @param command_to_run [String] The command to execute.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
     inventory_hash = inventory_hash_from_inventory_file
@@ -100,6 +101,10 @@ module PuppetLitmus::Serverspec
 
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
+    result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                            stdout: result.first['result']['stdout'],
+                            stderr: result.first['result']['stderr'])
+    yield result if block_given?
     result
   end
 
