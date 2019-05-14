@@ -22,7 +22,7 @@ module PuppetLitmus::Serverspec
   #  :catch_changes [Boolean] exit status of 1 if there were changes.  
   #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
   #  :manifest_file_location [Path] The place on the target system.
-  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja';".
+  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
   #  :debug [Boolean] run puppet apply with the debug flag.
   # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.

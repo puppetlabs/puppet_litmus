@@ -289,9 +289,9 @@ namespace :litmus do
         end
 
         # output test summary
-        puts "Successful on #{success_list.size} nodes: #{success_list}" unless success_list.size.zero?
-        puts "Failed on #{failure_list.size} nodes: #{failure_list}" unless failure_list.size.zero?
-        exit 1 unless failure_list.size.zero?
+        puts "Successful on #{success_list.size} nodes: #{success_list}" if success_list.any?
+        puts "Failed on #{failure_list.size} nodes: #{failure_list}" if failure_list.any?
+        exit 1 if failure_list.any?
       end
 
       targets.each do |target|
