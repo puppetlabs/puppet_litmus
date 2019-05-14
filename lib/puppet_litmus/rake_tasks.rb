@@ -252,6 +252,8 @@ namespace :litmus do
         end
 
         results = []
+        success_list = []
+        failure_list = []
         if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
@@ -269,23 +271,27 @@ namespace :litmus do
               stdout, stderr, status = Open3.capture3(test)
               if status.to_i.zero?
                 sp.success
+                success_list.push(title)
               else
                 sp.error
+                failure_list.push(title)
               end
               results.push(["================\n#{title}\n", stdout, stderr, status])
             end
           end
           spinners.auto_spin
-          # if any result is nonzero, there were test failures
           spinners.success
         end
 
-        failures = false
+        # output test results
         results.each do |result|
-          failures = true unless result.last.exitstatus.zero?
           puts result
         end
-        exit 1 if failures
+
+        # output test summary
+        puts "Successful on #{success_list.size} nodes: #{success_list}" unless success_list.size.zero?
+        puts "Failed on #{failure_list.size} nodes: #{failure_list}" unless failure_list.size.zero?
+        exit 1 unless failure_list.size.zero?
       end
 
       targets.each do |target|
