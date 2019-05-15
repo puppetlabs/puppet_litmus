@@ -6,7 +6,6 @@ require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
 require 'json'
-require 'parallel'
 
 def get_metadata_operating_systems(metadata)
   return unless metadata.is_a?(Hash)
@@ -248,10 +247,13 @@ namespace :litmus do
         payloads = []
         targets.each do |target|
           test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress"
-          payloads << [target, test]
+          title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
+          payloads << [title, test]
         end
 
         results = []
+        success_list = []
+        failure_list = []
         if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
@@ -269,23 +271,27 @@ namespace :litmus do
               stdout, stderr, status = Open3.capture3(test)
               if status.to_i.zero?
                 sp.success
+                success_list.push(title)
               else
                 sp.error
+                failure_list.push(title)
               end
               results.push(["================\n#{title}\n", stdout, stderr, status])
             end
           end
           spinners.auto_spin
-          # if any result is nonzero, there were test failures
           spinners.success
         end
 
-        failures = false
+        # output test results
         results.each do |result|
-          failures = true unless result.last.exitstatus.zero?
           puts result
         end
-        exit 1 if failures
+
+        # output test summary
+        puts "Successful on #{success_list.size} nodes: #{success_list}" if success_list.any?
+        puts "Failed on #{failure_list.size} nodes: #{failure_list}" if failure_list.any?
+        exit 1 if failure_list.any?
       end
 
       targets.each do |target|
