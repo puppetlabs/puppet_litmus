@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.2.0](https://github.com/puppetlabs/puppet_litmus/tree/0.2.0) (2019-05-15)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.1.1...0.2.0)
+
+### Added
+
+- \(FM-8073\) Support blocks in apply\_manifest [\#108](https://github.com/puppetlabs/puppet_litmus/pull/108) ([tphoney](https://github.com/tphoney))
+- \(FM-7978\) use a spinner for parallel acceptance [\#101](https://github.com/puppetlabs/puppet_litmus/pull/101) ([tphoney](https://github.com/tphoney))
+- \(FM-7963\) Yard doc for serverspec [\#99](https://github.com/puppetlabs/puppet_litmus/pull/99) ([tphoney](https://github.com/tphoney))
+- \(FM-7718\) Support vagrant provisioning [\#92](https://github.com/puppetlabs/puppet_litmus/pull/92) ([florindragos](https://github.com/florindragos))
+
+### Fixed
+
+- \(FM-8021\) remove output to html, for now [\#107](https://github.com/puppetlabs/puppet_litmus/pull/107) ([tphoney](https://github.com/tphoney))
+- Added require for tempfile [\#102](https://github.com/puppetlabs/puppet_litmus/pull/102) ([dylanratcliffe](https://github.com/dylanratcliffe))
+- \(bugfix\) typo in error msg of apply\_manifest [\#100](https://github.com/puppetlabs/puppet_litmus/pull/100) ([tphoney](https://github.com/tphoney))
+
 ## [0.1.1](https://github.com/puppetlabs/puppet_litmus/tree/0.1.1) (2019-04-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.1.0...0.1.1)
