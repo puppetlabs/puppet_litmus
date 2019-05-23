@@ -142,7 +142,8 @@ namespace :litmus do
     results = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
     results.each do |result|
       if result['status'] != 'success'
-        puts "Failed on #{result['node']}\n#{result}"
+        command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{config_data['modulepath']}"
+        puts "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
       end
     end
 
