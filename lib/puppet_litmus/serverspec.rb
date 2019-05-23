@@ -42,18 +42,7 @@ module PuppetLitmus::Serverspec
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
-    # BOLT-608
-    if Gem.win_platform?
-      stdout, stderr, status = Open3.capture3(command_to_run)
-      status_text = if status.to_i.zero?
-                      'success'
-                    else
-                      'failure'
-                    end
-      result = [{ 'node' => 'localhost', 'status' => status_text, 'result' => { 'exit_code' => status.to_i, 'stderr' => stderr, 'stdout' => stdout } }]
-    else
-      result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-    end
+    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
     raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
@@ -64,15 +53,15 @@ module PuppetLitmus::Serverspec
     result
   end
 
-  # Creates a manifest file locally, if running against localhost create in a temp location. Or create it on the target system.
+  # Creates a manifest file locally in a temp location, if its a remote target copy it to there.
   #
   # @param manifest [String] puppet manifest code.
   # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest)
-    require 'tempfile'
-
+    require 'tmpdir'
     target_node_name = ENV['TARGET_HOST']
-    manifest_file = Tempfile.new(['manifest_', '.pp'])
+    tmp_filename = File.join(Dir.tmpdir, "manifest_#{Time.now.strftime('%Y%m%d')}_#{Process.pid}_#{rand(0x100000000).to_s(36)}.pp")
+    manifest_file = File.open(tmp_filename, 'w')
     manifest_file.write(manifest)
     manifest_file.close
     if target_node_name.nil? || target_node_name == 'localhost'
