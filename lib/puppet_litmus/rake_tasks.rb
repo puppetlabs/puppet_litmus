@@ -102,15 +102,15 @@ namespace :litmus do
     raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?
   end
 
-  desc "provision container/VM - abs/docker/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
+  desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
-    unless %w[abs vmpooler docker vagrant].include?(args[:provisioner])
-      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vmpooler/vagrant"
+    unless %w[abs docker docker_exp vagrant vmpooler].include?(args[:provisioner])
+      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vagrant/vmpooler"
     end
 
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
@@ -207,7 +207,7 @@ namespace :litmus do
     targets.each do |node_name|
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
-      next unless %w[abs docker vmpooler vagrant].include?(node_facts['provisioner'])
+      next unless %w[abs docker docker_exp vagrant vmpooler].include?(node_facts['provisioner'])
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       result = run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
