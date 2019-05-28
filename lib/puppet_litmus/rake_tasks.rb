@@ -6,6 +6,7 @@ require 'bolt_spec/run'
 require 'open3'
 require 'pdk'
 require 'json'
+require 'parallel'
 
 def get_metadata_operating_systems(metadata)
   return unless metadata.is_a?(Hash)
@@ -253,6 +254,14 @@ namespace :litmus do
           results = Parallel.map(payloads) do |title, test|
             stdout, stderr, status = Open3.capture3(test)
             ["================\n#{title}\n", stdout, stderr, status]
+          end
+          # because we cannot modify variables inside of Parallel
+          results.each do |result|
+            if result.last.to_i.zero?
+              success_list.push(result.first.scan(%r{.*})[2])
+            else
+              failure_list.push(result.first.scan(%r{.*})[2])
+            end
           end
           spinner.success
         else
