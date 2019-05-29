@@ -111,6 +111,10 @@ module PuppetLitmus::Serverspec
 
     raise "task failed\n`#{task_name}`\n======\n#{result}" if result.first['status'] != 'success'
 
+    result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                            stdout: result.first['result']['stdout'],
+                            stderr: result.first['result']['stderr'])
+    yield result if block_given?
     result
   end
 end
