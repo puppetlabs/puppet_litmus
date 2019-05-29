@@ -24,6 +24,7 @@ module PuppetLitmus::Serverspec
   #  :manifest_file_location [Path] The place on the target system.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
   #  :debug [Boolean] run puppet apply with the debug flag.
+  #  :noop [Boolean] run puppet apply with the noop flag.
   # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
@@ -42,6 +43,7 @@ module PuppetLitmus::Serverspec
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
+    command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
     raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
