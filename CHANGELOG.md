@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.3.0](https://github.com/puppetlabs/puppet_litmus/tree/0.3.0) (2019-05-29)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.2.0...0.3.0)
+
+### Added
+
+- \(feat\) better error message for agent\_install [\#114](https://github.com/puppetlabs/puppet_litmus/pull/114) ([tphoney](https://github.com/tphoney))
+- \(MODULES-9170\) allow for the new docker provisioner [\#113](https://github.com/puppetlabs/puppet_litmus/pull/113) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- \(FM-8105\) when in CI correctly display test summary [\#115](https://github.com/puppetlabs/puppet_litmus/pull/115) ([tphoney](https://github.com/tphoney))
+- \(FM-8094\) remove workaround for bolt on windows [\#112](https://github.com/puppetlabs/puppet_litmus/pull/112) ([tphoney](https://github.com/tphoney))
+- \(bugfix\) handle block in bolt\_task [\#111](https://github.com/puppetlabs/puppet_litmus/pull/111) ([tphoney](https://github.com/tphoney))
+
 ## [0.2.0](https://github.com/puppetlabs/puppet_litmus/tree/0.2.0) (2019-05-15)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.1.1...0.2.0)
