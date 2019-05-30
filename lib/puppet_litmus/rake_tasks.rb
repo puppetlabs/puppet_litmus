@@ -116,13 +116,9 @@ namespace :litmus do
 
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
     results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
-    results.each do |result|
-      if result['status'] != 'success'
-        puts "Failed #{result['node']}\n#{result}"
-      else
-        puts "#{result['result']['node_name']}, #{args[:platform]}"
-      end
-    end
+    raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}" if results.first['status'] != 'success'
+
+    puts "#{results.first['result']['node_name']}, #{args[:platform]}"
   end
 
   desc 'install puppet agent, [:collection, :target_node_name]'
@@ -144,7 +140,7 @@ namespace :litmus do
     results.each do |result|
       if result['status'] != 'success'
         command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{config_data['modulepath']}"
-        puts "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
+        raise "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
       end
     end
 
