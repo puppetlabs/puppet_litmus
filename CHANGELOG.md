@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.4.0](https://github.com/puppetlabs/puppet_litmus/tree/0.4.0) (2019-05-30)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.1...0.4.0)
+
+### Added
+
+- \(FM-8072\) add noop flag detection to apply\_manifest [\#119](https://github.com/puppetlabs/puppet_litmus/pull/119) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
+
+### Fixed
+
+- \(bugfix\) raise on task failure [\#120](https://github.com/puppetlabs/puppet_litmus/pull/120) ([tphoney](https://github.com/tphoney))
+
 ## [0.3.1](https://github.com/puppetlabs/puppet_litmus/tree/0.3.1) (2019-05-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.0...0.3.1)
