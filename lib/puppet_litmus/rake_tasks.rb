@@ -61,7 +61,8 @@ namespace :litmus do
     end
   end
 
-  desc "provision all supported OSes on with abs eg 'bundle exec rake 'litmus:provision_from_metadata'"
+  desc "DEPRECATED: provision_from_metadata task is deprecated.
+  Provision all supported OSes on with abs eg 'bundle exec rake 'litmus:provision_from_metadata'"
   task :provision_from_metadata, [:provisioner] do |_task, args|
     metadata = JSON.parse(File.read('metadata.json'))
     get_metadata_operating_systems(metadata) do |os_and_version|
