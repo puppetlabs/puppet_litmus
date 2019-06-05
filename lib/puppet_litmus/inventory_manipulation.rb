@@ -55,7 +55,7 @@ module PuppetLitmus::InventoryManipulation
         end
       end
     end
-    raise "No config was found for #{node_name}"
+    raise "No facts were found for #{node_name}"
   end
 
   def add_node_to_group(inventory_hash, node_name, group_name)

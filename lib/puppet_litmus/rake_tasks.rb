@@ -8,51 +8,55 @@ require 'pdk'
 require 'json'
 require 'parallel'
 
-def get_metadata_operating_systems(metadata)
-  return unless metadata.is_a?(Hash)
-  return unless metadata['operatingsystem_support'].is_a?(Array)
+# helper methods for the litmus rake tasks
+module LitmusRakeHelper
+  def get_metadata_operating_systems(metadata)
+    return unless metadata.is_a?(Hash)
+    return unless metadata['operatingsystem_support'].is_a?(Array)
 
-  metadata['operatingsystem_support'].each do |os_info|
-    next unless os_info['operatingsystem'] && os_info['operatingsystemrelease']
+    metadata['operatingsystem_support'].each do |os_info|
+      next unless os_info['operatingsystem'] && os_info['operatingsystemrelease']
 
-    os_name = case os_info['operatingsystem']
-              when 'Amazon', 'Archlinux', 'AIX', 'OSX'
-                next
-              when 'OracleLinux'
-                'oracle'
-              when 'Windows'
-                'win'
-              else
-                os_info['operatingsystem'].downcase
-              end
-
-    os_info['operatingsystemrelease'].each do |release|
-      version = case os_name
-                when 'ubuntu', 'osx'
-                  release.sub('.', '')
-                when 'sles'
-                  release.gsub(%r{ SP[14]}, '')
-                when 'win'
-                  release = release.delete('.') if release.include? '8.1'
-                  release.sub('Server', '').sub('10', '10-pro')
+      os_name = case os_info['operatingsystem']
+                when 'Amazon', 'Archlinux', 'AIX', 'OSX'
+                  next
+                when 'OracleLinux'
+                  'oracle'
+                when 'Windows'
+                  'win'
                 else
-                  release
+                  os_info['operatingsystem'].downcase
                 end
 
-      yield "#{os_name}-#{version.downcase}-x86_64".delete(' ')
+      os_info['operatingsystemrelease'].each do |release|
+        version = case os_name
+                  when 'ubuntu', 'osx'
+                    release.sub('.', '')
+                  when 'sles'
+                    release.gsub(%r{ SP[14]}, '')
+                  when 'win'
+                    release = release.delete('.') if release.include? '8.1'
+                    release.sub('Server', '').sub('10', '10-pro')
+                  else
+                    release
+                  end
+
+        yield "#{os_name}-#{version.downcase}-x86_64".delete(' ')
+      end
     end
+  end
+
+  def run_local_command(command)
+    stdout, stderr, status = Open3.capture3(command)
+    error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
+    raise error_message unless status.to_i.zero?
+
+    stdout
   end
 end
 
-def run_local_command(command)
-  stdout, stderr, status = Open3.capture3(command)
-  error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-  raise error_message unless status.to_i.zero?
-
-  stdout
-end
-
 namespace :litmus do
+  include LitmusRakeHelper
   desc 'print all supported OSes from metadata'
   task :metadata do
     metadata = JSON.parse(File.read('metadata.json'))
