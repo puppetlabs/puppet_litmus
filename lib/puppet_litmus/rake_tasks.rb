@@ -10,6 +10,10 @@ require 'parallel'
 
 # helper methods for the litmus rake tasks
 module LitmusRakeHelper
+  # Gets a string representing the operating system and version.
+  #
+  # @param metadata [Hash] metadata to parse for operating system info
+  # @return [String] the operating system string with version info for use in provisioning.
   def get_metadata_operating_systems(metadata)
     return unless metadata.is_a?(Hash)
     return unless metadata['operatingsystem_support'].is_a?(Array)
@@ -46,6 +50,10 @@ module LitmusRakeHelper
     end
   end
 
+  # Executes a command on the test runner.
+  #
+  # @param command [String] command to execute.
+  # @return [Object] the standard out stream.
   def run_local_command(command)
     stdout, stderr, status = Open3.capture3(command)
     error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
@@ -57,6 +65,7 @@ end
 
 namespace :litmus do
   include LitmusRakeHelper
+  # Prints all supported OSes from metadata.json file.
   desc 'print all supported OSes from metadata'
   task :metadata do
     metadata = JSON.parse(File.read('metadata.json'))
@@ -65,8 +74,11 @@ namespace :litmus do
     end
   end
 
+  # DEPRECATED - Provisions all supported OSes with provisioner eg 'bundle exec rake litmus:provision_from_metadata['vmpooler']'.
+  #
+  # @param :provisioner [String] provisioner to use in provisioning all OSes.
   desc "DEPRECATED: provision_from_metadata task is deprecated.
-  Provision all supported OSes on with abs eg 'bundle exec rake 'litmus:provision_from_metadata'"
+  Provision all supported OSes with provisioner eg 'bundle exec rake 'litmus:provision_from_metadata'"
   task :provision_from_metadata, [:provisioner] do |_task, args|
     metadata = JSON.parse(File.read('metadata.json'))
     get_metadata_operating_systems(metadata) do |os_and_version|
@@ -88,6 +100,9 @@ namespace :litmus do
     end
   end
 
+  # Provisions a list of OSes from provision.yaml file e.g. 'bundle exec rake litmus:provision_list[default]'.
+  #
+  # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
   task :provision_list, [:key] do |_task, args|
     provision_hash = YAML.load_file('./provision.yaml')
@@ -108,6 +123,10 @@ namespace :litmus do
     raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?
   end
 
+  # Provision a container or VM with a given platform 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'.
+  #
+  # @param :provisioner [String] provisioner to use in provisioning given platform.
+  # @param :platform [String] OS platform for container or VM to use.
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include BoltSpec::Run
@@ -126,6 +145,10 @@ namespace :litmus do
     puts "#{results.first['result']['node_name']}, #{args[:platform]}"
   end
 
+  # Install puppet agent on a collection of nodes
+  #
+  # @param :collection [String] parameters to pass to the puppet agent install command.
+  # @param :target_node_name [Array] nodes on which to install puppet agent.
   desc 'install puppet agent, [:collection, :target_node_name]'
   task :install_agent, [:collection, :target_node_name] do |_task, args|
     puts 'install_agent'
@@ -158,6 +181,9 @@ namespace :litmus do
     end
   end
 
+  # Install puppet enterprise - for internal puppet employees only - Requires an el7 provisioned machine - experimental feature [:target_node_name]'
+  #
+  # @param :target_node_name [Array] nodes on which to install puppet agent.
   desc 'install puppet enterprise - for internal puppet employees only - Requires an el7 provisioned machine - experimental feature [:target_node_name]'
   task :install_pe, [:target_node_name] do |_task, args|
     puts 'install_pe'
@@ -203,6 +229,9 @@ namespace :litmus do
     puts 'PE Installation is now complete'
   end
 
+  # Install the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'install_module - build and install module'
   task :install_module, [:target_node_name] do |_task, args|
     include BoltSpec::Run
@@ -242,6 +271,10 @@ namespace :litmus do
     puts 'Installed'
   end
 
+  # Provision a list of machines, install a puppet agent, and install the puppet module under test on a collection of nodes
+  #
+  # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
+  # @param :collection [String] parameters to pass to the puppet agent install command.
   desc 'provision_install - provision a list of machines, install an agent, and the module.'
   task :provision_install, [:key, :collection] do |_task, args|
     Rake::Task['spec_prep'].invoke
@@ -250,6 +283,9 @@ namespace :litmus do
     Rake::Task['litmus:install_module'].invoke
   end
 
+  # Decommissions test machines.
+  #
+  # @param :target [Array] nodes to remove from test environemnt and decommission.
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
     include BoltSpec::Run
@@ -287,6 +323,7 @@ namespace :litmus do
       inventory_hash = inventory_hash_from_inventory_file
       targets = find_targets(inventory_hash, nil)
 
+      # Run acceptance tests against all machines in the inventory file in parallel.
       desc 'Run tests in parallel against all machines in the inventory file'
       task :parallel do
         spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
