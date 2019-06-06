@@ -171,7 +171,7 @@ namespace :litmus do
     PE_RELEASE = 2019.0
     pe_latest_cmd = "curl http://enterprise.delivery.puppetlabs.net/#{PE_RELEASE}/ci-ready/LATEST"
     pe_latest = run_command(pe_latest_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-    pe_latest_string = pe_latest[0]['result']['stdout'].gsub("\n", '')
+    pe_latest_string = pe_latest[0]['result']['stdout'].delete("\n")
     PE_FILE_NAME = "puppet-enterprise-#{pe_latest_string}-el-7-x86_64"
     TAR_FILE = "#{PE_FILE_NAME}.tar"
     DOWNLOAD_URL = "http://enterprise.delivery.puppetlabs.net/#{PE_RELEASE}/ci-ready/#{TAR_FILE}"
@@ -239,6 +239,14 @@ namespace :litmus do
     end
     # rubocop:enable Style/GuardClause
     puts 'Installed'
+  end
+
+  desc 'provision_install - provision a list of machines, install an agent, and the module.'
+  task :provision_install, [:key, :collection] do |_task, args|
+    Rake::Task['spec_prep'].invoke
+    Rake::Task['litmus:provision_list'].invoke(args[:key])
+    Rake::Task['litmus:install_agent'].invoke(args[:collection])
+    Rake::Task['litmus:install_module'].invoke
   end
 
   desc 'tear-down - decommission machines'

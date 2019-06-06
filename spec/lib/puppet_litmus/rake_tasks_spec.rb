@@ -4,8 +4,10 @@ require 'spec_helper'
 require 'rake'
 
 describe 'litmus rake tasks' do
-  before(:each) do
+  before(:all) do # rubocop:disable RSpec/BeforeAfterAll
     load File.expand_path('../../../lib/puppet_litmus/rake_tasks.rb', __dir__)
+    # the spec_prep task is stubbed, rather than load from another gem.
+    Rake::Task.define_task(:spec_prep)
   end
 
   context 'with litmus:metadata task' do
@@ -22,6 +24,16 @@ describe 'litmus rake tasks' do
       expect(STDOUT).to receive(:puts).with('ubuntu-1404-x86_64')
       expect(STDOUT).to receive(:puts).with('ubuntu-1804-x86_64')
       Rake::Task['litmus:metadata'].invoke
+    end
+  end
+
+  context 'with litmus:provision_install task' do
+    it 'happy path' do
+      expect(Rake::Task['spec_prep']).to receive(:invoke).and_return('').once
+      expect(Rake::Task['litmus:provision_list']).to receive(:invoke).with('default').once
+      expect(Rake::Task['litmus:install_agent']).to receive(:invoke).with('puppet6').once
+      expect(Rake::Task['litmus:install_module']).to receive(:invoke).once
+      Rake::Task['litmus:provision_install'].invoke('default', 'puppet6')
     end
   end
 end
