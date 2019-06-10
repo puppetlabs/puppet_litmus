@@ -111,6 +111,12 @@ namespace :litmus do
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include BoltSpec::Run
+    spinner = if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+                TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
+              else
+                TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
+              end
+    spinner.auto_spin
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -121,17 +127,25 @@ namespace :litmus do
 
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
     results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
-    raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}" if results.first['status'] != 'success'
+    if results.first['status'] != 'success'
+      spinner.error
+      raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
+    end
 
+    spinner.success
     puts "#{results.first['result']['node_name']}, #{args[:platform]}"
   end
 
   desc 'install puppet agent, [:collection, :target_node_name]'
   task :install_agent, [:collection, :target_node_name] do |_task, args|
-    puts 'install_agent'
-    include BoltSpec::Run
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target_node_name])
+    if targets.empty?
+      puts 'No targets found'
+      exit 0
+    end
+    puts 'install_agent'
+    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     params = if args[:collection].nil?
@@ -160,10 +174,14 @@ namespace :litmus do
 
   desc 'install puppet enterprise - for internal puppet employees only - Requires an el7 provisioned machine - experimental feature [:target_node_name]'
   task :install_pe, [:target_node_name] do |_task, args|
-    puts 'install_pe'
-    include BoltSpec::Run
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+    puts 'install_pe'
+    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
 
@@ -205,6 +223,12 @@ namespace :litmus do
 
   desc 'install_module - build and install module'
   task :install_module, [:target_node_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
     include BoltSpec::Run
     # old cli_way
     # pdk_build_command = 'bundle exec pdk build  --force'
@@ -217,8 +241,6 @@ namespace :litmus do
     module_tar = builder.build
     puts 'Built'
 
-    inventory_hash = inventory_hash_from_inventory_file
-    target_nodes = find_targets(inventory_hash, args[:target_node_name])
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
@@ -252,13 +274,17 @@ namespace :litmus do
 
   desc 'tear-down - decommission machines'
   task :tear_down, [:target] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    targets = find_targets(inventory_hash, args[:target])
+    if targets.empty?
+      puts 'No targets found'
+      exit 0
+    end
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
-    inventory_hash = inventory_hash_from_inventory_file
-    targets = find_targets(inventory_hash, args[:target])
     bad_results = []
     targets.each do |node_name|
       # how do we know what provisioner to use
@@ -289,6 +315,10 @@ namespace :litmus do
 
       desc 'Run tests in parallel against all machines in the inventory file'
       task :parallel do
+        if targets.empty?
+          puts 'No targets found'
+          exit 0
+        end
         spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
         payloads = []
         targets.each do |target|

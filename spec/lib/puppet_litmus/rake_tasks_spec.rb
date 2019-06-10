@@ -36,4 +36,20 @@ describe 'litmus rake tasks' do
       Rake::Task['litmus:provision_install'].invoke('default', 'puppet6')
     end
   end
+
+  context 'with litmus:provision task' do
+    it 'provisions' do
+      results = [{ 'node' => 'localhost',
+                   'target' => 'localhost',
+                   'action' => 'task',
+                   'object' => 'provision::docker',
+                   'status' => 'success',
+                   'result' => { 'status' => 'ok', 'node_name' => 'localhost:2222' } }]
+
+      allow(File).to receive(:directory?).with(any_args).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results) # rubocop:disable RSpec/AnyInstance
+      expect(STDOUT).to receive(:puts).with('localhost:2222, centos:7')
+      Rake::Task['litmus:provision'].invoke('docker', 'centos:7')
+    end
+  end
 end
