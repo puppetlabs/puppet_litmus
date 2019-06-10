@@ -188,7 +188,7 @@ namespace :litmus do
     # Install PE
     untar_cmd = "tar xvf #{TAR_FILE}"
     run_command(untar_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-    run_command("cd #{PE_FILE_NAME} && 1 | ./puppet-enterprise-installer", target_nodes, config: nil, inventory: inventory_hash)
+    puts run_command("cd #{PE_FILE_NAME} && 1 | ./puppet-enterprise-installer", target_nodes, config: nil, inventory: inventory_hash)[0]['result']['stdout']
 
     puts 'Autosigning Certificates'
 
