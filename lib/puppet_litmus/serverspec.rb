@@ -21,11 +21,11 @@ module PuppetLitmus::Serverspec
   # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
   #  :catch_changes [Boolean] exit status of 1 if there were changes.  
   #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
-  #  :manifest_file_location [Path] The place on the target system.
-  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
-  #  :debug [Boolean] run puppet apply with the debug flag.
-  #  :noop [Boolean] run puppet apply with the noop flag.
-  # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
+  #  :manifest_file_location [Path] The place on the target system.  
+  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
+  #  :debug [Boolean] run puppet apply with the debug flag.  
+  #  :noop [Boolean] run puppet apply with the noop flag.  
+  # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
     # rubocop:enable Layout/TrailingWhitespace
@@ -83,7 +83,7 @@ module PuppetLitmus::Serverspec
   #
   # @param command_to_run [String] The command to execute.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
-  # @param [Block] his method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
+  # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
     inventory_hash = inventory_hash_from_inventory_file

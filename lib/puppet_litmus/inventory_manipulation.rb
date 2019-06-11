@@ -2,6 +2,10 @@
 
 # helper functions for manipulating and reading a bolt inventory file
 module PuppetLitmus::InventoryManipulation
+  # Creates an inventory hash from the inventory.yaml.
+  #
+  # @param inventory_full_path [String] path to the inventory.yaml file
+  # @return [Hash] hash of the inventory.yaml file.
   def inventory_hash_from_inventory_file(inventory_full_path = nil)
     inventory_full_path = if inventory_full_path.nil?
                             'inventory.yaml'
@@ -14,6 +18,11 @@ module PuppetLitmus::InventoryManipulation
     inventory_hash
   end
 
+  # Finds targets to perform operations on from an inventory hash.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param targets [Array]
+  # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
     if targets.nil?
       inventory = Bolt::Inventory.new(inventory_hash, nil)
@@ -24,6 +33,12 @@ module PuppetLitmus::InventoryManipulation
     targets
   end
 
+  # Determines if a node_name exists in a group in the inventory_hash.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @param group_name [String] group of nodes to limit the search for the node_name in
+  # @return [Boolean] true if node_name exists in group_name.
   def target_in_group(inventory_hash, node_name, group_name)
     exists = false
     inventory_hash['groups'].each do |group|
@@ -36,6 +51,11 @@ module PuppetLitmus::InventoryManipulation
     exists
   end
 
+  # Finds a config hash in the inventory hash by searching for a node name.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @return [Hash] config for node of name node_name
   def config_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
       group['nodes'].each do |node|
@@ -47,6 +67,11 @@ module PuppetLitmus::InventoryManipulation
     raise "No config was found for #{node_name}"
   end
 
+  # Finds a facts hash in the inventory hash by searching for a node name.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @return [Hash] facts for node of name node_name
   def facts_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
       group['nodes'].each do |node|
@@ -58,6 +83,12 @@ module PuppetLitmus::InventoryManipulation
     raise "No facts were found for #{node_name}"
   end
 
+  # Adds a node to a group specified, if group_name exists in inventory hash.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # group_name [String] group of nodes to limit the search for the node_name in
+  # @return [Hash] inventory_hash with node added to group if group_name exists in inventory hash.
   def add_node_to_group(inventory_hash, node_name, group_name)
     inventory_hash['groups'].each do |group|
       if group['name'] == group_name
@@ -67,6 +98,11 @@ module PuppetLitmus::InventoryManipulation
     inventory_hash
   end
 
+  # Removes named node from a group inside an inventory_hash.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @return [Hash] inventory_hash with node of node_name removed.
   def remove_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
       group['nodes'].delete_if { |i| i['name'] == node_name }
