@@ -86,10 +86,13 @@ module PuppetLitmus::Serverspec
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
-    inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST']
+    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
+                       nil
+                     else
+                       inventory_hash_from_inventory_file
+                     end
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],

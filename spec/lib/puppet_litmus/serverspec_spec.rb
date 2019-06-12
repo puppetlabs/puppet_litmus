@@ -23,4 +23,31 @@ RSpec.describe PuppetLitmus::Serverspec do
       dummy_class.idempotent_apply(manifest)
     end
   end
+
+  describe '.run_shell' do
+    let(:command_to_run) { "puts 'doot'" }
+    let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:inventory_hash) { Hash.new(0) }
+
+    it 'responds to run_shell' do
+      expect(dummy_class).to respond_to(:run_shell).with(1..2).arguments
+    end
+
+    context 'when running against localhost and no inventory.yaml file' do
+      it 'does run_shell against localhost without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        expect(dummy_class).to receive(:run_command).with(command_to_run, 'localhost', config: nil, inventory: nil).and_return(result)
+        expect { dummy_class.run_shell(command_to_run) }.not_to raise_error
+      end
+    end
+
+    context 'when running against remote host' do
+      it 'does run_shell against remote host without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(dummy_class).to receive(:run_command).with(command_to_run, 'some.host', config: nil, inventory: inventory_hash).and_return(result)
+        expect { dummy_class.run_shell(command_to_run) }.not_to raise_error
+      end
+    end
+  end
 end
