@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.5.0](https://github.com/puppetlabs/puppet_litmus/tree/0.5.0) (2019-06-12)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.4.0...0.5.0)
+
+### Added
+
+- \(FM-8185\) Use spinner when provisioning  [\#130](https://github.com/puppetlabs/puppet_litmus/pull/130) ([florindragos](https://github.com/florindragos))
+- \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
+- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
+- Addition of pe\_install rake task [\#124](https://github.com/puppetlabs/puppet_litmus/pull/124) ([HelenCampbell](https://github.com/HelenCampbell))
+
+### Fixed
+
+- Update the install\_pe experimental rake task [\#131](https://github.com/puppetlabs/puppet_litmus/pull/131) ([gregohardy](https://github.com/gregohardy))
+
 ## [0.4.0](https://github.com/puppetlabs/puppet_litmus/tree/0.4.0) (2019-05-30)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.1...0.4.0)
