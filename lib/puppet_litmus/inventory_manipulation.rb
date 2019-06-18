@@ -109,4 +109,49 @@ module PuppetLitmus::InventoryManipulation
     end
     inventory_hash
   end
+
+  # Adds a feature to the group specified/
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param feature_name [String] feature to locate in the group
+  # group_name [String] group of nodes to limit the search for the group_name in
+  # @return inventory.yaml file with feature added to group.
+  # @return [Hash] inventory_hash with feature added to group if group_name exists in inventory hash.
+  def add_feature_to_group(inventory_hash, feature_name, group_name)
+    i = 0
+    inventory_hash['groups'].each do |group|
+      if group['name'] == group_name
+        group = group.merge('features' => [])
+        group['features'].push feature_name
+        inventory_hash['groups'][i] = group
+      end
+      i += 1
+    end
+    inventory_hash
+  end
+
+  # Removes a feature from the group specified/
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param feature_name [String] feature to locate in the group
+  # group_name [String] group of nodes to limit the search for the group_name in
+  # @return inventory.yaml file with feature removed from the group.
+  # @return [Hash] inventory_hash with feature added to group if group_name exists in inventory hash.
+  def remove_feature_from_group(inventory_hash, feature_name, group_name)
+    inventory_hash['groups'].each do |group|
+      if group['name'] == group_name && group['features'].nil? != true
+        group['features'].delete(feature_name)
+      end
+    end
+    inventory_hash
+  end
+
+  # Write inventory_hash to inventory_yaml file/
+  #
+  #  @param inventory_full_path [String] path to the inventory.yaml file
+  #  @param inventory_hash [Hash] hash of the inventory.yaml file
+  #  @return inventory.yaml file with feature added to group.
+  def write_to_inventory_file(inventory_hash, inventory_full_path)
+    File.open(inventory_full_path, 'w+') { |f| f.write(inventory_hash.to_yaml) }
+  end
 end
