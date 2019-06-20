@@ -50,4 +50,33 @@ RSpec.describe PuppetLitmus::Serverspec do
       end
     end
   end
+
+  describe '.bolt_upload_file' do
+    let(:local) { '/tmp' }
+    let(:remote) { '/remote_tmp' }
+    let(:result) { ['status' => 'success', 'result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:inventory_hash) { Hash.new(0) }
+
+    it 'responds to run_shell' do
+      expect(dummy_class).to respond_to(:bolt_upload_file).with(2..3).arguments
+    end
+
+    context 'when running against remote host' do
+      it 'does upload_file against remote host without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(dummy_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+        expect { dummy_class.bolt_upload_file(local, remote) }.not_to raise_error
+      end
+    end
+
+    context 'when running against remote host' do
+      it 'does upload_file against localhost without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
+        expect(dummy_class).to receive(:upload_file).with(local, remote, 'localhost', options: {}, config: nil, inventory: nil).and_return(result)
+        expect { dummy_class.bolt_upload_file(local, remote) }.not_to raise_error
+      end
+    end
+  end
 end

@@ -102,6 +102,37 @@ module PuppetLitmus::Serverspec
     result
   end
 
+  # Copies file to the target, using its respective transport
+  #
+  # @param source [String] place locally, to copy from.
+  # @param destination [String] place on the target, to copy to.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
+  # @return [Object] A result object from the command.
+  def bolt_upload_file(source, destination, options = {})
+    target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
+    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
+                       nil
+                     else
+                       inventory_hash_from_inventory_file
+                     end
+
+    result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+
+    raise "upload file failed\n======\n#{result}" if result.first['status'] != 'success'
+
+    exit_code = if result.first['status'] == 'success'
+                  0
+                else
+                  255
+                end
+    result = OpenStruct.new(exit_code: exit_code,
+                            stdout: result.first['result']['status'],
+                            stderr: result.first['result']['status'])
+    yield result if block_given?
+    result
+  end
+
   # Runs a task against the target system.
   #
   # @param task_name [String] The name of the task to run.
