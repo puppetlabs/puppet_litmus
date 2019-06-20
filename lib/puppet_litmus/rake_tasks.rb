@@ -358,22 +358,30 @@ namespace :litmus do
         end
         spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
         payloads = []
+        # Generate list of targets to provision
         targets.each do |target|
-          test = "TARGET_HOST=#{target} bundle exec rspec ./spec/acceptance --format progress"
+          test = 'bundle exec bundle exec rspec ./spec/acceptance --format progress'
           title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
-          payloads << [title, test]
+          options = {
+            env: {
+              'TARGET_HOST' => target,
+            },
+          }
+          payloads << [title, test, options]
         end
 
         results = []
         success_list = []
         failure_list = []
+        # Provision targets depending on what environment we're in
         if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
           spinner = TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
           spinner.auto_spin
-          results = Parallel.map(payloads) do |title, test|
-            stdout, stderr, status = Open3.capture3(test)
+          results = Parallel.map(payloads) do |title, test, options|
+            env = options[:env].nil? ? {} : options[:env]
+            stdout, stderr, status = Open3.capture3(env, test)
             ["================\n#{title}\n", stdout, stderr, status]
           end
           # because we cannot modify variables inside of Parallel
@@ -387,9 +395,10 @@ namespace :litmus do
           spinner.success
         else
           spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
-          payloads.each do |title, test|
+          payloads.each do |title, test, options|
+            env = options[:env].nil? ? {} : options[:env]
             spinners.register("[:spinner] #{title}") do |sp|
-              stdout, stderr, status = Open3.capture3(test)
+              stdout, stderr, status = Open3.capture3(env, test)
               if status.to_i.zero?
                 sp.success
                 success_list.push(title)
