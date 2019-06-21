@@ -108,7 +108,7 @@ namespace :litmus do
     provision_hash = YAML.load_file('./provision.yaml')
     provisioner = provision_hash[args[:key]]['provisioner']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
-    provision_hash[args[:key]]['params'].each { |key, value| ENV["LITMUS_#{key.upcase}"] = value }
+    provision_hash[args[:key]]['params']&.each { |key, value| ENV["LITMUS_#{key.upcase}"] = value }
     failed_image_message = ''
     provision_hash[args[:key]]['images'].each do |image|
       # this is the only way to capture the stdout from the rake task, it will affect pry
