@@ -7,6 +7,7 @@ require 'open3'
 require 'pdk'
 require 'json'
 require 'parallel'
+require 'pry'
 
 # helper methods for the litmus rake tasks
 module LitmusRakeHelper
@@ -253,7 +254,7 @@ namespace :litmus do
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'install_module - build and install module'
-  task :install_module, [:target_node_name] do |_task, args|
+  task :install_module, [:target_node_name, :puppetfile] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -261,38 +262,66 @@ namespace :litmus do
       exit 0
     end
     include BoltSpec::Run
-    # old cli_way
-    # pdk_build_command = 'bundle exec pdk build  --force'
-    # stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
-    require 'pdk/module/build'
-    opts = {}
-    opts[:force] = true
-    builder = PDK::Module::Build.new(opts)
-    module_tar = builder.build
-    puts 'Built'
-
-    # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
-    raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
     target_string = if args[:target_node_name].nil?
                       'all'
                     else
                       args[:target_node_name]
                     end
-    run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
-    install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
-    # rubocop:disable Style/GuardClause
-    if result.is_a?(Array)
-      result.each do |node|
-        puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
+
+    if args[:puppetfile]
+      run_local_command('mkdir -p ~/.puppetlabs/bolt/')
+      run_local_command('mkdir -p ~/.puppetlabs/bolt/modules')
+      run_local_command("cp #{args[:puppetfile]} ~/.puppetlabs/bolt/Puppetfile")
+      run_local_command('bolt puppetfile install')
+
+      # puppet module install defaults to the first path in the module path. Check the modulepath on the remote
+      # with a call. We will use that to install our modules.
+      output = run_command('puppet module list', target_nodes, config: nil, inventory: inventory_hash)
+
+      # modulepath should be an optional arg
+      modulepath = ''
+      begin
+        modulepath = output[0]['result']['stdout'].split("\n")[0].split[0]
+      rescue StandardError => e
+        raise "No modulepath detected on the remote host [#{target_nodes}] error [#{e}]"
       end
+
+      run_local_command("bundle exec bolt file upload ~/.puppetlabs/bolt/modules #{modulepath} --nodes #{target_string} --inventoryfile inventory.yaml")
+      run_command("mv #{modulepath}/modules/* #{modulepath}", target_nodes, config: nil, inventory: inventory_hash)
+      run_command("rmdir #{modulepath}/modules", target_nodes, config: nil, inventory: inventory_hash)
+      output = run_command('puppet module list', target_nodes, config: nil, inventory: inventory_hash)
+      puts 'Installed :'
+      puts output[0]['result']['stdout'].split("\n")
     else
-      raise "Failed trying to run '#{install_module_command}' against inventory."
+      # old cli_way
+      # pdk_build_command = 'bundle exec pdk build  --force'
+      # stdout, stderr, _status = Open3.capture3(pdk_build_command)
+      # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
+      require 'pdk/module/build'
+      opts = {}
+      opts[:force] = true
+      builder = PDK::Module::Build.new(opts)
+      module_tar = builder.build
+      raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
+
+      puts 'Built'
+      run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
+
+      install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
+      result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+
+      # rubocop:disable Style/GuardClause
+      if result.is_a?(Array)
+        result.each do |node|
+          puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
+        end
+      else
+        raise "Failed trying to run '#{install_module_command}' against inventory."
+      end
+      # rubocop:enable Style/GuardClause
+      puts 'Installed'
     end
-    # rubocop:enable Style/GuardClause
-    puts 'Installed'
   end
 
   # Provision a list of machines, install a puppet agent, and install the puppet module under test on a collection of nodes
