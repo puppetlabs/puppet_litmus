@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.6.0](https://github.com/puppetlabs/puppet_litmus/tree/0.6.0) (2019-06-24)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.5.0...0.6.0)
+
+### Added
+
+- FM-8269 add or remove features in inventory file [\#138](https://github.com/puppetlabs/puppet_litmus/pull/138) ([sheenaajay](https://github.com/sheenaajay))
+- \(FM-8178\) Make params passable using provision.yaml [\#137](https://github.com/puppetlabs/puppet_litmus/pull/137) ([michaeltlombardi](https://github.com/michaeltlombardi))
+- \(FM-8268\) adding file/directory upload method [\#136](https://github.com/puppetlabs/puppet_litmus/pull/136) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- \(bugfix\) check for litmus env vars in params [\#141](https://github.com/puppetlabs/puppet_litmus/pull/141) ([tphoney](https://github.com/tphoney))
+- \(minor fix for add\_feature\_to\_group function\) [\#140](https://github.com/puppetlabs/puppet_litmus/pull/140) ([sheenaajay](https://github.com/sheenaajay))
+- \(FM-8273\) Enable parallel acceptance from Windows [\#139](https://github.com/puppetlabs/puppet_litmus/pull/139) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
 ## [0.5.0](https://github.com/puppetlabs/puppet_litmus/tree/0.5.0) (2019-06-13)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.4.0...0.5.0)
