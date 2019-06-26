@@ -137,15 +137,16 @@ module PuppetLitmus::Serverspec
   #
   # @param task_name [String] The name of the task to run.
   # @param params [Hash] key : value pairs to be passed to the task.
-  # @return [Object] A result object from the task.
-  def run_bolt_task(task_name, params = {})
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  # @return [Object] A result object from the task.The values available are stdout, stderr and result.
+  def run_bolt_task(task_name, params = {}, opts = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
 
-    raise "task failed\n`#{task_name}`\n======\n#{result}" if result.first['status'] != 'success'
+    raise "task failed\n`#{task_name}`\n======\n#{result}" if result.first['status'] != 'success' && opts[:expect_failures] != true
 
     exit_code = if result.first['status'] == 'success'
                   0
@@ -154,7 +155,8 @@ module PuppetLitmus::Serverspec
                 end
     result = OpenStruct.new(exit_code: exit_code,
                             stdout: result.first['result']['status'],
-                            stderr: result.first['result']['status'])
+                            stderr: result.first['result']['stderr'],
+                            result: result.first['result'])
     yield result if block_given?
     result
   end
