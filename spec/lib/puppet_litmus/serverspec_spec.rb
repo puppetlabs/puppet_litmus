@@ -116,4 +116,35 @@ RSpec.describe PuppetLitmus::Serverspec do
       end
     end
   end
+
+  describe '.run_bolt_task' do
+    let(:task_name) { 'testtask' }
+    let(:params) { { 'action' => 'install', 'name' => 'foo' } }
+    let(:config_data) { { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } }
+    let(:result_success) { ['status' => 'success', 'result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil, 'result' => nil }] }
+    let(:result_failure) { ['status' => 'failure', 'result' => { 'exit_code' => 255, 'stdout' => 'failure', 'stderr' => 'failure', 'result' => nil }] }
+    let(:inventory_hash) { Hash.new(0) }
+
+    it 'responds to bolt_run_task' do
+      expect(dummy_class).to respond_to(:run_bolt_task).with(2..3).arguments
+    end
+
+    context 'when bolt returns success' do
+      it 'does bolt_task_run gives no runtime error for success' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_success)
+        expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.not_to raise_error
+      end
+    end
+
+    context 'when bolt returns failure' do
+      it 'does bolt_task_run gives runtime error for failure' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
+        expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, %r{task failed})
+      end
+    end
+  end
 end
