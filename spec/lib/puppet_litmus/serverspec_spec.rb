@@ -79,4 +79,41 @@ RSpec.describe PuppetLitmus::Serverspec do
       end
     end
   end
+
+  describe '.bolt_run_script' do
+    let(:script) { '/tmp/script.sh' }
+    let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:inventory_hash) { Hash.new(0) }
+
+    it 'responds to bolt_run_script' do
+      expect(dummy_class).to respond_to(:bolt_run_script).with(1..2).arguments
+    end
+
+    context 'when running against localhost and no inventory.yaml file' do
+      it 'does bolt_run_script against localhost without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
+        expect(dummy_class).to receive(:run_script).with(script, 'localhost', [], options: {}, config: nil, inventory: nil).and_return(result)
+        expect { dummy_class.bolt_run_script(script) }.not_to raise_error
+      end
+    end
+
+    context 'when running against remote host' do
+      it 'does bolt_run_script against remote host without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        expect(dummy_class).to receive(:inventory_hash_from_inventory_file)
+        expect(dummy_class).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: nil).and_return(result)
+        expect { dummy_class.bolt_run_script(script) }.not_to raise_error
+      end
+    end
+
+    context 'when running with arguments' do
+      it 'does bolt_run_script with arguments without error' do
+        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
+        expect(dummy_class).to receive(:run_script).with(script, 'localhost', ['doot'], options: {}, config: nil, inventory: nil).and_return(result)
+        expect { dummy_class.bolt_run_script(script, arguments: ['doot']) }.not_to raise_error
+      end
+    end
+  end
 end
