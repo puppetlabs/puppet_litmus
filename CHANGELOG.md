@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.7.0](https://github.com/puppetlabs/puppet_litmus/tree/0.7.0) (2019-06-27)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.6.0...0.7.0)
+
+### Added
+
+- FM-8286 run\_bolt\_task returns bolt result object [\#146](https://github.com/puppetlabs/puppet_litmus/pull/146) ([sheenaajay](https://github.com/sheenaajay))
+- \(FM-8284\) Add bolt\_run\_script command [\#145](https://github.com/puppetlabs/puppet_litmus/pull/145) ([eimlav](https://github.com/eimlav))
+
 ## [0.6.0](https://github.com/puppetlabs/puppet_litmus/tree/0.6.0) (2019-06-24)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.5.0...0.6.0)
