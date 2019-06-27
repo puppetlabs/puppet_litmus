@@ -132,12 +132,6 @@ namespace :litmus do
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform] do |_task, args|
     include BoltSpec::Run
-    spinner = if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-                TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
-              else
-                TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
-              end
-    spinner.auto_spin
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -147,6 +141,12 @@ namespace :litmus do
     end
 
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+    spinner = if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+                TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
+              else
+                TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
+              end
+    spinner.auto_spin
     results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
     if results.first['status'] != 'success'
       spinner.error
