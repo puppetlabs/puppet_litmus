@@ -18,3 +18,16 @@ group :development do
   gem 'pry'
   gem 'yard'
 end
+
+# Evaluate Gemfile.local and ~/.gemfile if they exist
+extra_gemfiles = [
+  "#{__FILE__}.local",
+  File.join(Dir.home, '.gemfile'),
+]
+
+extra_gemfiles.each do |gemfile|
+  if File.file?(gemfile) && File.readable?(gemfile)
+    eval(File.read(gemfile), binding)
+  end
+end
+# vim: syntax=ruby
