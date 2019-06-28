@@ -35,7 +35,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against localhost and no inventory.yaml file' do
       it 'does run_shell against localhost without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
         expect(dummy_class).to receive(:run_command).with(command_to_run, 'localhost', config: nil, inventory: nil).and_return(result)
         expect { dummy_class.run_shell(command_to_run) }.not_to raise_error
       end
@@ -43,7 +43,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against remote host' do
       it 'does run_shell against remote host without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(dummy_class).to receive(:run_command).with(command_to_run, 'some.host', config: nil, inventory: inventory_hash).and_return(result)
         expect { dummy_class.run_shell(command_to_run) }.not_to raise_error
@@ -63,7 +63,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against remote host' do
       it 'does upload_file against remote host without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(dummy_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
         expect { dummy_class.bolt_upload_file(local, remote) }.not_to raise_error
@@ -72,7 +72,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against remote host' do
       it 'does upload_file against localhost without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
         expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(dummy_class).to receive(:upload_file).with(local, remote, 'localhost', options: {}, config: nil, inventory: nil).and_return(result)
         expect { dummy_class.bolt_upload_file(local, remote) }.not_to raise_error
@@ -91,7 +91,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against localhost and no inventory.yaml file' do
       it 'does bolt_run_script against localhost without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
         expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(dummy_class).to receive(:run_script).with(script, 'localhost', [], options: {}, config: nil, inventory: nil).and_return(result)
         expect { dummy_class.bolt_run_script(script) }.not_to raise_error
@@ -100,7 +100,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running against remote host' do
       it 'does bolt_run_script against remote host without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file)
         expect(dummy_class).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: nil).and_return(result)
         expect { dummy_class.bolt_run_script(script) }.not_to raise_error
@@ -109,7 +109,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when running with arguments' do
       it 'does bolt_run_script with arguments without error' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('localhost')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
         expect(dummy_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(dummy_class).to receive(:run_script).with(script, 'localhost', ['doot'], options: {}, config: nil, inventory: nil).and_return(result)
         expect { dummy_class.bolt_run_script(script, arguments: ['doot']) }.not_to raise_error
@@ -131,7 +131,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when bolt returns success' do
       it 'does bolt_task_run gives no runtime error for success' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_success)
         expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.not_to raise_error
@@ -140,7 +140,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     context 'when bolt returns failure' do
       it 'does bolt_task_run gives runtime error for failure' do
-        allow(ENV).to receive(:[]).with('TARGET_HOST').and_return('some.host')
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
         expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, %r{task failed})
