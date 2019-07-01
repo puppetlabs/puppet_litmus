@@ -109,7 +109,7 @@ module PuppetLitmus::Serverspec
   # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
-  def bolt_upload_file(source, destination, options = {})
+  def bolt_upload_file(source, destination, opts = {}, options = {})
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
     inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
                        nil
@@ -119,16 +119,23 @@ module PuppetLitmus::Serverspec
 
     result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
 
-    raise "upload file failed\n======\n#{result}" if result.first['status'] != 'success'
+    result_obj = {
+      exit_code: 0,
+      stdout: result.first['result']['_output'],
+      stderr: nil,
+      result: result.first['result'],
+    }
 
-    exit_code = if result.first['status'] == 'success'
-                  0
-                else
-                  255
-                end
-    result = OpenStruct.new(exit_code: exit_code,
-                            stdout: result.first['result']['status'],
-                            stderr: result.first['result']['status'])
+    if result.first['status'] != 'success'
+      raise "upload file failed\n======\n#{result}" if opts[:expect_failures] != true
+
+      result_obj[:exit_code] = 255
+      result_obj[:stderr]    = result.first['result']['_error']['msg']
+    end
+
+    result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                            stdout: result_obj[:stdout],
+                            stderr: result_obj[:stderr])
     yield result if block_given?
     result
   end
@@ -146,17 +153,24 @@ module PuppetLitmus::Serverspec
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
 
-    raise "task failed\n`#{task_name}`\n======\n#{result}" if result.first['status'] != 'success' && opts[:expect_failures] != true
+    result_obj = {
+      exit_code: 0,
+      stdout: result.first['result']['_output'],
+      stderr: nil,
+      result: result.first['result'],
+    }
 
-    exit_code = if result.first['status'] == 'success'
-                  0
-                else
-                  255
-                end
-    result = OpenStruct.new(exit_code: exit_code,
-                            stdout: result.first['result']['status'],
-                            stderr: result.first['result']['stderr'],
-                            result: result.first['result'])
+    if result.first['status'] != 'success'
+      raise "task failed\n`#{task_name}`\n======\n#{result}" if opts[:expect_failures] != true
+
+      result_obj[:exit_code] = result.first['result']['_error']['details'].fetch('exitcode', 255)
+      result_obj[:stderr]    = result.first['result']['_error']['msg']
+    end
+
+    result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                            stdout: result_obj[:stdout],
+                            stderr: result_obj[:stderr],
+                            result: result_obj[:result])
     yield result if block_given?
     result
   end
