@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.7.1](https://github.com/puppetlabs/puppet_litmus/tree/0.7.1) (2019-07-02)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.0...0.7.1)
+
+### Fixed
+
+- \(bugfix\) fix multiple update to inventoryfile [\#152](https://github.com/puppetlabs/puppet_litmus/pull/152) ([sheenaajay](https://github.com/sheenaajay))
+- \(FM-8299\) spinner runs after spec\_prep in provision [\#149](https://github.com/puppetlabs/puppet_litmus/pull/149) ([tphoney](https://github.com/tphoney))
+- \(FM-8296\) Ensure serverspec helpers emit correctly [\#147](https://github.com/puppetlabs/puppet_litmus/pull/147) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
 ## [0.7.0](https://github.com/puppetlabs/puppet_litmus/tree/0.7.0) (2019-06-27)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.6.0...0.7.0)
