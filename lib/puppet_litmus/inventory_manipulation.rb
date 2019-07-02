@@ -124,7 +124,7 @@ module PuppetLitmus::InventoryManipulation
         if group['features'].nil? == true
           group = group.merge('features' => [])
         end
-        group['features'].push feature_name
+        group['features'].push feature_name unless group['features'].include?(feature_name)
         inventory_hash['groups'][i] = group
       end
       i += 1
