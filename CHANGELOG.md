@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.7.2](https://github.com/puppetlabs/puppet_litmus/tree/0.7.2) (2019-07-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.1...0.7.2)
+
+### Fixed
+
+- \(bugfix\) bolt\_task populates stdout, if successful [\#153](https://github.com/puppetlabs/puppet_litmus/pull/153) ([tphoney](https://github.com/tphoney))
+
 ## [0.7.1](https://github.com/puppetlabs/puppet_litmus/tree/0.7.1) (2019-07-02)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.0...0.7.1)
