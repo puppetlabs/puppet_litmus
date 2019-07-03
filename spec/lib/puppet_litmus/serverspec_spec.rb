@@ -170,7 +170,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_structured_task_success)
         method_result = dummy_class.run_bolt_task(task_name, params, opts: {})
-        expect(method_result.stdout).to eq(nil)
+        expect(method_result.stdout).to eq('{"key1"=>"foo", "key2"=>"bar"}')
         expect(method_result.result['key1']).to eq('foo')
         expect(method_result.result['key2']).to eq('bar')
       end
