@@ -152,15 +152,22 @@ module PuppetLitmus::Serverspec
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
-
     result_obj = {
       exit_code: 0,
-      stdout: result.first['result']['_output'],
+      stdout: nil,
       stderr: nil,
       result: result.first['result'],
     }
 
-    if result.first['status'] != 'success'
+    if result.first['status'] == 'success'
+      # stdout returns unstructured data if structured data is not available
+      result_obj[:stdout] = if result.first['result']['_output'].nil?
+                              result.first['result'].to_s
+                            else
+                              result.first['result']['_output']
+                            end
+
+    else
       raise "task failed\n`#{task_name}`\n======\n#{result}" if opts[:expect_failures] != true
 
       result_obj[:exit_code] = result.first['result']['_error']['details'].fetch('exitcode', 255)
