@@ -148,8 +148,12 @@ module PuppetLitmus::Serverspec
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
   def run_bolt_task(task_name, params = {}, opts = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    inventory_hash = inventory_hash_from_inventory_file
     target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
+    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
+                       nil
+                     else
+                       inventory_hash_from_inventory_file
+                     end
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
     result_obj = {
