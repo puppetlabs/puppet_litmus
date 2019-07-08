@@ -280,7 +280,7 @@ namespace :litmus do
                     else
                       args[:target_node_name]
                     end
-    run_local_command("bundle exec bolt file upload #{module_tar} /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
+    run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
     # rubocop:disable Style/GuardClause
