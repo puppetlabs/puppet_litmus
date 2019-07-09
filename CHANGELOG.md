@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.7.3](https://github.com/puppetlabs/puppet_litmus/tree/0.7.3) (2019-07-08)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.2...0.7.3)
+
+### Fixed
+
+- \(bugfix\) Use quote around upload path [\#156](https://github.com/puppetlabs/puppet_litmus/pull/156) ([hajee](https://github.com/hajee))
+- \(FM-8303\) Ensure run\_bolt\_task works against localhost [\#155](https://github.com/puppetlabs/puppet_litmus/pull/155) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
 ## [0.7.2](https://github.com/puppetlabs/puppet_litmus/tree/0.7.2) (2019-07-03)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.1...0.7.2)
