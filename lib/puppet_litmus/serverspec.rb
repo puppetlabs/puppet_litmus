@@ -52,6 +52,11 @@ module PuppetLitmus::Serverspec
                             stdout: result.first['result']['stdout'],
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
+    if ENV['RSPEC_DEBUG']
+      puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
+      puts result.stderr
+      puts result.stdout
+    end
     result
   end
 
