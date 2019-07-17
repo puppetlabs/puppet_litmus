@@ -129,8 +129,9 @@ namespace :litmus do
   #
   # @param :provisioner [String] provisioner to use in provisioning given platform.
   # @param :platform [String] OS platform for container or VM to use.
+  # @param :params [String] key/values pairs to be passed to the provision task .
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
-  task :provision, [:provisioner, :platform] do |_task, args|
+  task :provision, [:provisioner, :platform, :params] do |_task, args|
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
@@ -140,7 +141,12 @@ namespace :litmus do
       raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vagrant/vmpooler"
     end
 
+    unless vars.nil?
+      additional_params = YAML.safe_load(args[:params])
+    end
+    
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+    params = params.merge(additional_params)
     spinner = if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
                 TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
               else
