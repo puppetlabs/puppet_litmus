@@ -16,6 +16,11 @@ module PuppetLitmus::Serverspec
   # rubocop:disable Layout/TrailingWhitespace
 
   # Applies a manifest. returning the result of that apply. Mimics the apply_manifest from beaker
+  # 
+  # When you set the environment variable RSPEC_DEBUG, the output of your
+  # puppet run will be displayed. If you have set the :debug flag, you will see the
+  # full debug log. If you have **not** set the :debug flag, it will display the regular
+  # output.
   #
   # @param manifest [String] puppet manifest code to be applied.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
@@ -52,6 +57,11 @@ module PuppetLitmus::Serverspec
                             stdout: result.first['result']['stdout'],
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
+    if ENV['RSPEC_DEBUG']
+      puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
+      puts result.stderr
+      puts result.stdout
+    end
     result
   end
 
