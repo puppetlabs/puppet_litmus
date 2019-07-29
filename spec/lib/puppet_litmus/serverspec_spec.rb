@@ -3,12 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe PuppetLitmus::Serverspec do
-  class DummyClass
-  end
   let(:dummy_class) do
-    dummy_class = DummyClass.new
-    dummy_class.extend(described_class)
-    dummy_class
+    dummy = Class.new
+    dummy.extend(described_class)
+    dummy
   end
 
   context 'with idempotent_apply' do
