@@ -148,6 +148,50 @@ module PuppetLitmus::InventoryManipulation
     inventory_hash
   end
 
+  # Adds a feature to the node specified/
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param feature_name [String] feature to locate in the node
+  # node_name [String] node of nodes to limit the search for the node_name in
+  # @return inventory.yaml file with feature added to node.
+  # @return [Hash] inventory_hash with feature added to node if node_name exists in inventory hash.
+  def add_feature_to_node(inventory_hash, feature_name, node_name)
+    group_index = 0
+    inventory_hash['groups'].each do |group|
+      node_index = 0
+      group['nodes'].each do |node|
+        if node['name'] == node_name
+          if node['features'].nil? == true
+            node = node.merge('features' => [])
+          end
+          node['features'].push feature_name unless node['features'].include?(feature_name)
+          inventory_hash['groups'][group_index]['nodes'][node_index] = node
+        end
+        node_index += 1
+      end
+      group_index += 1
+    end
+    inventory_hash
+  end
+
+  # Removes a feature from the node specified/
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param feature_name [String] feature to locate in the node
+  # node_name [String] node of nodes to limit the search for the node_name in
+  # @return inventory.yaml file with feature removed from the node.
+  # @return [Hash] inventory_hash with feature added to node if node_name exists in inventory hash.
+  def remove_feature_from_node(inventory_hash, feature_name, node_name)
+    inventory_hash['groups'].each do |group|
+      group['nodes'].each do |node|
+        if node['name'] == node_name && node['features'].nil? != true
+          node['features'].delete(feature_name)
+        end
+      end
+    end
+    inventory_hash
+  end
+
   # Write inventory_hash to inventory_yaml file/
   #
   #  @param inventory_full_path [String] path to the inventory.yaml file
