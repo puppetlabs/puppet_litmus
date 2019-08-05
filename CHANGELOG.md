@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.7.3](https://github.com/puppetlabs/puppet_litmus/tree/0.7.3) (2019-07-08)
+## [0.8.0](https://github.com/puppetlabs/puppet_litmus/tree/0.8.0) (2019-08-05)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.3...0.8.0)
+
+### Added
+
+- \(feat\) Add option to run acceptance in serial [\#164](https://github.com/puppetlabs/puppet_litmus/pull/164) ([michaeltlombardi](https://github.com/michaeltlombardi))
+- \(feat\) Enable manipulating inventory features by node [\#163](https://github.com/puppetlabs/puppet_litmus/pull/163) ([michaeltlombardi](https://github.com/michaeltlombardi))
+- \(feat\) Add support to show apply\_manifest output for debugging [\#159](https://github.com/puppetlabs/puppet_litmus/pull/159) ([hajee](https://github.com/hajee))
+
+## [0.7.3](https://github.com/puppetlabs/puppet_litmus/tree/0.7.3) (2019-07-09)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.2...0.7.3)
 
