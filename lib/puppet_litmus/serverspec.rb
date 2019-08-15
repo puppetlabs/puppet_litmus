@@ -184,7 +184,11 @@ module PuppetLitmus::Serverspec
     else
       raise "task failed\n`#{task_name}`\n======\n#{result}" if opts[:expect_failures] != true
 
-      result_obj[:exit_code] = result.first['result']['_error']['details'].fetch('exitcode', 255)
+      result_obj[:exit_code] = if result.first['result']['_error']['details'].nil?
+                                 255
+                               else
+                                 result.first['result']['_error']['details'].fetch('exitcode', 255)
+                               end
       result_obj[:stderr]    = result.first['result']['_error']['msg']
     end
 
