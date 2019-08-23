@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.9.0](https://github.com/puppetlabs/puppet_litmus/tree/0.9.0) (2019-08-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.2...0.9.0)
+
+### Added
+
+- \(FM-8477\) Add paramter to pass hiera config to apply calls [\#171](https://github.com/puppetlabs/puppet_litmus/pull/171) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## [0.8.2](https://github.com/puppetlabs/puppet_litmus/tree/0.8.2) (2019-08-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.1...0.8.2)
+
+### Fixed
+
+- Pin bolt version, latest version breaks docker\_exp [\#169](https://github.com/puppetlabs/puppet_litmus/pull/169) ([florindragos](https://github.com/florindragos))
+
 ## [0.8.1](https://github.com/puppetlabs/puppet_litmus/tree/0.8.1) (2019-08-19)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.0...0.8.1)
