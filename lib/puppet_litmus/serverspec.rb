@@ -27,6 +27,7 @@ module PuppetLitmus::Serverspec
   #  :catch_changes [Boolean] exit status of 1 if there were changes.  
   #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
   #  :manifest_file_location [Path] The place on the target system.  
+  #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
   #  :debug [Boolean] run puppet apply with the debug flag.  
   #  :noop [Boolean] run puppet apply with the noop flag.  
@@ -46,6 +47,7 @@ module PuppetLitmus::Serverspec
                      end
     command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
+    command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
     command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)

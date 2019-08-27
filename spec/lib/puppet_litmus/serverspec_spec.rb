@@ -22,6 +22,20 @@ RSpec.describe PuppetLitmus::Serverspec do
     end
   end
 
+  describe '.apply_manifest' do
+    context 'when specifying a hiera config' do
+      let(:manifest) { "include '::doot'" }
+      let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
+
+      it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
+        expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+        expect(dummy_class).to receive(:run_command).with(command, nil, config: nil, inventory: nil).and_return(result)
+        dummy_class.apply_manifest(manifest, hiera_config: '/hiera.yaml')
+      end
+    end
+  end
+
   describe '.run_shell' do
     let(:command_to_run) { "puts 'doot'" }
     let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
