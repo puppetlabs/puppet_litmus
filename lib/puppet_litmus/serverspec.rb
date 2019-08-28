@@ -44,14 +44,12 @@ module PuppetLitmus::Serverspec
                      else
                        inventory_hash_from_inventory_file
                      end
-    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
+    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location} --detailed-exitcodes"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
-    command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-
-    raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+    report_puppet_error(command_to_run, result) unless successful_puppet_apply?(result.first['result']['exit_code']) && opts[:expect_failures] != true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
@@ -224,5 +222,26 @@ module PuppetLitmus::Serverspec
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
     result
+  end
+
+  private
+
+  # Checks a puppet return status and returns true if it both
+  # the catalog compiled and the apply was successful. Either
+  # wit or without changes
+  #
+  # @param command [String] The puppet command causing the error.
+  # @param result  [Array] The result struct containing the result
+  def report_puppet_error(command, result)
+    raise "apply manifest failed\n`#{command}`\n======Start output of failed Puppet run======\n#{result.dig(0, 'result', 'stdout')}\n======End output of failed Puppet run======"
+  end
+
+  # Checks a puppet return status and returns true if it both
+  # the catalog compiled and the apply was successful. Either
+  # wit or without changes
+  #
+  # @param exit_status [Integer] The status of the puppet run.
+  def successful_puppet_apply?(exit_status)
+    [0, 2].include?(exit_status)
   end
 end
