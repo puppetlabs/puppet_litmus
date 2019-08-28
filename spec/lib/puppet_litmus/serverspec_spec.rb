@@ -16,7 +16,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     it 'calls all functions' do
       expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-      expect(dummy_class).to receive(:apply_manifest).with(nil, catch_failures: true, manifest_file_location: '/bla.pp')
+      expect(dummy_class).to receive(:apply_manifest).with(nil, expect_failures: false, manifest_file_location: '/bla.pp')
       expect(dummy_class).to receive(:apply_manifest).with(nil, catch_changes: true, manifest_file_location: '/bla.pp')
       dummy_class.idempotent_apply(manifest)
     end
