@@ -358,7 +358,6 @@ namespace :litmus do
           puts 'No targets found'
           exit 0
         end
-        spinners = TTY::Spinner::Multi.new("Running against #{targets.size} targets.[:spinner]", frames: ['.'], interval: 0.1)
         payloads = []
         # Generate list of targets to provision
         targets.each do |target|
@@ -379,12 +378,17 @@ namespace :litmus do
         if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
-          spinner = TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
-          spinner.auto_spin
+          progress = Thread.new do
+            loop do
+              printf '.'
+              sleep(10)
+            end
+          end
+
           results = Parallel.map(payloads) do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
             stdout, stderr, status = Open3.capture3(env, test)
-            ["================\n#{title}\n", stdout, stderr, status]
+            ["\n================\n#{title}\n", stdout, stderr, status]
           end
           # because we cannot modify variables inside of Parallel
           results.each do |result|
@@ -394,7 +398,7 @@ namespace :litmus do
               failure_list.push(result.first.scan(%r{.*})[2])
             end
           end
-          spinner.success
+          Thread.kill(progress)
         else
           spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
           payloads.each do |title, test, options|
