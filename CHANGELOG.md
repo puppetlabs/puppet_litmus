@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.9.0](https://github.com/puppetlabs/puppet_litmus/tree/0.9.0) (2019-08-23)
+## [0.9.1](https://github.com/puppetlabs/puppet_litmus/tree/0.9.1) (2019-09-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.0...0.9.1)
+
+### Fixed
+
+- \(FM-8486\) Remove tty-spinner when running in CI [\#177](https://github.com/puppetlabs/puppet_litmus/pull/177) ([florindragos](https://github.com/florindragos))
+- \(FM-8488\) Correct param loading as env vars in provision\_list [\#176](https://github.com/puppetlabs/puppet_litmus/pull/176) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+## [0.9.0](https://github.com/puppetlabs/puppet_litmus/tree/0.9.0) (2019-08-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.2...0.9.0)
 
