@@ -325,6 +325,8 @@ namespace :litmus do
 
     bad_results = []
     targets.each do |node_name|
+      next if node_name == 'litmus_localhost'
+
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
       next unless %w[abs docker docker_exp vagrant vmpooler].include?(node_facts['provisioner'])
@@ -446,6 +448,8 @@ namespace :litmus do
 
       targets.each do |target|
         desc "Run serverspec against #{target}"
+        next if target == 'litmus_localhost'
+
         RSpec::Core::RakeTask.new(target.to_sym) do |t|
           t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
           ENV['TARGET_HOST'] = target

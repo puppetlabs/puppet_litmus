@@ -18,6 +18,25 @@ module PuppetLitmus::InventoryManipulation
     inventory_hash
   end
 
+  # Provide a default hash for executing against localhost
+  #
+  # @return [Hash] inventory.yaml hash containing only an entry for localhost
+  def localhost_inventory_hash
+    {
+      'groups' => [
+        {
+          'name' => 'local',
+          'nodes' => [
+            {
+              'name' => 'litmus_localhost',
+              'config' => { 'transport' => 'local' },
+            },
+          ],
+        },
+      ],
+    }
+  end
+
   # Finds targets to perform operations on from an inventory hash.
   #
   # @param inventory_hash [Hash] hash of the inventory.yaml file
@@ -49,6 +68,15 @@ module PuppetLitmus::InventoryManipulation
       end
     end
     exists
+  end
+
+  # Determines if a node_name exists in the inventory_hash.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @return [Boolean] true if node_name exists in the inventory_hash.
+  def target_in_inventory?(inventory_hash, node_name)
+    find_targets(inventory_hash, nil).include?(node_name)
   end
 
   # Finds a config hash in the inventory hash by searching for a node name.
