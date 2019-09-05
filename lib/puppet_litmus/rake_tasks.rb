@@ -141,19 +141,27 @@ namespace :litmus do
     end
 
     params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-    spinner = if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-                TTY::Spinner.new(':spinner', frames: ['.'], interval: 0.1)
-              else
-                TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
-              end
-    spinner.auto_spin
+    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+      progress = Thread.new do
+        loop do
+          printf '.'
+          sleep(10)
+        end
+      end
+    else
+      spinner = TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
+      spinner.auto_spin
+    end
     results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
     if results.first['status'] != 'success'
-      spinner.error
       raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
     end
 
-    spinner.success
+    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+      Thread.kill(progress)
+    else
+      spinner.success
+    end
     puts "#{results.first['result']['node_name']}, #{args[:platform]}"
   end
 
@@ -189,7 +197,10 @@ namespace :litmus do
     end
 
     # fix the path on ssh_nodes
-    results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment', 'ssh_nodes', config: nil, inventory: inventory_hash) unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero? # rubocop:disable Metrics/LineLength
+    unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
+      results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
+                            'ssh_nodes', config: nil, inventory: inventory_hash)
+    end
     results.each do |result|
       if result['status'] != 'success'
         puts "Failed on #{result['node']}\n#{result}"
@@ -283,15 +294,13 @@ namespace :litmus do
     run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
-    # rubocop:disable Style/GuardClause
-    if result.is_a?(Array)
-      result.each do |node|
-        puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
-      end
-    else
-      raise "Failed trying to run '#{install_module_command}' against inventory."
+
+    raise "Failed trying to run '#{install_module_command}' against inventory." unless result.is_a?(Array)
+
+    result.each do |node|
+      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
     end
-    # rubocop:enable Style/GuardClause
+
     puts 'Installed'
   end
 
