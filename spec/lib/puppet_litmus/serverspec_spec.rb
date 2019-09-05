@@ -16,7 +16,7 @@ RSpec.describe PuppetLitmus::Serverspec do
 
     it 'calls all functions' do
       expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-      expect(dummy_class).to receive(:apply_manifest).with(nil, catch_failures: true, manifest_file_location: '/bla.pp')
+      expect(dummy_class).to receive(:apply_manifest).with(nil, expect_failures: false, manifest_file_location: '/bla.pp')
       expect(dummy_class).to receive(:apply_manifest).with(nil, catch_changes: true, manifest_file_location: '/bla.pp')
       dummy_class.idempotent_apply(manifest)
     end
@@ -26,7 +26,7 @@ RSpec.describe PuppetLitmus::Serverspec do
     context 'when specifying a hiera config' do
       let(:manifest) { "include '::doot'" }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
+      let(:command) { " puppet apply /bla.pp --detailed-exitcodes --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
       it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
         expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')

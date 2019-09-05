@@ -9,7 +9,7 @@ module PuppetLitmus::Serverspec
   # @return [Boolean] The result of the 2 apply manifests.
   def idempotent_apply(manifest)
     manifest_file_location = create_manifest_file(manifest)
-    apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
+    apply_manifest(nil, expect_failures: false, manifest_file_location: manifest_file_location)
     apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
   end
 
@@ -45,15 +45,16 @@ module PuppetLitmus::Serverspec
                      else
                        inventory_hash_from_inventory_file
                      end
-    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
+    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location} --detailed-exitcodes"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
     command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
-    command_to_run += ' --detailed-exitcodes' if !opts[:catch_changes].nil? && (opts[:catch_changes] == true)
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
-    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
 
-    raise "apply manifest failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    status = result.first['result']['exit_code']
+    report_puppet_error(command_to_run, result) unless puppet_successful?(status) && opts[:expect_failures] != true
+    report_puppet_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
@@ -226,5 +227,47 @@ module PuppetLitmus::Serverspec
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
     result
+  end
+
+  private
+
+  # Report an error in the puppet run
+  #
+  # @param command [String] The puppet command causing the error.
+  # @param result  [Array] The result struct containing the result
+  def report_puppet_error(command, result)
+    raise "apply manifest failed\n`#{command}`\n======Start output of failed Puppet run======\n#{puppet_output(result)}\n======End output of failed Puppet run======"
+  end
+
+  # Report an unexpected change in the puppet run
+  #
+  # @param command [String] The puppet command causing the error.
+  # @param result  [Array] The result struct containing the result
+  # rubocop: disable Metrics/LineLength
+  def report_puppet_change(command, result)
+    raise "apply manifest expected no changes\n`#{command}`\n======Start output of Puppet run with unexpected changes======\n#{puppet_output(result)}\n======End output of Puppet run with unexpected changes======"
+  end
+  # rubocop: enable Metrics/LineLength
+
+  # Return the stdout of the puppet run
+  def puppet_output(result)
+    result.dig(0, 'result', 'stdout').to_s
+  end
+
+  # Checks a puppet return status and returns true if it both
+  # the catalog compiled and the apply was successful. Either
+  # with or without changes
+  #
+  # @param exit_status [Integer] The status of the puppet run.
+  def puppet_successful?(exit_status)
+    [0, 2].include?(exit_status)
+  end
+
+  # Checks a puppet return status and returns true if
+  # puppet reported any changes
+  #
+  # @param exit_status [Integer] The status of the puppet run.
+  def puppet_changes?(exit_status)
+    [2, 6].include?(exit_status)
   end
 end
