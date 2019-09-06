@@ -35,18 +35,16 @@ module PuppetLitmus::Serverspec
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
     # rubocop:enable Layout/TrailingWhitespace
-    target_node_name = ENV['TARGET_HOST']
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
     raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
     raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
 
     manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
-    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
-                       nil
-                     else
-                       inventory_hash_from_inventory_file
-                     end
+    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
     command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location} --detailed-exitcodes"
-    command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name.nil? || target_node_name == 'localhost'
+    command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
     command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
@@ -99,12 +97,10 @@ module PuppetLitmus::Serverspec
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
-    target_node_name = ENV['TARGET_HOST']
-    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
-                       nil
-                     else
-                       inventory_hash_from_inventory_file
-                     end
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
@@ -123,12 +119,9 @@ module PuppetLitmus::Serverspec
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def bolt_upload_file(source, destination, opts = {}, options = {})
-    target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
-    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
-                       nil
-                     else
-                       inventory_hash_from_inventory_file
-                     end
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
     result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
 
@@ -161,12 +154,9 @@ module PuppetLitmus::Serverspec
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
   def run_bolt_task(task_name, params = {}, opts = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
-    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
-                       nil
-                     else
-                       inventory_hash_from_inventory_file
-                     end
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
     result_obj = {
@@ -211,12 +201,9 @@ module PuppetLitmus::Serverspec
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the script run.
   def bolt_run_script(script, opts = {}, arguments: [])
-    target_node_name = ENV['TARGET_HOST'] if target_node_name.nil?
-    inventory_hash = if target_node_name.nil? || target_node_name == 'localhost'
-                       nil
-                     else
-                       inventory_hash_from_inventory_file
-                     end
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
     result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
@@ -227,6 +214,13 @@ module PuppetLitmus::Serverspec
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
     result
+  end
+
+  # Determines if the current execution is targeting localhost or not
+  #
+  # @return [Boolean] true if targeting localhost in the tests
+  def targeting_localhost?
+    ENV['TARGET_HOST'].nil? || ENV['TARGET_HOST'] == 'localhost'
   end
 
   private
