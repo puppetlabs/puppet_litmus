@@ -51,8 +51,8 @@ module PuppetLitmus::Serverspec
 
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     status = result.first['result']['exit_code']
-    report_puppet_error(command_to_run, result) unless puppet_successful?(status) && opts[:expect_failures] != true
-    report_puppet_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
+    report_puppet_apply_error(command_to_run, result) unless puppet_successful?(status) && opts[:expect_failures] != true
+    report_puppet_apply_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
@@ -229,19 +229,31 @@ module PuppetLitmus::Serverspec
   #
   # @param command [String] The puppet command causing the error.
   # @param result  [Array] The result struct containing the result
-  def report_puppet_error(command, result)
-    raise "apply manifest failed\n`#{command}`\n======Start output of failed Puppet run======\n#{puppet_output(result)}\n======End output of failed Puppet run======"
+  def report_puppet_apply_error(command, result)
+    puppet_apply_error = <<-ERROR
+apply manifest failed
+`#{command}`
+======Start output of failed Puppet run======
+#{puppet_output(result)}
+======End output of failed Puppet run======
+    ERROR
+    raise puppet_apply_error
   end
 
   # Report an unexpected change in the puppet run
   #
   # @param command [String] The puppet command causing the error.
   # @param result  [Array] The result struct containing the result
-  # rubocop: disable Metrics/LineLength
-  def report_puppet_change(command, result)
-    raise "apply manifest expected no changes\n`#{command}`\n======Start output of Puppet run with unexpected changes======\n#{puppet_output(result)}\n======End output of Puppet run with unexpected changes======"
+  def report_puppet_apply_change(command, result)
+    puppet_apply_changes = <<-ERROR
+apply manifest expected no changes
+`#{command}`
+======Start output of Puppet run with unexpected changes======
+#{puppet_output(result)}
+======End output of Puppet run with unexpected changes======
+    ERROR
+    raise puppet_apply_changes
   end
-  # rubocop: enable Metrics/LineLength
 
   # Return the stdout of the puppet run
   def puppet_output(result)
