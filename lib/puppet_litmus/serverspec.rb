@@ -51,8 +51,9 @@ module PuppetLitmus::Serverspec
 
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     status = result.first['result']['exit_code']
-    report_puppet_apply_error(command_to_run, result) unless puppet_successful?(status) && opts[:expect_failures] != true
-    report_puppet_apply_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
+    report_missing_puppet_error(command_to_run, result) if puppet_successful?(status) && opts[:expect_failures] == true
+    report_puppet_error(command_to_run, result) if !puppet_successful?(status) && opts[:expect_failures] != true
+    report_puppet_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
@@ -224,6 +225,14 @@ module PuppetLitmus::Serverspec
   end
 
   private
+
+  # Report an error was expected but not raised
+  #
+  # @param command [String] The puppet command causing the error.
+  # @param result  [Array] The result struct containing the result
+  def report_missing_puppet_error(command, result)
+    raise "apply manifest succeded, but failure expected\n`#{command}`\n======Start output of succesful Puppet run======\n#{puppet_output(result)}\n======End output of succesful Puppet run======"
+  end
 
   # Report an error in the puppet run
   #
