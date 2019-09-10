@@ -257,7 +257,8 @@ apply manifest expected no changes
 
   # Return the stdout of the puppet run
   def puppet_output(result)
-    result.dig(0, 'result', 'stdout').to_s
+    result.dig(0, 'result', 'stderr').to_s << \
+      result.dig(0, 'result', 'stdout').to_s
   end
 
   # Checks a puppet return status and returns true if it both
