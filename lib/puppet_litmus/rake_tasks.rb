@@ -81,6 +81,7 @@ namespace :litmus do
   task :provision_list, [:key] do |_task, args|
     provision_hash = YAML.load_file('./provision.yaml')
     provisioner = provision_hash[args[:key]]['provisioner']
+    inventory_vars = provision_hash[args[:key]]['vars']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[args[:key]]['params']&.each { |key, value| ENV[key.upcase] = value.to_s }
     failed_image_message = ''
@@ -88,7 +89,7 @@ namespace :litmus do
       # this is the only way to capture the stdout from the rake task, it will affect pry
       capture_rake_output = StringIO.new
       $stdout = capture_rake_output
-      Rake::Task['litmus:provision'].invoke(provisioner, image)
+      Rake::Task['litmus:provision'].invoke(provisioner, image, inventory_vars)
       if $stdout.string =~ %r{.status.=>.failure}
         failed_image_message += "=====\n#{image}\n#{$stdout.string}\n"
       else
@@ -104,17 +105,22 @@ namespace :litmus do
   # @param :provisioner [String] provisioner to use in provisioning given platform.
   # @param :platform [String] OS platform for container or VM to use.
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
-  task :provision, [:provisioner, :platform] do |_task, args|
+  task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
     unless %w[abs docker docker_exp vagrant vmpooler].include?(args[:provisioner])
-      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vagrant/vmpooler"
+      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/docker_exp/vagrant/vmpooler"
     end
 
-    params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+    params = if args[:inventory_vars].nil?
+               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+             else
+               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd, 'vars' => args[:inventory_vars] }
+             end
+
     if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
       progress = Thread.new do
         loop do
