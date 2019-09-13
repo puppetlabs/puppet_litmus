@@ -24,8 +24,10 @@ module PuppetLitmus::Serverspec
   #
   # @param manifest [String] puppet manifest code to be applied.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
-  #  :catch_changes [Boolean] exit status of 1 if there were changes.  
-  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the apply failed.  
+  #  :catch_changes [Boolean] return zero even if there were changes.
+  #  :expect_changes [Boolean] returns zero only if there were changes.
+  #  :catch_failures [Boolean] returns zero even if there were failures.
+  #  :expect_failures [Boolean] doesn't return an exit code of non-zero if the apply failed.  
   #  :manifest_file_location [Path] The place on the target system.  
   #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
@@ -38,21 +40,44 @@ module PuppetLitmus::Serverspec
     target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
     raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
     raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
+    raise 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`' if
+      [opts[:catch_changes], opts[:expect_changes], opts[:catch_failures], opts[:expect_failures]].compact.length > 1
+
+    if opts[:catch_changes]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [0]
+    elsif opts[:catch_failures]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [0, 2]
+    elsif opts[:expect_failures]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [1, 4, 6]
+    elsif opts[:expect_changes]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [2]
+    else
+      use_detailed_exit_codes = false
+      acceptable_exit_codes = [0]
+    end
 
     manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
     inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location} --detailed-exitcodes"
+    command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
     command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
     command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
+    command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
 
     result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     status = result.first['result']['exit_code']
-    report_puppet_apply_error(command_to_run, result) unless puppet_successful?(status) && opts[:expect_failures] != true
-    report_puppet_apply_change(command_to_run, result) if puppet_changes?(status) && opts[:catch_changes] == true
+    if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
+      report_puppet_apply_change(command_to_run, result)
+    elsif !acceptable_exit_codes.include?(status)
+      report_puppet_apply_error(command_to_run, result, acceptable_exit_codes)
+    end
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
@@ -229,10 +254,11 @@ module PuppetLitmus::Serverspec
   #
   # @param command [String] The puppet command causing the error.
   # @param result  [Array] The result struct containing the result
-  def report_puppet_apply_error(command, result)
+  def report_puppet_apply_error(command, result, acceptable_exit_codes)
     puppet_apply_error = <<-ERROR
 apply manifest failed
 `#{command}`
+with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
 ======Start output of failed Puppet run======
 #{puppet_output(result)}
 ======End output of failed Puppet run======

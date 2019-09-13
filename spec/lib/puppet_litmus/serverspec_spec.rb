@@ -27,7 +27,7 @@ RSpec.describe PuppetLitmus::Serverspec do
       let(:manifest) { "include '::doot'" }
       let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --detailed-exitcodes --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
+      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
       it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
@@ -36,6 +36,54 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(dummy_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         dummy_class.apply_manifest(manifest, hiera_config: '/hiera.yaml')
+      end
+    end
+
+    context 'when using detailed-exitcodes' do
+      let(:manifest) { "include '::doot'" }
+      let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
+      let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
+
+      it 'uses detailed-exitcodes with expect_failures' do
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(dummy_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
+        expect(dummy_class).to receive(:target_in_inventory?).and_return(true)
+        expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+        expect(dummy_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect { dummy_class.apply_manifest(manifest, expect_failures: true) }.to raise_error(RuntimeError)
+      end
+
+      it 'uses detailed-exitcodes with catch_failures' do
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(dummy_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
+        expect(dummy_class).to receive(:target_in_inventory?).and_return(true)
+        expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+        expect(dummy_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        dummy_class.apply_manifest(manifest, catch_failures: true)
+      end
+
+      it 'uses detailed-exitcodes with expect_changes' do
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(dummy_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
+        expect(dummy_class).to receive(:target_in_inventory?).and_return(true)
+        expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+        expect(dummy_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect { dummy_class.apply_manifest(manifest, expect_changes: true) }.to raise_error(RuntimeError)
+      end
+
+      it 'uses detailed-exitcodes with catch_changes' do
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(dummy_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
+        expect(dummy_class).to receive(:target_in_inventory?).and_return(true)
+        expect(dummy_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+        expect(dummy_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        dummy_class.apply_manifest(manifest, catch_changes: true)
+      end
+
+      it 'uses raises exception for multiple options' do
+        expect { dummy_class.apply_manifest(manifest, catch_changes: true, expect_failures: true) }
+          .to raise_error(RuntimeError, 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`')
       end
     end
   end
