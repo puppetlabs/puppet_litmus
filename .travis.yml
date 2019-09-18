@@ -16,4 +16,4 @@ rvm:
 matrix:
   include:
   - env: CHECK="rubocop"
-  - env: CHECK='spec'
+  - env: CHECK='spec' COVERAGE='yes'

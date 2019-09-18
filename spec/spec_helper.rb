@@ -6,9 +6,14 @@ require 'puppet_litmus'
 if ENV['COVERAGE'] == 'yes'
   require 'simplecov'
 
-  SimpleCov.formatters = [
-    SimpleCov::Formatter::HTMLFormatter,
-  ]
+  if ENV['CI'] == 'true'
+    require 'codecov'
+    SimpleCov.formatter = SimpleCov::Formatter::Codecov
+  else
+    SimpleCov.formatters = [
+      SimpleCov::Formatter::HTMLFormatter,
+    ]
+  end
   SimpleCov.start do
     track_files 'lib/**/*.rb'
 
