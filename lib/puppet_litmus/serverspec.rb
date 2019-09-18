@@ -24,10 +24,10 @@ module PuppetLitmus::Serverspec
   #
   # @param manifest [String] puppet manifest code to be applied.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
-  #  :catch_changes [Boolean] return zero even if there were changes.
-  #  :expect_changes [Boolean] returns zero only if there were changes.
-  #  :catch_failures [Boolean] returns zero even if there were failures.
-  #  :expect_failures [Boolean] doesn't return an exit code of non-zero if the apply failed.  
+  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.
+  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.
+  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.
+  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.
   #  :manifest_file_location [Path] The place on the target system.  
   #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
@@ -259,9 +259,9 @@ module PuppetLitmus::Serverspec
 apply manifest failed
 `#{command}`
 with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
-======Start output of failed Puppet run======
+====== Start output of failed Puppet apply ======
 #{puppet_output(result)}
-======End output of failed Puppet run======
+====== End output of failed Puppet apply ======
     ERROR
     raise puppet_apply_error
   end
@@ -274,9 +274,9 @@ with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_ex
     puppet_apply_changes = <<-ERROR
 apply manifest expected no changes
 `#{command}`
-======Start output of Puppet run with unexpected changes======
+====== Start output of Puppet apply with unexpected changes ======
 #{puppet_output(result)}
-======End output of Puppet run with unexpected changes======
+====== End output of Puppet apply with unexpected changes ======
     ERROR
     raise puppet_apply_changes
   end
