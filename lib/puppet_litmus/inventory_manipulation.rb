@@ -111,6 +111,22 @@ module PuppetLitmus::InventoryManipulation
     raise "No facts were found for #{node_name}"
   end
 
+  # Finds a var hash in the inventory hash by searching for a node name.
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node to locate in the group
+  # @return [Hash] vars for node of name node_name
+  def vars_from_node(inventory_hash, node_name)
+    inventory_hash['groups'].each do |group|
+      group['nodes'].each do |node|
+        if node['name'] == node_name
+          return node['vars']
+        end
+      end
+    end
+    {}
+  end
+
   # Adds a node to a group specified, if group_name exists in inventory hash.
   #
   # @param inventory_hash [Hash] hash of the inventory.yaml file

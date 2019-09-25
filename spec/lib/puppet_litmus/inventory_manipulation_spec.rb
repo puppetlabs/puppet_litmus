@@ -25,7 +25,8 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
      'nodes' =>
      [{ 'name' => 'test.delivery.puppetlabs.net',
         'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }] },
+        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
+        'vars' => { 'role' => 'agent' } }] },
    { 'name' => 'winrm_nodes', 'nodes' => [] }] }
     end
 
@@ -96,6 +97,14 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     it 'config exists, and returns' do
       expect(dummy_class.config_from_node(config_hash, 'test.delivery.puppetlabs.net')).to eq('transport' => 'ssh', 'ssh' =>
 { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false })
+    end
+
+    it 'facts exists, and returns' do
+      expect(dummy_class.facts_from_node(config_hash, 'test.delivery.puppetlabs.net')).to eq('provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64')
+    end
+
+    it 'vars exists, and returns' do
+      expect(dummy_class.vars_from_node(config_hash, 'test.delivery.puppetlabs.net')).to eq('role' => 'agent')
     end
 
     it 'no feature exists for the group, and returns hash with feature added' do

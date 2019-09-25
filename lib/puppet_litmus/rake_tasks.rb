@@ -74,32 +74,6 @@ namespace :litmus do
     end
   end
 
-  # DEPRECATED - Provisions all supported OSes with provisioner eg 'bundle exec rake litmus:provision_from_metadata['vmpooler']'.
-  #
-  # @param :provisioner [String] provisioner to use in provisioning all OSes.
-  desc "DEPRECATED: provision_from_metadata task is deprecated.
-  Provision all supported OSes with provisioner eg 'bundle exec rake 'litmus:provision_from_metadata'"
-  task :provision_from_metadata, [:provisioner] do |_task, args|
-    metadata = JSON.parse(File.read('metadata.json'))
-    get_metadata_operating_systems(metadata) do |os_and_version|
-      puts os_and_version
-      include BoltSpec::Run
-      Rake::Task['spec_prep'].invoke
-      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-      raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
-
-      params = { 'action' => 'provision', 'platform' => os_and_version, 'inventory' => Dir.pwd }
-      results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
-      results.each do |result|
-        if result['status'] != 'success'
-          puts "Failed on #{result['node']}\n#{result}"
-        else
-          puts "Provisioned #{result['result']['node_name']}"
-        end
-      end
-    end
-  end
-
   # Provisions a list of OSes from provision.yaml file e.g. 'bundle exec rake litmus:provision_list[default]'.
   #
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
@@ -107,6 +81,7 @@ namespace :litmus do
   task :provision_list, [:key] do |_task, args|
     provision_hash = YAML.load_file('./provision.yaml')
     provisioner = provision_hash[args[:key]]['provisioner']
+    inventory_vars = provision_hash[args[:key]]['vars']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[args[:key]]['params']&.each { |key, value| ENV[key.upcase] = value.to_s }
     failed_image_message = ''
@@ -114,7 +89,7 @@ namespace :litmus do
       # this is the only way to capture the stdout from the rake task, it will affect pry
       capture_rake_output = StringIO.new
       $stdout = capture_rake_output
-      Rake::Task['litmus:provision'].invoke(provisioner, image)
+      Rake::Task['litmus:provision'].invoke(provisioner, image, inventory_vars)
       if $stdout.string =~ %r{.status.=>.failure}
         failed_image_message += "=====\n#{image}\n#{$stdout.string}\n"
       else
@@ -130,17 +105,22 @@ namespace :litmus do
   # @param :provisioner [String] provisioner to use in provisioning given platform.
   # @param :platform [String] OS platform for container or VM to use.
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
-  task :provision, [:provisioner, :platform] do |_task, args|
+  task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
     unless %w[abs docker docker_exp vagrant vmpooler].include?(args[:provisioner])
-      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/vagrant/vmpooler"
+      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/docker_exp/vagrant/vmpooler"
     end
 
-    params = { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+    params = if args[:inventory_vars].nil?
+               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
+             else
+               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd, 'vars' => args[:inventory_vars] }
+             end
+
     if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
       progress = Thread.new do
         loop do
@@ -206,58 +186,6 @@ namespace :litmus do
         puts "Failed on #{result['node']}\n#{result}"
       end
     end
-  end
-
-  # Install puppet enterprise - for internal puppet employees only - Requires an el7 provisioned machine - experimental feature [:target_node_name]'
-  #
-  # @param :target_node_name [Array] nodes on which to install puppet agent.
-  desc 'install puppet enterprise - for internal puppet employees only - Requires an el7 provisioned machine - experimental feature [:target_node_name]'
-  task :install_pe, [:target_node_name] do |_task, args|
-    inventory_hash = inventory_hash_from_inventory_file
-    target_nodes = find_targets(inventory_hash, args[:target_node_name])
-    if target_nodes.empty?
-      puts 'No targets found'
-      exit 0
-    end
-    puts 'install_pe'
-    include BoltSpec::Run
-    Rake::Task['spec_prep'].invoke
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-
-    puts 'Setting up parameters'
-
-    PE_RELEASE = 2019.0
-    pe_latest_cmd = "curl http://enterprise.delivery.puppetlabs.net/#{PE_RELEASE}/ci-ready/LATEST"
-    pe_latest = run_command(pe_latest_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-    pe_latest_string = pe_latest[0]['result']['stdout'].delete("\n")
-    PE_FILE_NAME = "puppet-enterprise-#{pe_latest_string}-el-7-x86_64"
-    TAR_FILE = "#{PE_FILE_NAME}.tar"
-    DOWNLOAD_URL = "http://enterprise.delivery.puppetlabs.net/#{PE_RELEASE}/ci-ready/#{TAR_FILE}"
-
-    puts 'Initiating PE download'
-
-    # Download PE
-    download_pe_cmd = "wget -q #{DOWNLOAD_URL}"
-    run_command(download_pe_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-
-    puts 'PE successfully downloaded, running installer (this may take 5 or so minutes, please be patient)'
-
-    # Install PE
-    untar_cmd = "tar xvf #{TAR_FILE}"
-    run_command(untar_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-    puts run_command("cd #{PE_FILE_NAME} && 1 | ./puppet-enterprise-installer", target_nodes, config: nil, inventory: inventory_hash)[0]['result']['stdout']
-
-    puts 'Autosigning Certificates'
-
-    # Set Autosign
-    autosign_cmd = "echo 'autosign = true' >> /etc/puppetlabs/puppet/puppet.conf"
-    run_command(autosign_cmd, target_nodes, config: config_data, inventory: inventory_hash)
-
-    puts 'Finishing installation with a Puppet Agent run'
-
-    run_command('puppet agent -t', target_nodes, config: config_data, inventory: inventory_hash)
-
-    puts 'PE Installation is now complete'
   end
 
   # Install the puppet module under test on a collection of nodes
@@ -372,7 +300,7 @@ namespace :litmus do
         payloads = []
         # Generate list of targets to provision
         targets.each do |target|
-          test = 'bundle exec bundle exec rspec ./spec/acceptance --format progress'
+          test = 'bundle exec rspec ./spec/acceptance --format progress'
           title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
           options = {
             env: {
