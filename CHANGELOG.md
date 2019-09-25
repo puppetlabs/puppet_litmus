@@ -2,7 +2,26 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.9.1](https://github.com/puppetlabs/puppet_litmus/tree/0.9.1) (2019-09-03)
+## [0.10.0](https://github.com/puppetlabs/puppet_litmus/tree/0.10.0) (2019-09-25)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.1...0.10.0)
+
+### Changed
+
+- \(FM-8513\) Better handling of errors and changes [\#185](https://github.com/puppetlabs/puppet_litmus/pull/185) ([florindragos](https://github.com/florindragos))
+- \(FM-8456\) set inventory vars when provisioning [\#184](https://github.com/puppetlabs/puppet_litmus/pull/184) ([tphoney](https://github.com/tphoney))
+
+### Added
+
+- \(FM-8342\) Handle mocking of localhost [\#179](https://github.com/puppetlabs/puppet_litmus/pull/179) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
+### Fixed
+
+- \(FM-8494\) fix provision progress in travis and rubocop [\#182](https://github.com/puppetlabs/puppet_litmus/pull/182) ([tphoney](https://github.com/tphoney))
+- \(bugfix\) Report both stderr and stdout when an error is detected [\#180](https://github.com/puppetlabs/puppet_litmus/pull/180) ([hajee](https://github.com/hajee))
+- \(feat\) Better puppet error detection and better readable output [\#173](https://github.com/puppetlabs/puppet_litmus/pull/173) ([hajee](https://github.com/hajee))
+
+## [0.9.1](https://github.com/puppetlabs/puppet_litmus/tree/0.9.1) (2019-09-04)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.0...0.9.1)
 
