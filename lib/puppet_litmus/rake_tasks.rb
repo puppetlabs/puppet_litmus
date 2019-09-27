@@ -61,6 +61,34 @@ module LitmusRakeHelper
 
     stdout
   end
+
+  # Builds all the modules in a specified module
+  #
+  # @param source_folder [String] the folder to get the modules from
+  # @return [Array] an array of module tar's
+  def build_modules_in_folder(source_folder)
+    require 'pdk/module/build'
+    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
+    module_tars = []
+    folder_list.each do |folder|
+      file = File.new(File.join(source_folder, folder))
+      next if File.symlink?(file)
+
+      opts = {}
+      opts[:module_dir] = file.path
+      opts[:'target-dir'] = File.join(Dir.pwd, 'pkg')
+      opts[:force] = true
+      builder = PDK::Module::Build.new(opts)
+
+      # remove old build folder if exists, before we build afresh
+      FileUtils.rm_rf(builder.build_dir) if File.directory?(builder.build_dir)
+
+      # build_module
+      module_tar = builder.build
+      module_tars.push(File.new(module_tar))
+    end
+    module_tars
+  end
 end
 
 namespace :litmus do
@@ -185,6 +213,45 @@ namespace :litmus do
       if result['status'] != 'success'
         puts "Failed on #{result['node']}\n#{result}"
       end
+    end
+  end
+
+  # Install the puppet modules from a source directory to nodes. It does not install dependencies.
+  #
+  # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  desc 'install_module - build and install module'
+  task :install_modules_from_directory, [:source, :target_node_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+    source_folder = if args[:source].nil?
+                      './spec/fixtures/modules'
+                    else
+                      File.expand_path(args[:source])
+                    end
+    raise "Source folder doesnt exist #{source_folder}" unless File.directory?(source_folder)
+
+    module_tars = build_modules_in_folder(source_folder)
+    puts 'Building'
+    module_tars.each do |module_tar|
+      print "#{File.basename(module_tar)} "
+    end
+    include BoltSpec::Run
+    puts "\nSending"
+    module_tars.each do |module_tar|
+      upload_file(module_tar.path, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash)
+      print "#{File.basename(module_tar)} "
+    end
+    puts "\nInstalling"
+    module_tars.each do |module_tar|
+      # install_module
+      install_module_command = "puppet module install --force /tmp/#{File.basename(module_tar)}"
+      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+      print "#{File.basename(module_tar)} "
     end
   end
 

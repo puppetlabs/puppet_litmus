@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 require 'rake'
-
+# rubocop:disable RSpec/AnyInstance
 describe 'litmus rake tasks' do
   before(:all) do # rubocop:disable RSpec/BeforeAfterAll
     load File.expand_path('../../../lib/puppet_litmus/rake_tasks.rb', __dir__)
@@ -24,6 +24,25 @@ describe 'litmus rake tasks' do
       expect(STDOUT).to receive(:puts).with('ubuntu-1404-x86_64')
       expect(STDOUT).to receive(:puts).with('ubuntu-1804-x86_64')
       Rake::Task['litmus:metadata'].invoke
+    end
+  end
+
+  context 'with litmus:install_modules_from_directory' do
+    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'name' => 'some.host' }] }] } }
+    let(:target_folder) { File.join(Dir.pwd, 'spec/fixtures/modules') }
+    let(:dummy_tar) { File.new('spec/data/doot.tar.gz') }
+
+    it 'happy path' do
+      stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+      expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+      expect(File).to receive(:directory?).with(target_folder).and_return(true)
+      expect_any_instance_of(Object).to receive(:build_modules_in_folder).with(target_folder).and_return([dummy_tar])
+      expect(STDOUT).to receive(:puts).with('Building')
+      expect(STDOUT).to receive(:puts).with("\nSending")
+      expect_any_instance_of(Object).to receive(:upload_file).once
+      expect(STDOUT).to receive(:puts).with("\nInstalling")
+      expect_any_instance_of(Object).to receive(:run_command).once
+      Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end
 
@@ -53,3 +72,4 @@ describe 'litmus rake tasks' do
     end
   end
 end
+# rubocop:enable RSpec/AnyInstance
