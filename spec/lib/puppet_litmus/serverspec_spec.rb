@@ -145,6 +145,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_success)
         expect { dummy_class.bolt_upload_file(local, remote) }.not_to raise_error
       end
+
       it 'does upload_file against localhost without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
@@ -165,6 +166,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
         expect { dummy_class.bolt_upload_file(local, remote) }.to raise_error(RuntimeError, %r{upload file failed})
       end
+
       it 'returns the exit code and error message when expecting failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
@@ -249,6 +251,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
         expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.not_to raise_error
       end
+
       it 'returns stdout for unstructured-data tasks' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
@@ -258,6 +261,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         method_result = dummy_class.run_bolt_task(task_name, params, opts: {})
         expect(method_result.stdout).to eq('SUCCESS!')
       end
+
       it 'returns structured output for structured-data tasks' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
@@ -280,6 +284,7 @@ RSpec.describe PuppetLitmus::Serverspec do
         expect(dummy_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
         expect { dummy_class.run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, %r{task failed})
       end
+
       it 'returns the exit code and error message when expecting failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)

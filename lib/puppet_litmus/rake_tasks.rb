@@ -376,10 +376,12 @@ namespace :litmus do
         # We can rely on them always being in the format `litmus:acceptance:host_name:port`
         # The host_name might be localhost or an IP or a DNS-resolvable node.
         prefix = 'litmus:acceptance:'
-        tasks = Rake::Task.tasks.select { |task| task.name =~ %r{^#{prefix}.+:\d+$} }
-        tasks.each do |task|
-          puts "Running acceptance tests against #{task.name[prefix.length..-1]}"
-          task.invoke
+        targets.each do |target|
+          tasks = Rake::Task.tasks.select { |task| task.name =~ %r{#{target}} }
+          tasks.each do |task|
+            puts "Running acceptance tests against #{task.name[prefix.length..-1]}"
+            task.invoke
+          end
         end
       end
 
