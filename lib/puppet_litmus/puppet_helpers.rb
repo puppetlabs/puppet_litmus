@@ -24,10 +24,10 @@ module PuppetLitmus::PuppetHelpers
   #
   # @param manifest [String] puppet manifest code to be applied.
   # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
-  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.
-  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.
-  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.
-  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.
+  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.  
+  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.  
+  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.  
+  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.  
   #  :manifest_file_location [Path] The place on the target system.  
   #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
@@ -171,16 +171,27 @@ module PuppetLitmus::PuppetHelpers
     result
   end
 
+  # rubocop:disable Layout/TrailingWhitespace
+
   # Runs a task against the target system.
   #
   # @param task_name [String] The name of the task to run.
   # @param params [Hash] key : value pairs to be passed to the task.
-  # @param opts [Hash] Alters the behaviour of the command. Valid options are :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are  
+  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.  
+  #  :inventory_file [String] path to the inventory file to use with the task.
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
+  # rubocop:enable Layout/TrailingWhitespace
   def run_bolt_task(task_name, params = {}, opts = {})
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
+                       inventory_hash_from_inventory_file(opts[:inventory_file])
+                     elsif File.exist?('inventory.yaml')
+                       inventory_hash_from_inventory_file('inventory.yaml')
+                     else
+                       localhost_inventory_hash
+                     end
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
     result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
