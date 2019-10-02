@@ -57,7 +57,7 @@ describe 'litmus rake tasks' do
   end
 
   context 'with litmus:provision task' do
-    it 'provisions' do
+    it 'happy path' do
       results = [{ 'node' => 'localhost',
                    'target' => 'localhost',
                    'action' => 'task',
@@ -66,9 +66,20 @@ describe 'litmus rake tasks' do
                    'result' => { 'status' => 'ok', 'node_name' => 'localhost:2222' } }]
 
       allow(File).to receive(:directory?).with(any_args).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results) # rubocop:disable RSpec/AnyInstance
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)
       expect(STDOUT).to receive(:puts).with('localhost:2222, centos:7')
       Rake::Task['litmus:provision'].invoke('docker', 'centos:7')
+    end
+  end
+
+  context 'with litmus:provision_list task' do
+    let(:provision_file) { './provision.yaml' }
+    let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }
+
+    it 'no key in provision file' do
+      allow(File).to receive(:file?).with(any_args).and_return(true)
+      expect(YAML).to receive(:load_file).with(provision_file).and_return(provision_hash)
+      expect { Rake::Task['litmus:provision_list'].invoke('deet') }.to raise_error(%r{deet})
     end
   end
 end
