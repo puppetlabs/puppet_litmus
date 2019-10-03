@@ -130,14 +130,21 @@ module PuppetLitmus::InventoryManipulation
   # Adds a node to a group specified, if group_name exists in inventory hash.
   #
   # @param inventory_hash [Hash] hash of the inventory.yaml file
-  # @param node_name [String] node to locate in the group
+  # @param node [Hash] node to add to the group
   # group_name [String] group of nodes to limit the search for the node_name in
   # @return [Hash] inventory_hash with node added to group if group_name exists in inventory hash.
-  def add_node_to_group(inventory_hash, node_name, group_name)
-    inventory_hash['groups'].each do |group|
-      if group['name'] == group_name
-        group['nodes'].push node_name
+  def add_node_to_group(inventory_hash, node, group_name)
+    # check if group exists
+    if inventory_hash['groups'].any? { |g| g['name'] == group_name }
+      inventory_hash['groups'].each do |group|
+        if group['name'] == group_name
+          group['nodes'].push node
+        end
       end
+    else
+      # add new group
+      group = { 'name' => group_name, 'nodes' => [node] }
+      inventory_hash['groups'].push group
     end
     inventory_hash
   end

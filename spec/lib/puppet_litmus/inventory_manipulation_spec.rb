@@ -19,6 +19,12 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
    { 'name' => 'winrm_nodes', 'nodes' => [] }] }
     end
 
+    let(:no_docker_hash) do
+      { 'groups' =>
+        [{ 'name' => 'ssh_nodes', 'nodes' => [] },
+         { 'name' => 'winrm_nodes', 'nodes' => [] }] }
+    end
+
     let(:config_hash) do
       { 'groups' =>
   [{ 'name' => 'ssh_nodes',
@@ -86,6 +92,11 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
    { 'name' => 'winrm_nodes', 'nodes' => [] }] }
     end
 
+    let(:foo_node) do
+      { 'name' => 'foo',
+        'facts' => { 'provisioner' => 'bar', 'platform' => 'ubuntu' } }
+    end
+
     it 'no matching node, raises' do
       expect { dummy_class.config_from_node(config_hash, 'not.here') }.to raise_error('No config was found for not.here')
     end
@@ -142,6 +153,16 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     it 'write from inventory_hash to inventory_yaml file no feature_hash' do
       expect(File).to exist(inventory_full_path)
       expect { dummy_class.write_to_inventory_file(no_feature_hash, inventory_full_path) }.not_to raise_error
+    end
+
+    it 'group does not exist in inventory, and returns hash with group added' do
+      expect(dummy_class.add_node_to_group(no_docker_hash, foo_node, 'docker_nodes')).to eq('groups' =>
+        [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }, { 'name' => 'docker_nodes', 'nodes' => [foo_node] }])
+    end
+
+    it 'group exists in inventory, and returns hash with node added' do
+      expect(dummy_class.add_node_to_group(no_docker_hash, foo_node, 'ssh_nodes')).to eq('groups' =>
+        [{ 'name' => 'ssh_nodes', 'nodes' => [foo_node] }, { 'name' => 'winrm_nodes', 'nodes' => [] }])
     end
   end
 end
