@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require 'rake'
-# rubocop:disable RSpec/AnyInstance
 describe 'litmus rake tasks' do
   before(:all) do # rubocop:disable RSpec/BeforeAfterAll
     load File.expand_path('../../../lib/puppet_litmus/rake_tasks.rb', __dir__)
@@ -83,4 +82,3 @@ describe 'litmus rake tasks' do
     end
   end
 end
-# rubocop:enable RSpec/AnyInstance
