@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-load File.expand_path('../../../lib/puppet_litmus/serverspec.rb', __dir__)
+load File.expand_path('../../../lib/puppet_litmus/puppet_helpers.rb', __dir__)
 
-include PuppetLitmus::Serverspec # rubocop:disable Style/MixinUsage
+include PuppetLitmus::PuppetHelpers # rubocop:disable Style/MixinUsage
 
-RSpec.describe PuppetLitmus::Serverspec do
+RSpec.describe PuppetLitmus::PuppetHelpers do
   context 'with idempotent_apply' do
     let(:manifest) do
       "include '::doot'"
