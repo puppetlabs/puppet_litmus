@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.10.0](https://github.com/puppetlabs/puppet_litmus/tree/0.10.0) (2019-09-25)
+## [0.11.0](https://github.com/puppetlabs/puppet_litmus/tree/0.11.0) (2019-10-03)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.10.0...0.11.0)
+
+### Added
+
+- \(FM-7077\) add install\_modules\_from\_directory [\#192](https://github.com/puppetlabs/puppet_litmus/pull/192) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- \(FM-8464\) Remove bolt version pin [\#196](https://github.com/puppetlabs/puppet_litmus/pull/196) ([florindragos](https://github.com/florindragos))
+- \(bugfix\) error on provisionlist with no key [\#195](https://github.com/puppetlabs/puppet_litmus/pull/195) ([tphoney](https://github.com/tphoney))
+
+## [0.10.0](https://github.com/puppetlabs/puppet_litmus/tree/0.10.0) (2019-09-26)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.1...0.10.0)
 
