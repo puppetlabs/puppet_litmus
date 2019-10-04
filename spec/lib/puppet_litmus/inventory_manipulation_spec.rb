@@ -152,12 +152,12 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'group does not exist in inventory, and returns hash with group added' do
-      expect(dummy_class.add_node_to_group(no_docker_hash, foo_node, 'docker_nodes')).to eq('groups' =>
+      expect(described_class.add_node_to_group(no_docker_hash, foo_node, 'docker_nodes')).to eq('groups' =>
         [{ 'name' => 'ssh_nodes', 'nodes' => [] }, { 'name' => 'winrm_nodes', 'nodes' => [] }, { 'name' => 'docker_nodes', 'nodes' => [foo_node] }])
     end
 
     it 'group exists in inventory, and returns hash with node added' do
-      expect(dummy_class.add_node_to_group(no_docker_hash, foo_node, 'ssh_nodes')).to eq('groups' =>
+      expect(described_class.add_node_to_group(no_docker_hash, foo_node, 'ssh_nodes')).to eq('groups' =>
         [{ 'name' => 'ssh_nodes', 'nodes' => [foo_node] }, { 'name' => 'winrm_nodes', 'nodes' => [] }])
     end
   end
