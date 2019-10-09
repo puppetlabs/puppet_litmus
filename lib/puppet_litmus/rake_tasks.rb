@@ -7,6 +7,7 @@ require 'open3'
 require 'pdk'
 require 'json'
 require 'parallel'
+require 'tty-spinner'
 
 # helper methods for the litmus rake tasks
 module LitmusRakeHelper
@@ -277,6 +278,7 @@ namespace :litmus do
     # stdout, stderr, _status = Open3.capture3(pdk_build_command)
     # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
     require 'pdk/module/build'
+
     opts = {}
     opts[:force] = true
     builder = PDK::Module::Build.new(opts)
