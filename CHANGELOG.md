@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.11.1](https://github.com/puppetlabs/puppet_litmus/tree/0.11.1) (2019-10-09)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.0...0.11.1)
+
+### Fixed
+
+- \(bugfix\) pin pdk gem and require tty [\#201](https://github.com/puppetlabs/puppet_litmus/pull/201) ([tphoney](https://github.com/tphoney))
+- \(FM-8346\) Create inventory group if missing when adding a node [\#198](https://github.com/puppetlabs/puppet_litmus/pull/198) ([florindragos](https://github.com/florindragos))
+
 ## [0.11.0](https://github.com/puppetlabs/puppet_litmus/tree/0.11.0) (2019-10-03)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.10.0...0.11.0)
