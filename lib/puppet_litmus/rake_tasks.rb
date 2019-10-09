@@ -3,98 +3,13 @@
 require 'rspec/core/rake_task'
 require 'puppet_litmus'
 require 'bolt_spec/run'
-require 'open3'
 require 'pdk'
 require 'json'
 require 'parallel'
 require 'tty-spinner'
 
-# helper methods for the litmus rake tasks
-module LitmusRakeHelper
-  # Gets a string representing the operating system and version.
-  #
-  # @param metadata [Hash] metadata to parse for operating system info
-  # @return [String] the operating system string with version info for use in provisioning.
-  def get_metadata_operating_systems(metadata)
-    return unless metadata.is_a?(Hash)
-    return unless metadata['operatingsystem_support'].is_a?(Array)
-
-    metadata['operatingsystem_support'].each do |os_info|
-      next unless os_info['operatingsystem'] && os_info['operatingsystemrelease']
-
-      os_name = case os_info['operatingsystem']
-                when 'Amazon', 'Archlinux', 'AIX', 'OSX'
-                  next
-                when 'OracleLinux'
-                  'oracle'
-                when 'Windows'
-                  'win'
-                else
-                  os_info['operatingsystem'].downcase
-                end
-
-      os_info['operatingsystemrelease'].each do |release|
-        version = case os_name
-                  when 'ubuntu', 'osx'
-                    release.sub('.', '')
-                  when 'sles'
-                    release.gsub(%r{ SP[14]}, '')
-                  when 'win'
-                    release = release.delete('.') if release.include? '8.1'
-                    release.sub('Server', '').sub('10', '10-pro')
-                  else
-                    release
-                  end
-
-        yield "#{os_name}-#{version.downcase}-x86_64".delete(' ')
-      end
-    end
-  end
-
-  # Executes a command on the test runner.
-  #
-  # @param command [String] command to execute.
-  # @return [Object] the standard out stream.
-  def run_local_command(command)
-    stdout, stderr, status = Open3.capture3(command)
-    error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-    raise error_message unless status.to_i.zero?
-
-    stdout
-  end
-
-  # Builds all the modules in a specified module
-  #
-  # @param source_folder [String] the folder to get the modules from
-  # @return [Array] an array of module tar's
-  def build_modules_in_folder(source_folder)
-    require 'pdk/module/build'
-    require 'pdk/util'
-    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
-    module_tars = []
-    folder_list.each do |folder|
-      file = File.new(File.join(source_folder, folder))
-      next if File.symlink?(file)
-
-      opts = {}
-      opts[:module_dir] = file.path
-      opts[:'target-dir'] = File.join(Dir.pwd, 'pkg')
-      opts[:force] = true
-      builder = PDK::Module::Build.new(opts)
-
-      # remove old build folder if exists, before we build afresh
-      FileUtils.rm_rf(builder.build_dir) if File.directory?(builder.build_dir)
-
-      # build_module
-      module_tar = builder.build
-      module_tars.push(File.new(module_tar))
-    end
-    module_tars
-  end
-end
-
 namespace :litmus do
-  include LitmusRakeHelper
+  include PuppetLitmus::RakeHelper
   # Prints all supported OSes from metadata.json file.
   desc 'print all supported OSes from metadata'
   task :metadata do
@@ -110,27 +25,14 @@ namespace :litmus do
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
   task :provision_list, [:key] do |_task, args|
-    raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
-
-    provision_hash = YAML.load_file('./provision.yaml')
-    raise "No key #{args[:key]} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
-
-    provisioner = provision_hash[args[:key]]['provisioner']
-    inventory_vars = provision_hash[args[:key]]['vars']
-    # Splat the params into environment variables to pass to the provision task but only in this runspace
-    provision_hash[args[:key]]['params']&.each { |key, value| ENV[key.upcase] = value.to_s }
+    results = provision_list(args[:key])
     failed_image_message = ''
-    provision_hash[args[:key]]['images'].each do |image|
-      # this is the only way to capture the stdout from the rake task, it will affect pry
-      capture_rake_output = StringIO.new
-      $stdout = capture_rake_output
-      Rake::Task['litmus:provision'].invoke(provisioner, image, inventory_vars)
-      if $stdout.string =~ %r{.status.=>.failure}
-        failed_image_message += "=====\n#{image}\n#{$stdout.string}\n"
+    results.each do |result|
+      if result.first['status'] != 'success'
+        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['result']['_output']}\n"
       else
-        STDOUT.puts $stdout.string
+        STDOUT.puts result.first['result']['_output']
       end
-      Rake::Task['litmus:provision'].reenable
     end
     raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?
   end
@@ -141,21 +43,7 @@ namespace :litmus do
   # @param :platform [String] OS platform for container or VM to use.
   desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
-    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
-
-    unless %w[abs docker docker_exp vagrant vmpooler].include?(args[:provisioner])
-      raise "Unknown provisioner '#{args[:provisioner]}', try abs/docker/docker_exp/vagrant/vmpooler"
-    end
-
-    params = if args[:inventory_vars].nil?
-               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd }
-             else
-               { 'action' => 'provision', 'platform' => args[:platform], 'inventory' => Dir.pwd, 'vars' => args[:inventory_vars] }
-             end
-
     if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
       progress = Thread.new do
         loop do
@@ -167,7 +55,7 @@ namespace :litmus do
       spinner = TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
       spinner.auto_spin
     end
-    results = run_task("provision::#{args[:provisioner]}", 'localhost', params, config: config_data, inventory: nil)
+    results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
     if results.first['status'] != 'success'
       raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
     end
@@ -195,15 +83,8 @@ namespace :litmus do
     puts 'install_agent'
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    params = if args[:collection].nil?
-               {}
-             else
-               { 'collection' => args[:collection] }
-             end
-    raise "puppet_agent was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'puppet_agent'))
 
-    results = run_task('puppet_agent::install', targets, params, config: config_data, inventory: inventory_hash)
+    results = install_agent(args[:collection], targets, inventory_hash)
     results.each do |result|
       if result['status'] != 'success'
         command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{config_data['modulepath']}"
@@ -217,10 +98,7 @@ namespace :litmus do
     write_to_inventory_file(inventory_hash, 'inventory.yaml')
 
     # fix the path on ssh_nodes
-    unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
-      results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
-                            'ssh_nodes', config: nil, inventory: inventory_hash)
-    end
+    results = configure_path(inventory_hash)
 
     results.each do |result|
       if result['status'] != 'success'
@@ -279,31 +157,16 @@ namespace :litmus do
       puts 'No targets found'
       exit 0
     end
-    include BoltSpec::Run
-    # old cli_way
-    # pdk_build_command = 'bundle exec pdk build  --force'
-    # stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
-    require 'pdk/module/build'
-    require 'pdk/util'
 
     opts = {}
     opts[:force] = true
-    builder = PDK::Module::Build.new(opts)
-    module_tar = builder.build
+    module_tar = build_module(opts)
     puts 'Built'
 
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
-    target_string = if args[:target_node_name].nil?
-                      'all'
-                    else
-                      args[:target_node_name]
-                    end
-    run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
-    install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    result = install_module(inventory_hash, args[:target_node_name], module_tar)
 
     raise "Failed trying to run '#{install_module_command}' against inventory." unless result.is_a?(Array)
 
@@ -337,25 +200,15 @@ namespace :litmus do
       puts 'No targets found'
       exit 0
     end
-    include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
-
     bad_results = []
-    targets.each do |node_name|
-      next if node_name == 'litmus_localhost'
-
-      # how do we know what provisioner to use
-      node_facts = facts_from_node(inventory_hash, node_name)
-      next unless %w[abs docker docker_exp vagrant vmpooler].include?(node_facts['provisioner'])
-
-      params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-      result = run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: config_data, inventory: nil)
+    results = tear_down_nodes(targets, inventory_hash)
+    results.each do |node, result|
+      puts result.first['status']
       if result.first['status'] != 'success'
-        bad_results << "#{node_name}, #{result.first['result']['_error']['msg']}"
+        bad_results << "#{node}, #{result.first['result']['_error']['msg']}"
       else
-        print "#{node_name}, "
+        print "#{node}, "
       end
     end
     puts ''
