@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.11.2](https://github.com/puppetlabs/puppet_litmus/tree/0.11.2) (2019-10-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.1...0.11.2)
+
+### Fixed
+
+- \(MODULES-9998\) Require pdk/util and remove pdk pin [\#203](https://github.com/puppetlabs/puppet_litmus/pull/203) ([florindragos](https://github.com/florindragos))
+
 ## [0.11.1](https://github.com/puppetlabs/puppet_litmus/tree/0.11.1) (2019-10-09)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.0...0.11.1)
