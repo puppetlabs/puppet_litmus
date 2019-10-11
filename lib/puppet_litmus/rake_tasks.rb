@@ -69,6 +69,7 @@ module LitmusRakeHelper
   # @return [Array] an array of module tar's
   def build_modules_in_folder(source_folder)
     require 'pdk/module/build'
+    require 'pdk/util'
     folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
     module_tars = []
     folder_list.each do |folder|
@@ -278,6 +279,7 @@ namespace :litmus do
     # stdout, stderr, _status = Open3.capture3(pdk_build_command)
     # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
     require 'pdk/module/build'
+    require 'pdk/util'
 
     opts = {}
     opts[:force] = true
