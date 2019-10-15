@@ -2,5 +2,5 @@
 
 # version of this gem
 module PuppetLitmus
-  VERSION ||= '0.11.2'
+  VERSION ||= '0.12.0'
 end
