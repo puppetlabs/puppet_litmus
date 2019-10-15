@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.12.0](https://github.com/puppetlabs/puppet_litmus/tree/0.12.0) (2019-10-15)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.2...0.12.0)
+
+### Added
+
+- \(feature\) run\_bolt\_task allows a custom inventory file [\#194](https://github.com/puppetlabs/puppet_litmus/pull/194) ([tphoney](https://github.com/tphoney))
+
 ## [0.11.2](https://github.com/puppetlabs/puppet_litmus/tree/0.11.2) (2019-10-11)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.1...0.11.2)
