@@ -1,0 +1,16 @@
+---
+groups:
+- name: ssh_nodes
+  nodes:
+  - name: test.delivery.puppetlabs.net
+    config:
+      transport: ssh
+      ssh:
+        user: root
+        password: Qu@lity!
+        host-key-check: false
+    facts:
+      provisioner: vmpooler
+      platform: centos-5-x86_64
+- name: winrm_nodes
+  nodes: []

@@ -249,6 +249,15 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect { described_class.run_bolt_task(task_name, params, opts: {}) }.not_to raise_error
       end
 
+      it 'does bolt_task_run gives no runtime error for success, for a named inventory file' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('jim.yaml').and_return(true)
+        expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(described_class).to receive(:target_in_inventory?).and_return(true)
+        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
+        expect { described_class.run_bolt_task(task_name, params, inventory_file: 'jim.yaml') }.not_to raise_error
+      end
+
       it 'returns stdout for unstructured-data tasks' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)

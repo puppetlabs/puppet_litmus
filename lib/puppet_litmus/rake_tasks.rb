@@ -208,14 +208,20 @@ namespace :litmus do
       if result['status'] != 'success'
         command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{config_data['modulepath']}"
         raise "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
+      else
+        # add puppet-agent feature to successful nodes
+        inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['node'])
       end
     end
+    # update the inventory with the puppet-agent feature set per node
+    write_to_inventory_file(inventory_hash, 'inventory.yaml')
 
     # fix the path on ssh_nodes
     unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
       results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
                             'ssh_nodes', config: nil, inventory: inventory_hash)
     end
+
     results.each do |result|
       if result['status'] != 'success'
         puts "Failed on #{result['node']}\n#{result}"
