@@ -400,6 +400,7 @@ namespace :litmus do
     host = 'localhost'
     RSpec::Core::RakeTask.new(host.to_sym) do |t|
       t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+      Rake::Task['spec_prep'].invoke
       ENV['TARGET_HOST'] = host
     end
   end
