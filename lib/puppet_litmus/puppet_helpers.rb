@@ -130,6 +130,7 @@ module PuppetLitmus::PuppetHelpers
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                            exit_status: result.first['result']['exit_code'],
                             stdout: result.first['result']['stdout'],
                             stderr: result.first['result']['stderr'])
     yield result if block_given?
