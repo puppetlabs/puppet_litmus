@@ -184,4 +184,22 @@ module PuppetLitmus::RakeHelper
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
   end
+
+  def metadata_module_name
+    require 'json'
+    raise 'Could not find metadata.json' unless File.exist?(File.join(Dir.pwd, 'metadata.json'))
+
+    metadata = JSON.parse(File.read(File.join(Dir.pwd, 'metadata.json')))
+    raise 'Could not read module name from metadata.json' if metadata['name'].nil?
+
+    metadata['name']
+  end
+
+  def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil)
+    include BoltSpec::Run
+    module_name = module_to_remove || metadata_module_name
+    target_nodes = find_targets(inventory_hash, target_node_name)
+    install_module_command = "puppet module uninstall #{module_name}"
+    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+  end
 end

@@ -224,6 +224,39 @@ namespace :litmus do
     end
   end
 
+  # Uninstall the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  # @param :module_name [String] module name to be uninstalled
+  desc 'uninstall_module - uninstall module'
+  task :uninstall_module, [:target_node_name, :module_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+
+    result = uninstall_module(inventory_hash, args[:target_node_name], args[:module_name])
+
+    raise "Failed trying to run 'puppet module uninstall #{module_name}' against inventory." unless result.is_a?(Array)
+
+    result.each do |node|
+      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
+    end
+
+    puts 'Uninstalled'
+  end
+
+  # Reinstall the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  desc 'reinstall_module - reinstall module'
+  task :reinstall_module, [:target_node_name] do |_task, args|
+    Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
+    Rake::Task['litmus:install_module'].invoke(args[:target_node_name])
+  end
+
   namespace :acceptance do
     include PuppetLitmus::InventoryManipulation
     if File.file?('inventory.yaml')
