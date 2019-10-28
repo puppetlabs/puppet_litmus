@@ -25,7 +25,12 @@ namespace :litmus do
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
   task :provision_list, [:key] do |_task, args|
-    results = provision_list(args[:key])
+    raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
+
+    provision_hash = YAML.load_file('./provision.yaml')
+    raise "No key #{args[:key]} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
+
+    results = provision_list(provision_hash, args[:key])
     failed_image_message = ''
     results.each do |result|
       if result.first['status'] != 'success'
@@ -168,7 +173,7 @@ namespace :litmus do
 
     result = install_module(inventory_hash, args[:target_node_name], module_tar)
 
-    raise "Failed trying to run '#{install_module_command}' against inventory." unless result.is_a?(Array)
+    raise "Failed trying to run 'puppet module install /tmp/#{File.basename(module_tar)}' against inventory." unless result.is_a?(Array)
 
     result.each do |node|
       puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'

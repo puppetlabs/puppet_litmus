@@ -5,8 +5,8 @@ require 'open3'
 
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
-  DEFAULT_CONFIG_DATA = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
-  VALID_PROVISIONERS = %w[abs docker docker_exp vagrant vmpooler].freeze
+  DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
+  VALID_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze
 
   # Gets a string representing the operating system and version.
   #
@@ -102,12 +102,7 @@ module PuppetLitmus::RakeHelper
     run_task("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
-  def provision_list(key)
-    raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
-
-    provision_hash = YAML.load_file('./provision.yaml')
-    raise "No key #{key} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[key].nil?
-
+  def provision_list(provision_hash, key)
     provisioner = provision_hash[key]['provisioner']
     inventory_vars = provision_hash[key]['vars']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
