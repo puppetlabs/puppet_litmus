@@ -87,7 +87,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
   describe '.run_shell' do
     let(:command_to_run) { "puts 'doot'" }
-    let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:result) { ['result' => { 'exit_code' => 0, 'exit_status' => 0, 'stdout' => nil, 'stderr' => nil }] }
     let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'name' => 'some.host' }] }] } }
     let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
 
