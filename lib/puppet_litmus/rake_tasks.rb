@@ -30,6 +30,7 @@ namespace :litmus do
     provision_hash = YAML.load_file('./provision.yaml')
     raise "No key #{args[:key]} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
 
+    Rake::Task['spec_prep'].invoke
     results = provision_list(provision_hash, args[:key])
     failed_image_message = ''
     results.each do |result|
