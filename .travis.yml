@@ -7,7 +7,9 @@ before_install:
   - rm -f Gemfile.lock
   - gem update --system $RUBYGEMS_VERSION
   - gem --version
+  - gem install bundler -v 2.0.1
   - bundle -v
+  - sudo apt-get -y install git
 script:
   - 'bundle exec rake $CHECK'
 bundler_args: --without system_tests
@@ -15,5 +17,31 @@ rvm:
   - 2.5.1
 matrix:
   include:
-  - env: CHECK="rubocop"
-  - env: CHECK='spec' COVERAGE='yes'
+  -
+    env: CHECK="rubocop"
+    stage: static
+  -
+    env: CHECK='spec' COVERAGE='yes'
+    stage: spec
+  -
+    stage: acceptance
+    sudo: required
+    env: 
+      - PLATFORMS=deb_puppet6
+    services: docker
+    rvm: 2.5.1
+    dist: trusty
+    before_script:
+    - |
+      git clone https://github.com/puppetlabs/pdksync.git pdksync
+      cd pdksync
+      git checkout gemfiletesting
+      bundle install --path vendor/bundle --gemfile=./Gemfile
+      sed -i.bak 's/#- puppetlabs-motd/- puppetlabs-motd/g' managed_modules.yml
+      BUNDLE_GEMFILE=./Gemfile bundle exec rake git:clone_managed_modules
+      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'pdksync:gem_file_update["puppet_litmus", "gem '\'puppet_litmus\''\, git: '\'https://github.com/puppetlabs/puppet_litmus.git\''\, branch: '\'master\''"]'
+    script:
+    - BUNDLE_GEMFILE=./Gemfile bundle exec rake 'pdksync:run_tests['litmus','default']'
+env:
+  global:
+    - secure: NIWDDkrxx8o8hoS1rxZ+KDHCMfCvhdVSc6N3aRGqV4/xssTYzfAjy50jfk7VIYrV25fSTb+LqlCV7J4Sbgv328SwXL805YfcNP8YJGA24dx1D4JzHG61XgLpbf1PJcv4KwRrIjcRXQVGYzZW6asEjcs37nQjjG9Hfm/qfQ4MkPi88D0TOsnhuoLFmXPOwz7mNboJyV48DrkQ4X780h+J5B0eLlpjcuUXti0YoeRFAQX9TGj5xJSahGg+ROoVN84WHJ50hp2hmIjUnOtsoBvGulwLW7JhCpaiAbhflzV/NpJs6NXy2M+cN2feGHcsX+e72qDZoByzYfwz2l+y77PQnlhpg9sj02leK8PX51aZw91Mw2vuf5vIxEd311ks12Sar20pD70R8VDT+g19/jeqO8o7dtNCofcu8nDbVF2kNc7uwSPbzEwHM7LOKLCiO6gqfcboizYK1Qnt3E8FqNrvnY4+UmFXFv+MeoPr65lPrw0pSAaerNteiOPvWcAYyry5i8UNzQ4f1TYq2x5WaX+swMr61Ii9Z5NA4DM/9mPAdnTVMD+XBiCxaEOA7X0RC+SLxuPRqd/EE1BRJ6VFSFm5A4anY0twHbDOFtbntArgh6XE+Ur8puozfqeGGooey7tuT0Z1kAYMtWso5UHkguaOh1fT0LS2LFPhf7B2eShCGas
