@@ -77,4 +77,36 @@ RSpec.describe PuppetLitmus::RakeHelper do
       described_class.install_module(inventory_hash, nil, module_tar)
     end
   end
+
+  context 'with uninstall module' do
+    let(:inventory_hash) do
+      { 'groups' =>
+        [{ 'name' => 'ssh_nodes', 'nodes' =>
+          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+    end
+    let(:targets) { ['some.host'] }
+    let(:uninstall_module_command) { 'puppet module uninstall foo-bar' }
+
+    it 'uninstalls module' do
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
+      expect(described_class).to receive(:metadata_module_name).and_return('foo-bar')
+      described_class.uninstall_module(inventory_hash, nil)
+    end
+
+    it 'and custom name' do
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
+      described_class.uninstall_module(inventory_hash, nil, 'foo-bar')
+    end
+  end
+
+  context 'with module name' do
+    let(:metadata) { '{ "name" : "foo-bar" }' }
+
+    it 'reads module name' do
+      allow(File).to receive(:exist?).with(File.join(Dir.pwd, 'metadata.json')).and_return(true)
+      allow(File).to receive(:read).with(File.join(Dir.pwd, 'metadata.json')).and_return(metadata)
+      name = described_class.metadata_module_name
+      expect(name).to eq('foo-bar')
+    end
+  end
 end
