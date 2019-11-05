@@ -24,4 +24,6 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'pdk',         ['>= 1.10.0', '< 2.0.0']
   spec.add_runtime_dependency 'tty-spinner', ['>= 0.5.0', '< 1.0.0']
   spec.add_runtime_dependency 'docker-api',  ['>= 1.34', '< 2.0.0']
+  spec.add_runtime_dependency 'parallel'
+  spec.add_runtime_dependency 'rspec'
 end
