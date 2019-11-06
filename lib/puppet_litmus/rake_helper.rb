@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+module PuppetLitmus; end # rubocop:disable Style/Documentation
+
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
