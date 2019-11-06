@@ -252,6 +252,6 @@ module PuppetLitmus::InventoryManipulation
   #  @param inventory_hash [Hash] hash of the inventory.yaml file
   #  @return inventory.yaml file with feature added to group.
   def write_to_inventory_file(inventory_hash, inventory_full_path)
-    File.open(inventory_full_path, 'w+') { |f| f.write(inventory_hash.to_yaml) }
+    File.open(inventory_full_path, 'wb+') { |f| f.write(inventory_hash.to_yaml) }
   end
 end
