@@ -7,6 +7,7 @@ module PuppetLitmus::InventoryManipulation
   # @param inventory_full_path [String] path to the inventory.yaml file
   # @return [Hash] hash of the inventory.yaml file.
   def inventory_hash_from_inventory_file(inventory_full_path = nil)
+    require 'yaml'
     inventory_full_path = if inventory_full_path.nil?
                             'inventory.yaml'
                           else
@@ -44,6 +45,7 @@ module PuppetLitmus::InventoryManipulation
   # @param targets [Array]
   # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
+    require 'bolt/inventory'
     if targets.nil?
       inventory = Bolt::Inventory.new(inventory_hash, nil)
       targets = inventory.node_names.to_a
@@ -250,6 +252,6 @@ module PuppetLitmus::InventoryManipulation
   #  @param inventory_hash [Hash] hash of the inventory.yaml file
   #  @return inventory.yaml file with feature added to group.
   def write_to_inventory_file(inventory_hash, inventory_full_path)
-    File.open(inventory_full_path, 'w+') { |f| f.write(inventory_hash.to_yaml) }
+    File.open(inventory_full_path, 'wb+') { |f| f.write(inventory_hash.to_yaml) }
   end
 end
