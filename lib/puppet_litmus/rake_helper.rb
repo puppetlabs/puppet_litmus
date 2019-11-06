@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'bolt_spec/run'
-require 'open3'
-
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
@@ -53,6 +50,7 @@ module PuppetLitmus::RakeHelper
   # @param command [String] command to execute.
   # @return [Object] the standard out stream.
   def run_local_command(command)
+    require 'open3'
     stdout, stderr, status = Open3.capture3(command)
     error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
     raise error_message unless status.to_i.zero?
@@ -86,6 +84,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def provision(provisioner, platform, inventory_vars)
+    require 'bolt_spec/run'
     include BoltSpec::Run
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
@@ -115,6 +114,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def tear_down_nodes(targets, inventory_hash)
+    require 'bolt_spec/run'
     include BoltSpec::Run
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
@@ -139,6 +139,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def install_agent(collection, targets, inventory_hash)
+    require 'bolt_spec/run'
     include BoltSpec::Run
     params = if collection.nil?
                {}
@@ -173,6 +174,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def install_module(inventory_hash, target_node_name, module_tar)
+    require 'bolt_spec/run'
     include BoltSpec::Run
     target_nodes = find_targets(inventory_hash, target_node_name)
     target_string = if target_node_name.nil?
@@ -196,6 +198,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil)
+    require 'bolt_spec/run'
     include BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
     target_nodes = find_targets(inventory_hash, target_node_name)

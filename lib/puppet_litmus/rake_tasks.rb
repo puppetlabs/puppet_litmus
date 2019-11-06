@@ -1,14 +1,7 @@
 # frozen_string_literal: true
 
-require 'rspec/core/rake_task'
-require 'puppet_litmus'
-require 'bolt_spec/run'
-require 'pdk'
-require 'json'
-require 'parallel'
-require 'tty-spinner'
-
 namespace :litmus do
+  require 'puppet_litmus/rake_helper'
   include PuppetLitmus::RakeHelper
   # Prints all supported OSes from metadata.json file.
   desc 'print all supported OSes from metadata'
@@ -58,6 +51,7 @@ namespace :litmus do
         end
       end
     else
+      require 'tty-spinner'
       spinner = TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
       spinner.auto_spin
     end
@@ -87,6 +81,7 @@ namespace :litmus do
       exit 0
     end
     puts 'install_agent'
+    require 'bolt_spec/run'
     include BoltSpec::Run
     Rake::Task['spec_prep'].invoke
 
@@ -137,6 +132,7 @@ namespace :litmus do
     module_tars.each do |module_tar|
       print "#{File.basename(module_tar)} "
     end
+    require 'bolt_spec/run'
     include BoltSpec::Run
     puts "\nSending"
     module_tars.each do |module_tar|
@@ -259,8 +255,10 @@ namespace :litmus do
   end
 
   namespace :acceptance do
-    include PuppetLitmus::InventoryManipulation
+    require 'rspec/core/rake_task'
     if File.file?('inventory.yaml')
+      require 'puppet_litmus/inventory_manipulation'
+      include PuppetLitmus::InventoryManipulation
       inventory_hash = inventory_hash_from_inventory_file
       targets = find_targets(inventory_hash, nil)
 
@@ -298,6 +296,7 @@ namespace :litmus do
             end
           end
 
+          require 'parallel'
           results = Parallel.map(payloads) do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
             stdout, stderr, status = Open3.capture3(env, test)
@@ -313,6 +312,7 @@ namespace :litmus do
           end
           Thread.kill(progress)
         else
+          require 'tty-spinner'
           spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
           payloads.each do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
