@@ -267,13 +267,13 @@ module PuppetLitmus::PuppetHelpers
   # @param command [String] The puppet command causing the error.
   # @param result  [Array] The result struct containing the result
   def report_puppet_apply_error(command, result, acceptable_exit_codes)
-    puppet_apply_error = <<-ERROR
-apply manifest failed
-`#{command}`
-with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
-====== Start output of failed Puppet apply ======
-#{puppet_output(result)}
-====== End output of failed Puppet apply ======
+    puppet_apply_error = <<~ERROR
+      apply manifest failed
+      `#{command}`
+      with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
+      ====== Start output of failed Puppet apply ======
+      #{puppet_output(result)}
+      ====== End output of failed Puppet apply ======
     ERROR
     raise puppet_apply_error
   end
@@ -283,12 +283,12 @@ with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_ex
   # @param command [String] The puppet command causing the error.
   # @param result  [Array] The result struct containing the result
   def report_puppet_apply_change(command, result)
-    puppet_apply_changes = <<-ERROR
-apply manifest expected no changes
-`#{command}`
-====== Start output of Puppet apply with unexpected changes ======
-#{puppet_output(result)}
-====== End output of Puppet apply with unexpected changes ======
+    puppet_apply_changes = <<~ERROR
+      apply manifest expected no changes
+      `#{command}`
+      ====== Start output of Puppet apply with unexpected changes ======
+      #{puppet_output(result)}
+      ====== End output of Puppet apply with unexpected changes ======
     ERROR
     raise puppet_apply_changes
   end
