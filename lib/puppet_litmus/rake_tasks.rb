@@ -24,15 +24,42 @@ namespace :litmus do
     raise "No key #{args[:key]} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
 
     Rake::Task['spec_prep'].invoke
-    results = provision_list(provision_hash, args[:key])
+
+    provisioner = provision_hash[args[:key]]['provisioner']
+    inventory_vars = provision_hash[args[:key]]['vars']
+    # Splat the params into environment variables to pass to the provision task but only in this runspace
+    provision_hash[args[:key]]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
+    results = []
     failed_image_message = ''
-    results.each do |result|
+    provision_hash[args[:key]]['images'].each do |image|
+      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+        progress = Thread.new do
+          loop do
+            printf '.'
+            sleep(10)
+          end
+        end
+      else
+        require 'tty-spinner'
+        spinner = TTY::Spinner.new("Provisioning #{image} using #{provisioner} provisioner.[:spinner]")
+        spinner.auto_spin
+      end
+      result = provision(provisioner, image, inventory_vars)
+
+      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+        Thread.kill(progress)
+      else
+        spinner.success
+      end
+
       if result.first['status'] != 'success'
         failed_image_message += "=====\n#{result.first['node']}\n#{result.first['result']['_output']}\n"
       else
-        STDOUT.puts result.first['result']['_output']
+        STDOUT.puts "#{result.first['result']['node_name']}, #{image}"
       end
+      results << result
     end
+
     raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?
   end
 
@@ -206,11 +233,10 @@ namespace :litmus do
     bad_results = []
     results = tear_down_nodes(targets, inventory_hash)
     results.each do |node, result|
-      puts result.first['status']
       if result.first['status'] != 'success'
         bad_results << "#{node}, #{result.first['result']['_error']['msg']}"
       else
-        print "#{node}, "
+        puts "#{node}: #{result.first['status']}"
       end
     end
     puts ''

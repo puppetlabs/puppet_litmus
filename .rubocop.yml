@@ -129,7 +129,7 @@ Style/BracesAroundHashParameters:
 
 # requires 2.3's squiggly HEREDOC support, which we can't use, yet
 # see http://www.virtuouscode.com/2016/01/06/about-the-ruby-squiggly-heredoc-syntax/
-Layout/IndentHeredoc:
+Layout/HeredocIndentation:
   Enabled: false
 
 # Updated in 0.53 (or thereabouts)
@@ -143,7 +143,7 @@ Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: comma
 
 # Add allowing "is", as it is a technical term in puppet
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   Description: Checks for method parameter names that contain capital letters, end in
     numbers, or do not meet a minimal length.
   Enabled: true
