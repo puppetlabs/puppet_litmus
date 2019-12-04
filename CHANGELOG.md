@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.13.0](https://github.com/puppetlabs/puppet_litmus/tree/0.13.0) (2019-12-04)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.12.0...0.13.0)
+
+### Added
+
+- \(FM-8355\) Add spec\_helper\_acceptance [\#210](https://github.com/puppetlabs/puppet_litmus/pull/210) ([florindragos](https://github.com/florindragos))
+- \(FM-8611\) Reinstall module [\#209](https://github.com/puppetlabs/puppet_litmus/pull/209) ([florindragos](https://github.com/florindragos))
+
+### Fixed
+
+- \(FM-8770\) Fix provision\_list and tear\_down output [\#219](https://github.com/puppetlabs/puppet_litmus/pull/219) ([florindragos](https://github.com/florindragos))
+- \(maint\) declare PuppetLitmus module [\#216](https://github.com/puppetlabs/puppet_litmus/pull/216) ([DavidS](https://github.com/DavidS))
+- Invoke spec\_prep before provision\_list [\#213](https://github.com/puppetlabs/puppet_litmus/pull/213) ([florindragos](https://github.com/florindragos))
+- \(MODULES-10019\) Add exit\_status to run\_shell [\#207](https://github.com/puppetlabs/puppet_litmus/pull/207) ([florindragos](https://github.com/florindragos))
+
 ## [0.12.0](https://github.com/puppetlabs/puppet_litmus/tree/0.12.0) (2019-10-15)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.11.2...0.12.0)
