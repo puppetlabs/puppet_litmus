@@ -115,7 +115,7 @@ namespace :litmus do
     results = install_agent(args[:collection], targets, inventory_hash)
     results.each do |result|
       if result['status'] != 'success'
-        command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{config_data['modulepath']}"
+        command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
         raise "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
       else
         # add puppet-agent feature to successful nodes
