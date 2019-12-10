@@ -369,20 +369,6 @@ namespace :litmus do
         exit 1 if failure_list.any?
       end
 
-      # Run acceptance tests against all machines in the inventory file in serial.
-      desc 'Run tests in serial against all machines in the inventory file'
-      task :serial do
-        # Iterate over all of the acceptance test tasks and invoke them;
-        # We can rely on them always being in the format `litmus:acceptance:host_name:port`
-        # The host_name might be localhost or an IP or a DNS-resolvable node.
-        prefix = 'litmus:acceptance:'
-        tasks = Rake::Task.tasks.select { |task| task.name =~ %r{^#{prefix}.+:\d+$} }
-        tasks.each do |task|
-          puts "Running acceptance tests against #{task.name[prefix.length..-1]}"
-          task.invoke
-        end
-      end
-
       targets.each do |target|
         desc "Run serverspec against #{target}"
         next if target == 'litmus_localhost'
