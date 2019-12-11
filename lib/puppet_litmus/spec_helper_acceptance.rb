@@ -73,7 +73,9 @@ module PuppetLitmus
         set :os, family: 'windows'
         user = node_config.dig('winrm', 'user') unless node_config.dig('winrm', 'user').nil?
         pass = node_config.dig('winrm', 'password') unless node_config.dig('winrm', 'password').nil?
-        endpoint = "http://#{ENV['TARGET_HOST']}:5985/wsman"
+        endpoint = URI("http://#{ENV['TARGET_HOST']}")
+        endpoint.port = 5985 if endpoint.port == 80
+        endpoint.path = '/wsman'
 
         opts = {
           user: user,
