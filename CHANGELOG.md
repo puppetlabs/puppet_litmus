@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.13.1](https://github.com/puppetlabs/puppet_litmus/tree/0.13.1) (2019-12-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.13.0...0.13.1)
+
+### Fixed
+
+- \(FM-8772\) Fix install\_agent error output message [\#221](https://github.com/puppetlabs/puppet_litmus/pull/221) ([florindragos](https://github.com/florindragos))
+
 ## [0.13.0](https://github.com/puppetlabs/puppet_litmus/tree/0.13.0) (2019-12-04)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.12.0...0.13.0)
