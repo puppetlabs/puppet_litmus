@@ -71,7 +71,7 @@ module PuppetLitmus::PuppetHelpers
     command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
     command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
 
-    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    result = PuppetLitmus.bolt.run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     status = result.first['result']['exit_code']
     if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
       report_puppet_apply_change(command_to_run, result)
@@ -109,7 +109,7 @@ module PuppetLitmus::PuppetHelpers
       # transfer to TARGET_HOST
       inventory_hash = inventory_hash_from_inventory_file
       manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
-      result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+      result = PuppetLitmus.bolt.upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
       raise result.first['result'].to_s unless result.first['status'] == 'success'
     end
     manifest_file_location
@@ -126,7 +126,7 @@ module PuppetLitmus::PuppetHelpers
     inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    result = PuppetLitmus.bolt.run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
     raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
@@ -149,7 +149,7 @@ module PuppetLitmus::PuppetHelpers
     inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+    result = PuppetLitmus.bolt.upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
 
     result_obj = {
       exit_code: 0,
@@ -195,7 +195,7 @@ module PuppetLitmus::PuppetHelpers
                      end
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
+    result = PuppetLitmus.bolt.run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
     result_obj = {
       exit_code: 0,
       stdout: nil,
@@ -242,7 +242,7 @@ module PuppetLitmus::PuppetHelpers
     inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
     raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
+    result = PuppetLitmus.bolt.run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
     raise "script run failed\n`#{script}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
 

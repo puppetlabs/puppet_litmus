@@ -100,7 +100,7 @@ module PuppetLitmus::RakeHelper
              else
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
              end
-    run_task("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    PuppetLitmus.bolt.run_task("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def provision_list(provision_hash, key)
@@ -137,7 +137,7 @@ module PuppetLitmus::RakeHelper
     return [] unless VALID_PROVISIONERS.include?(node_facts['provisioner'])
 
     params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-    run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    PuppetLitmus.bolt.run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def install_agent(collection, targets, inventory_hash)
@@ -150,15 +150,15 @@ module PuppetLitmus::RakeHelper
              end
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
-    run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash)
+    PuppetLitmus.bolt.run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash)
   end
 
   def configure_path(inventory_hash)
     results = []
     # fix the path on ssh_nodes
     unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
-      results = run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
-                            'ssh_nodes', config: nil, inventory: inventory_hash)
+      results = PuppetLitmus.bolt.run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
+                                              'ssh_nodes', config: nil, inventory: inventory_hash)
     end
     results
   end
@@ -186,7 +186,7 @@ module PuppetLitmus::RakeHelper
                     end
     run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    PuppetLitmus.bolt.run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
   end
 
   def metadata_module_name
@@ -205,6 +205,6 @@ module PuppetLitmus::RakeHelper
     module_name = module_to_remove || metadata_module_name
     target_nodes = find_targets(inventory_hash, target_node_name)
     install_module_command = "puppet module uninstall #{module_name}"
-    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    PuppetLitmus.bolt.run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
   end
 end

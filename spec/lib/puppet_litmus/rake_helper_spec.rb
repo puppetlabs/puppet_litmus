@@ -23,7 +23,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     it 'calls function' do
       allow(File).to receive(:directory?).and_call_original
       allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return(results)
+      allow(PuppetLitmus.bolt).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return(results)
       described_class.provision('docker', 'waffleimage/centos7', nil)
     end
   end
@@ -39,7 +39,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
 
     it 'calls function' do
       allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return([])
+      allow(PuppetLitmus.bolt).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return([])
       described_class.tear_down_nodes(targets, inventory_hash)
     end
   end
@@ -55,7 +55,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
 
     it 'calls function' do
       allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
+      allow(PuppetLitmus.bolt).to receive(:run_task).with('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
       described_class.install_agent('puppet6', targets, inventory_hash)
     end
   end
@@ -73,7 +73,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     it 'calls function' do
       allow(Open3).to receive(:capture3).with("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml")
                                         .and_return(['success', '', 0])
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(install_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
+      allow(PuppetLitmus.bolt).to receive(:run_command).with(install_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       described_class.install_module(inventory_hash, nil, module_tar)
     end
   end
@@ -88,13 +88,13 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:uninstall_module_command) { 'puppet module uninstall foo-bar' }
 
     it 'uninstalls module' do
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
+      allow(PuppetLitmus.bolt).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       expect(described_class).to receive(:metadata_module_name).and_return('foo-bar')
       described_class.uninstall_module(inventory_hash, nil)
     end
 
     it 'and custom name' do
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
+      allow(PuppetLitmus.bolt).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       described_class.uninstall_module(inventory_hash, nil, 'foo-bar')
     end
   end

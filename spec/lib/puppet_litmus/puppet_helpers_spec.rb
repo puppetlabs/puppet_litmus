@@ -31,7 +31,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
         expect(described_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-        expect(described_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         described_class.apply_manifest(manifest, hiera_config: '/hiera.yaml')
       end
     end
@@ -47,7 +47,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
         expect(described_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-        expect(described_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { described_class.apply_manifest(manifest, expect_failures: true) }.to raise_error(RuntimeError)
       end
 
@@ -56,7 +56,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
         expect(described_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-        expect(described_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         described_class.apply_manifest(manifest, catch_failures: true)
       end
 
@@ -65,7 +65,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
         expect(described_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-        expect(described_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { described_class.apply_manifest(manifest, expect_changes: true) }.to raise_error(RuntimeError)
       end
 
@@ -74,7 +74,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
         expect(described_class).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-        expect(described_class).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         described_class.apply_manifest(manifest, catch_changes: true)
       end
 
@@ -101,7 +101,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_command).with(command_to_run, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command_to_run, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { described_class.run_shell(command_to_run) }.not_to raise_error
       end
     end
@@ -112,7 +112,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_command).with(command_to_run, 'some.host', config: nil, inventory: inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_command).with(command_to_run, 'some.host', config: nil, inventory: inventory_hash).and_return(result)
         expect { described_class.run_shell(command_to_run) }.not_to raise_error
       end
     end
@@ -139,7 +139,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_success)
+        expect(PuppetLitmus.bolt).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_success)
         expect { described_class.bolt_upload_file(local, remote) }.not_to raise_error
       end
 
@@ -149,7 +149,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:upload_file).with(local, remote, 'litmus_localhost', options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result_success)
+        expect(PuppetLitmus.bolt).to receive(:upload_file).with(local, remote, 'litmus_localhost', options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result_success)
         expect { described_class.bolt_upload_file(local, remote) }.not_to raise_error
       end
     end
@@ -160,7 +160,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
+        expect(PuppetLitmus.bolt).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
         expect { described_class.bolt_upload_file(local, remote) }.to raise_error(RuntimeError, %r{upload file failed})
       end
 
@@ -169,7 +169,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
+        expect(PuppetLitmus.bolt).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
         method_result = described_class.bolt_upload_file(local, remote, expect_failures: true)
         expect(method_result.exit_code).to be(255)
         expect(method_result.stderr).to be('No such file or directory @ rb_sysopen - /nonexistant/file/path')
@@ -194,7 +194,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_script).with(script, 'litmus_localhost', [], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_script).with(script, 'litmus_localhost', [], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { described_class.bolt_run_script(script) }.not_to raise_error
       end
     end
@@ -205,7 +205,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: nil).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: nil).and_return(result)
         expect { described_class.bolt_run_script(script) }.not_to raise_error
       end
     end
@@ -217,7 +217,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(described_class).to receive(:localhost_inventory_hash).and_return(localhost_inventory_hash)
         expect(described_class).not_to receive(:inventory_hash_from_inventory_file)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_script).with(script, 'litmus_localhost', ['doot'], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
+        expect(PuppetLitmus.bolt).to receive(:run_script).with(script, 'litmus_localhost', ['doot'], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { described_class.bolt_run_script(script, arguments: ['doot']) }.not_to raise_error
       end
     end
@@ -245,7 +245,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
         expect { described_class.run_bolt_task(task_name, params, opts: {}) }.not_to raise_error
       end
 
@@ -254,7 +254,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('jim.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
         expect { described_class.run_bolt_task(task_name, params, inventory_file: 'jim.yaml') }.not_to raise_error
       end
 
@@ -263,7 +263,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
         method_result = described_class.run_bolt_task(task_name, params, opts: {})
         expect(method_result.stdout).to eq('SUCCESS!')
       end
@@ -273,7 +273,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_structured_task_success)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_structured_task_success)
         method_result = described_class.run_bolt_task(task_name, params, opts: {})
         expect(method_result.stdout).to eq('{"key1"=>"foo", "key2"=>"bar"}')
         expect(method_result.result['key1']).to eq('foo')
@@ -287,7 +287,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
         expect { described_class.run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, %r{task failed})
       end
 
@@ -296,7 +296,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
         expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
+        expect(PuppetLitmus.bolt).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
         method_result = described_class.run_bolt_task(task_name, params, expect_failures: true)
         expect(method_result.exit_code).to be(123)
         expect(method_result.stderr).to be('FAILURE!')
