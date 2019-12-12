@@ -122,10 +122,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:local) { '/tmp' }
     let(:remote) { '/remote_tmp' }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
-    # rubocop:disable SpaceInsideHashLiteralBraces, SpaceInsideBlockBraces, SpaceAroundOperators, LineLength, SpaceAfterComma
+    # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Metrics/LineLength, Layout/SpaceAfterComma
     let(:result_success) {[{'node'=>'some.host','target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','result'=>{'_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\''}}]}
     let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','result'=>{'_error'=>{'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR'}}}]}
-    # rubocop:enable SpaceInsideHashLiteralBraces, SpaceInsideBlockBraces, SpaceAroundOperators, LineLength, SpaceAfterComma
+    # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Metrics/LineLength, Layout/SpaceAfterComma
     let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'some.host', 'config' => { 'transport' => 'local' } }] }] } }
     let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
 
@@ -228,11 +228,11 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:params) { { 'action' => 'install', 'name' => 'foo' } }
     let(:config_data) { { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
-    # rubocop:disable SpaceInsideHashLiteralBraces, SpaceBeforeBlockBraces, SpaceInsideBlockBraces, SpaceAroundOperators, LineLength, SpaceAfterComma
+    # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Metrics/LineLength, Layout/SpaceAfterComma
     let(:result_unstructured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'success','result'=>{'_output'=>'SUCCESS!'}}]}
     let(:result_structured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','result'=>{'key1'=>'foo','key2'=>'bar'}}]}
     let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','result'=>{'_error'=>{'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{'exitcode'=>123}}}}]}
-    # rubocop:enable SpaceInsideHashLiteralBraces, SpaceBeforeBlockBraces, SpaceInsideBlockBraces, SpaceAroundOperators, LineLength, SpaceAfterComma
+    # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Metrics/LineLength, Layout/SpaceAfterComma
     let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'some.host', 'config' => { 'transport' => 'local' } }] }] } }
 
     it 'responds to bolt_run_task' do
