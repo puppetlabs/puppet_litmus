@@ -9,6 +9,7 @@ module PuppetLitmus
 
     RSpec.configure do |config|
       config.include PuppetLitmus
+      config.extend PuppetLitmus
     end
 
     if ENV['TARGET_HOST'].nil? || ENV['TARGET_HOST'] == 'localhost'
