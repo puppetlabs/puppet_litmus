@@ -53,7 +53,7 @@ namespace :litmus do
       end
 
       if result.first['status'] != 'success'
-        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['result']['_output']}\n"
+        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['result']['_output']}\n#{result.inspect}"
       else
         STDOUT.puts "#{result.first['result']['node_name']}, #{image}"
       end
