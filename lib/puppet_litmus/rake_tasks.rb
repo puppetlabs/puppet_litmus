@@ -175,6 +175,20 @@ namespace :litmus do
     end
   end
 
+  # Check that the nodes in the inventory are still contactable
+  #
+  # @param :target_node_name [Array] nodes on which to check connnectivity
+  desc 'check_connectivity - build and install module'
+  task :check_connectivity, [:target_node_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+    check_connectivity?(inventory_hash, args[:target_node_name])
+  end
+
   # Install the puppet module under test on a collection of nodes
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.

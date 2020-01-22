@@ -207,4 +207,18 @@ module PuppetLitmus::RakeHelper
     install_module_command = "puppet module uninstall #{module_name}"
     run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
   end
+
+  def check_connectivity?(inventory_hash, target_node_name)
+    require 'bolt_spec/run'
+    include BoltSpec::Run
+    target_nodes = find_targets(inventory_hash, target_node_name)
+    results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
+    failed = []
+    results.each do |result|
+      failed.push(result['target']) if result['status'] == 'failure'
+    end
+    raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
+
+    true
+  end
 end
