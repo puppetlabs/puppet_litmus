@@ -78,6 +78,27 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
   end
 
+  context 'with check_connectivity' do
+    let(:inventory_hash) do
+      { 'groups' =>
+        [{ 'name' => 'ssh_nodes', 'nodes' =>
+          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+    end
+    let(:targets) { ['some.host'] }
+    let(:command) { 'cd .' }
+
+    it 'node available' do
+      allow(Open3).to receive(:capture3).with('cd .').and_return(['success', '', 0])
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'success' }])
+      described_class.check_connectivity?(inventory_hash, nil)
+    end
+
+    it 'node unavailable' do
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'failure' }])
+      expect { described_class.check_connectivity?(inventory_hash, nil) }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
+    end
+  end
+
   context 'with uninstall module' do
     let(:inventory_hash) do
       { 'groups' =>
