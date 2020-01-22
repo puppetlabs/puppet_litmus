@@ -81,4 +81,15 @@ describe 'litmus rake tasks' do
       expect { Rake::Task['litmus:provision_list'].invoke('deet') }.to raise_error(%r{deet})
     end
   end
+
+  context 'with litmus:check_connectivity task' do
+    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'name' => 'some.host' }] }] } }
+
+    it 'happy path' do
+      stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+      expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+      expect_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(inventory_hash, nil).and_return(true)
+      Rake::Task['litmus:check_connectivity'].invoke
+    end
+  end
 end
