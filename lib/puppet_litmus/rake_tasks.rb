@@ -380,6 +380,7 @@ namespace :litmus do
         # output test summary
         puts "Successful on #{success_list.size} nodes: #{success_list}" if success_list.any?
         puts "Failed on #{failure_list.size} nodes: #{failure_list}" if failure_list.any?
+        Rake::Task['litmus:check_connectivity'].invoke
         exit 1 if failure_list.any?
       end
 
