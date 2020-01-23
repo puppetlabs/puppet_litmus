@@ -1,8 +1,8 @@
 ---
 groups:
 - name: ssh_nodes
-  nodes:
-  - name: test.delivery.puppetlabs.net
+  targets:
+  - uri: test.delivery.puppetlabs.net
     config:
       transport: ssh
       ssh:

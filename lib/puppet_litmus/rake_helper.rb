@@ -150,7 +150,8 @@ module PuppetLitmus::RakeHelper
              end
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
-    run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash)
+    # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
+    run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
   end
 
   def configure_path(inventory_hash)
