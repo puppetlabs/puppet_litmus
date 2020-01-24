@@ -2,6 +2,8 @@
 
 require 'spec_helper'
 require 'rake'
+load File.expand_path('../../../lib/puppet_litmus/inventory_manipulation.rb', __dir__)
+include PuppetLitmus::InventoryManipulation # rubocop:disable Style/MixinUsage
 describe 'litmus rake tasks' do
   before(:all) do # rubocop:disable RSpec/BeforeAfterAll
     load File.expand_path('../../../lib/puppet_litmus/rake_tasks.rb', __dir__)
@@ -47,10 +49,10 @@ describe 'litmus rake tasks' do
 
   context 'with litmus:provision_install task' do
     it 'happy path' do
-      expect(Rake::Task['spec_prep']).to receive(:invoke).and_return('').once
-      expect(Rake::Task['litmus:provision_list']).to receive(:invoke).with('default').once
-      expect(Rake::Task['litmus:install_agent']).to receive(:invoke).with('puppet6').once
-      expect(Rake::Task['litmus:install_module']).to receive(:invoke).once
+      expect(Rake::Task['spec_prep']).to receive(:invoke).and_return('')
+      expect(Rake::Task['litmus:provision_list']).to receive(:invoke).with('default')
+      expect(Rake::Task['litmus:install_agent']).to receive(:invoke).with('puppet6')
+      expect(Rake::Task['litmus:install_module']).to receive(:invoke)
       Rake::Task['litmus:provision_install'].invoke('default', 'puppet6')
     end
   end
@@ -90,6 +92,14 @@ describe 'litmus rake tasks' do
       expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
       expect_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(inventory_hash, nil).and_return(true)
       Rake::Task['litmus:check_connectivity'].invoke
+    end
+  end
+
+  context 'with litmus:acceptance:localhost task' do
+    it 'calls spec_prep' do
+      expect(Rake::Task['spec_prep']).to receive(:invoke).and_return('')
+      expect_any_instance_of(RSpec::Core::RakeTask).to receive(:run_task)
+      Rake::Task['litmus:acceptance:localhost'].invoke
     end
   end
 end
