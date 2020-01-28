@@ -38,5 +38,6 @@ matrix:
       BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:provision_list[default]'
       BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:install_agent'
       BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:install_module'
+      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:add_feature[test_123]'
     script:
     - BUNDLE_GEMFILE=./Gemfile bundle exec rake litmus:acceptance:parallel

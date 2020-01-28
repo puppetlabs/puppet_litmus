@@ -135,6 +135,33 @@ namespace :litmus do
     end
   end
 
+  # Add a given feature to a selection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to add the feature.
+  # @param :added_feature [String] the feature which you wish to add.
+  desc 'add_feature, [:added_feature, :target_node_name]'
+  task :add_feature, [:added_feature, :target_node_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    targets = find_targets(inventory_hash, args[:target_node_name])
+    if targets.empty?
+      puts 'No targets found'
+      exit 0
+    end
+    if args[:added_feature].nil? || args[:added_feature] == ''
+      puts 'No feature given'
+      exit 0
+    end
+    puts 'add_feature'
+
+    targets.each do |target|
+      inventory_hash = add_feature_to_node(inventory_hash, args[:added_feature], target)
+    end
+
+    write_to_inventory_file(inventory_hash, 'inventory.yaml')
+
+    puts 'Feature added'
+  end
+
   # Install the puppet modules from a source directory to nodes. It does not install dependencies.
   #
   # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
