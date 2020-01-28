@@ -232,9 +232,7 @@ namespace :litmus do
       exit 0
     end
 
-    opts = {}
-    opts[:force] = true
-    module_tar = build_module(opts)
+    module_tar = build_module
     puts 'Built'
 
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }

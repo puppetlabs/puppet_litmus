@@ -71,15 +71,13 @@ module PuppetLitmus::RakeHelper
       folder_handle = Dir.open(File.join(source_folder, folder))
       next if File.symlink?(folder_handle)
 
-      opts = {}
-      opts[:module_dir] = folder_handle.path
-      opts[:'target-dir'] = File.join(Dir.pwd, 'pkg')
-      opts[:force] = true
+      module_dir = folder_handle.path
+      target_dir = File.join(Dir.pwd, 'pkg')
       # remove old build folder if exists, before we build afresh
-      FileUtils.rm_rf(opts[:'target-dir']) if File.directory?(opts[:'target-dir'])
+      FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
 
       # build_module
-      module_tar = build_module(opts)
+      module_tar = build_module(module_dir, target_dir)
       module_tars.push(File.new(module_tar))
     end
     module_tars
@@ -164,15 +162,20 @@ module PuppetLitmus::RakeHelper
     results
   end
 
-  def build_module(opts)
-    # old cli_way
-    # pdk_build_command = 'bundle exec pdk build  --force'
-    # stdout, stderr, _status = Open3.capture3(pdk_build_command)
-    # raise "Failed to run 'pdk_build_command',#{stdout} and #{stderr}" if (stderr =~ %r{completed successfully}).nil?
-    require 'pdk/module/build'
-    require 'pdk/util'
+  # @param opts Hash of options to build the module
+  # @param module_dir [String] The path of the module to build. If missing defaults to Dir.pwd
+  # @param target_dir [String] The path the module will be built into. The default is <source_dir>/pkg
+  # @return [String] The path to the built module
+  def build_module(module_dir = nil, target_dir = nil)
+    require 'puppet/modulebuilder'
 
-    builder = PDK::Module::Build.new(opts)
+    source_dir = module_dir || Dir.pwd
+    dest_dir = target_dir || File.join(source_dir, 'pkg')
+
+    builder = Puppet::Modulebuilder::Builder.new(source_dir, dest_dir, nil)
+    # Force the metadata to be read. Raises if metadata could not be found
+    _metadata = builder.metadata
+
     builder.build
   end
 
