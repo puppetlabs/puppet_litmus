@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-load File.expand_path('../../../lib/puppet_litmus/inventory_manipulation.rb', __dir__)
-include PuppetLitmus::InventoryManipulation # rubocop:disable Style/MixinUsage
 
 RSpec.describe PuppetLitmus::InventoryManipulation do
   context 'with config_from_node' do

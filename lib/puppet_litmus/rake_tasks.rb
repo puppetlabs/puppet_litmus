@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rake'
+
 namespace :litmus do
   require 'puppet_litmus/inventory_manipulation'
   require 'puppet_litmus/rake_helper'
