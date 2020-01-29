@@ -122,19 +122,25 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
-    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    Honeycomb.start_span(name: 'litmus_runshell') do |span|
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-    raise "shell failed\n`#{command_to_run}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+      result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+        span.add_field('litmus_runshellfailure', result)
+        raise "shell failed\n`#{command_to_run}`\n======\n#{result}"
+      end
 
-    result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
-                            exit_status: result.first['result']['exit_code'],
-                            stdout: result.first['result']['stdout'],
-                            stderr: result.first['result']['stderr'])
-    yield result if block_given?
-    result
+      result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                              exit_status: result.first['result']['exit_code'],
+                              stdout: result.first['result']['stdout'],
+                              stderr: result.first['result']['stderr'])
+      yield result if block_given?
+      span.add_field('litmus_runshellsuccess', result)
+      result
+    end
   end
 
   # Copies file to the target, using its respective transport
@@ -145,31 +151,37 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def bolt_upload_file(source, destination, opts = {}, options = {})
-    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    Honeycomb.start_span(name: 'litmus_uploadfile') do |span|
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+      result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
 
-    result_obj = {
-      exit_code: 0,
-      stdout: result.first['result']['_output'],
-      stderr: nil,
-      result: result.first['result'],
-    }
+      result_obj = {
+        exit_code: 0,
+        stdout: result.first['result']['_output'],
+        stderr: nil,
+        result: result.first['result'],
+      }
 
-    if result.first['status'] != 'success'
-      raise "upload file failed\n======\n#{result}" if opts[:expect_failures] != true
+      if result.first['status'] != 'success'
+        if opts[:expect_failures] != true
+          span.add_field('litmus_uploadfilefailure', result)
+          raise "upload file failed\n======\n#{result}"
+        end
 
-      result_obj[:exit_code] = 255
-      result_obj[:stderr]    = result.first['result']['_error']['msg']
+        result_obj[:exit_code] = 255
+        result_obj[:stderr]    = result.first['result']['_error']['msg']
+      end
+
+      result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                              stdout: result_obj[:stdout],
+                              stderr: result_obj[:stderr])
+      yield result if block_given?
+      span.add_field('litmus_uploadfilesucess', result)
+      result
     end
-
-    result = OpenStruct.new(exit_code: result_obj[:exit_code],
-                            stdout: result_obj[:stdout],
-                            stderr: result_obj[:stderr])
-    yield result if block_given?
-    result
   end
 
   # rubocop:disable Layout/TrailingWhitespace
@@ -184,50 +196,56 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
   # rubocop:enable Layout/TrailingWhitespace
   def run_bolt_task(task_name, params = {}, opts = {})
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-    inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
-                       inventory_hash_from_inventory_file(opts[:inventory_file])
-                     elsif File.exist?('inventory.yaml')
-                       inventory_hash_from_inventory_file('inventory.yaml')
-                     else
-                       localhost_inventory_hash
-                     end
-    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    Honeycomb.start_span(name: 'litmus_runtask') do |span|
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
+                         inventory_hash_from_inventory_file(opts[:inventory_file])
+                       elsif File.exist?('inventory.yaml')
+                         inventory_hash_from_inventory_file('inventory.yaml')
+                       else
+                         localhost_inventory_hash
+                       end
+      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
-    result_obj = {
-      exit_code: 0,
-      stdout: nil,
-      stderr: nil,
-      result: result.first['result'],
-    }
+      result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
+      result_obj = {
+        exit_code: 0,
+        stdout: nil,
+        stderr: nil,
+        result: result.first['result'],
+      }
 
-    if result.first['status'] == 'success'
-      # stdout returns unstructured data if structured data is not available
-      result_obj[:stdout] = if result.first['result']['_output'].nil?
-                              result.first['result'].to_s
-                            else
-                              result.first['result']['_output']
-                            end
+      if result.first['status'] == 'success'
+        # stdout returns unstructured data if structured data is not available
+        result_obj[:stdout] = if result.first['result']['_output'].nil?
+                                result.first['result'].to_s
+                              else
+                                result.first['result']['_output']
+                              end
 
-    else
-      raise "task failed\n`#{task_name}`\n======\n#{result}" if opts[:expect_failures] != true
+      else
+        if opts[:expect_failures] != true
+          span.add_field('litmus_runtaskfailure', result)
+          raise "task failed\n`#{task_name}`\n======\n#{result}"
+        end
 
-      result_obj[:exit_code] = if result.first['result']['_error']['details'].nil?
-                                 255
-                               else
-                                 result.first['result']['_error']['details'].fetch('exitcode', 255)
-                               end
-      result_obj[:stderr]    = result.first['result']['_error']['msg']
+        result_obj[:exit_code] = if result.first['result']['_error']['details'].nil?
+                                   255
+                                 else
+                                   result.first['result']['_error']['details'].fetch('exitcode', 255)
+                                 end
+        result_obj[:stderr]    = result.first['result']['_error']['msg']
+      end
+
+      result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                              stdout: result_obj[:stdout],
+                              stderr: result_obj[:stderr],
+                              result: result_obj[:result])
+      yield result if block_given?
+      span.add_field('litmus_runtasksuccess', result)
+      result
     end
-
-    result = OpenStruct.new(exit_code: result_obj[:exit_code],
-                            stdout: result_obj[:stdout],
-                            stderr: result_obj[:stderr],
-                            result: result_obj[:result])
-    yield result if block_given?
-    result
   end
 
   # Runs a script against the target system.
@@ -238,19 +256,25 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the script run.
   def bolt_run_script(script, opts = {}, arguments: [])
-    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-    inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-    raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    Honeycomb.start_span(name: 'litmus_runscript') do |span|
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-    result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
+      result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
-    raise "script run failed\n`#{script}`\n======\n#{result}" if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+      if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+        span.add_field('litmus_runscriptfailure', result)
+        raise "script run failed\n`#{script}`\n======\n#{result}"
+      end
 
-    result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
-                            stdout: result.first['result']['stdout'],
-                            stderr: result.first['result']['stderr'])
-    yield result if block_given?
-    result
+      result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
+                              stdout: result.first['result']['stdout'],
+                              stderr: result.first['result']['stderr'])
+      yield result if block_given?
+      span.add_field('litmus_runscriptsuccess', result)
+      result
+    end
   end
 
   # Determines if the current execution is targeting localhost or not
