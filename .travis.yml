@@ -1,5 +1,6 @@
 ---
-dist: trusty
+os: linux
+dist: xenial
 language: ruby
 cache: bundler
 before_install:
@@ -13,7 +14,7 @@ script:
 bundler_args: --without system_tests
 rvm:
   - 2.5.1
-matrix:
+jobs:
   include:
   -
     env: CHECK="rubocop"
@@ -23,11 +24,9 @@ matrix:
     stage: spec
   -
     stage: acceptance
-    sudo: required
     env: PLATFORMS=deb_puppet6
     services: docker
     rvm: 2.5.1
-    dist: trusty
     before_script:
     - |
       git clone https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
