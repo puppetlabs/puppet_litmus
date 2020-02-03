@@ -17,7 +17,6 @@ module PuppetLitmus
   include PuppetLitmus::PuppetHelpers
   include PuppetLitmus::RakeHelper
   Honeycomb.configure do |config|
-    # config.debug = true
   end
   process_span = Honeycomb.start_span(name: 'Litmus Testing')
   if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
