@@ -13,9 +13,11 @@ module PuppetLitmus::InventoryManipulation
                           else
                             inventory_full_path
                           end
-    raise "There is no inventory file at '#{inventory_full_path}'" unless File.exist?(inventory_full_path)
+    raise "There is no inventory file at '#{inventory_full_path}'." unless File.exist?(inventory_full_path)
 
     inventory_hash = YAML.load_file(inventory_full_path)
+    raise "Inventory file is incompatible (version 2 and up). Try the 'bolt project migrate' command." if inventory_hash.dig('version').nil? || (inventory_hash['version'] < 2)
+
     inventory_hash
   end
 
@@ -24,12 +26,13 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] inventory.yaml hash containing only an entry for localhost
   def localhost_inventory_hash
     {
+      'version' => 2,
       'groups' => [
         {
           'name' => 'local',
-          'nodes' => [
+          'targets' => [
             {
-              'name' => 'litmus_localhost',
+              'uri' => 'litmus_localhost',
               'config' => { 'transport' => 'local' },
               'feature' => 'puppet-agent',
             },
@@ -45,13 +48,11 @@ module PuppetLitmus::InventoryManipulation
   # @param targets [Array]
   # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
-    require 'bolt/inventory'
-    if targets.nil?
-      inventory = Bolt::Inventory.new(inventory_hash, nil)
-      targets = inventory.node_names.to_a
-    else
-      targets = [targets]
-    end
+    targets = if targets.nil?
+                inventory_hash.to_s.scan(%r{uri"=>"(\S*)"}).flatten
+              else
+                [targets]
+              end
     targets
   end
 
@@ -66,8 +67,8 @@ module PuppetLitmus::InventoryManipulation
     inventory_hash['groups'].each do |group|
       next unless group['name'] == group_name
 
-      group['nodes'].each do |node|
-        exists = true if node['name'] == node_name
+      group['targets'].each do |node|
+        exists = true if node['uri'] == node_name
       end
     end
     exists
@@ -89,8 +90,8 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] config for node of name node_name
   def config_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name
+      group['targets'].each do |node|
+        if node['uri'] == node_name
           return node['config']
         end
       end
@@ -105,8 +106,8 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] facts for node of name node_name
   def facts_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name
+      group['targets'].each do |node|
+        if node['uri'] == node_name
           return node['facts']
         end
       end
@@ -121,8 +122,8 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] vars for node of name node_name
   def vars_from_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name
+      group['targets'].each do |node|
+        if node['uri'] == node_name
           return node['vars']
         end
       end
@@ -141,12 +142,12 @@ module PuppetLitmus::InventoryManipulation
     if inventory_hash['groups'].any? { |g| g['name'] == group_name }
       inventory_hash['groups'].each do |group|
         if group['name'] == group_name
-          group['nodes'].push node
+          group['targets'].push node
         end
       end
     else
       # add new group
-      group = { 'name' => group_name, 'nodes' => [node] }
+      group = { 'name' => group_name, 'targets' => [node] }
       inventory_hash['groups'].push group
     end
     inventory_hash
@@ -159,7 +160,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] inventory_hash with node of node_name removed.
   def remove_node(inventory_hash, node_name)
     inventory_hash['groups'].each do |group|
-      group['nodes'].delete_if { |i| i['name'] == node_name }
+      group['targets'].delete_if { |i| i['uri'] == node_name }
     end
     inventory_hash
   end
@@ -213,13 +214,13 @@ module PuppetLitmus::InventoryManipulation
     group_index = 0
     inventory_hash['groups'].each do |group|
       node_index = 0
-      group['nodes'].each do |node|
-        if node['name'] == node_name
+      group['targets'].each do |node|
+        if node['uri'] == node_name
           if node['features'].nil? == true
             node = node.merge('features' => [])
           end
           node['features'].push feature_name unless node['features'].include?(feature_name)
-          inventory_hash['groups'][group_index]['nodes'][node_index] = node
+          inventory_hash['groups'][group_index]['targets'][node_index] = node
         end
         node_index += 1
       end
@@ -237,8 +238,8 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] inventory_hash with feature added to node if node_name exists in inventory hash.
   def remove_feature_from_node(inventory_hash, feature_name, node_name)
     inventory_hash['groups'].each do |group|
-      group['nodes'].each do |node|
-        if node['name'] == node_name && node['features'].nil? != true
+      group['targets'].each do |node|
+        if node['uri'] == node_name && node['features'].nil? != true
           node['features'].delete(feature_name)
         end
       end

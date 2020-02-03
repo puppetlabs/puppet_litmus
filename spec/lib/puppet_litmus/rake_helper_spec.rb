@@ -31,8 +31,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
   context 'with tear_down' do
     let(:inventory_hash) do
       { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'nodes' =>
-          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:targets) { ['some.host'] }
     let(:params) { { 'action' => 'tear_down', 'node_name' => 'some.host', 'inventory' => Dir.pwd } }
@@ -47,8 +47,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
   context 'with install_agent' do
     let(:inventory_hash) do
       { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'nodes' =>
-          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:targets) { ['some.host'] }
     let(:params) { { 'collection' => 'puppet6' } }
@@ -62,9 +62,10 @@ RSpec.describe PuppetLitmus::RakeHelper do
 
   context 'with install_module' do
     let(:inventory_hash) do
-      { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'nodes' =>
-          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+      { 'version' => 2,
+        'groups' =>
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:module_tar) { '/tmp/foo.tar.gz' }
     let(:targets) { ['some.host'] }
@@ -81,8 +82,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
   context 'with check_connectivity' do
     let(:inventory_hash) do
       { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'nodes' =>
-          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:targets) { ['some.host'] }
     let(:command) { 'cd .' }
@@ -102,8 +103,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
   context 'with uninstall module' do
     let(:inventory_hash) do
       { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'nodes' =>
-          [{ 'name' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:targets) { ['some.host'] }
     let(:uninstall_module_command) { 'puppet module uninstall foo-bar' }
