@@ -26,4 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'docker-api',  ['>= 1.34', '< 2.0.0']
   spec.add_runtime_dependency 'parallel'
   spec.add_runtime_dependency 'rspec'
+  spec.add_runtime_dependency 'honeycomb-beeline'
 end
