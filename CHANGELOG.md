@@ -14,9 +14,16 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(MODULES-10478\) honeycomb integration to litmus [\#238](https://github.com/puppetlabs/puppet_litmus/pull/238) ([sheenaajay](https://github.com/sheenaajay))
 - \(feat\) - new rake task to add a given feature to a group of nodes [\#236](https://github.com/puppetlabs/puppet_litmus/pull/236) ([david22swan](https://github.com/david22swan))
+- \(MAINT\) Ensure acceptance:localhost task also runs spec\_prep [\#206](https://github.com/puppetlabs/puppet_litmus/pull/206) ([RandomNoun7](https://github.com/RandomNoun7))
+
+## [0.14.0](https://github.com/puppetlabs/puppet_litmus/tree/0.14.0) (2020-01-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.13.1...0.14.0)
+
+### Added
+
 - \(feat\) check connectivity status, after testing completes [\#231](https://github.com/puppetlabs/puppet_litmus/pull/231) ([tphoney](https://github.com/tphoney))
 - \(feat\) new rake task to check nodes are available [\#230](https://github.com/puppetlabs/puppet_litmus/pull/230) ([tphoney](https://github.com/tphoney))
-- \(MAINT\) Ensure acceptance:localhost task also runs spec\_prep [\#206](https://github.com/puppetlabs/puppet_litmus/pull/206) ([RandomNoun7](https://github.com/RandomNoun7))
 
 ### Fixed
 
