@@ -14,15 +14,23 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(MODULES-10478\) honeycomb integration to litmus [\#238](https://github.com/puppetlabs/puppet_litmus/pull/238) ([sheenaajay](https://github.com/sheenaajay))
 - \(feat\) - new rake task to add a given feature to a group of nodes [\#236](https://github.com/puppetlabs/puppet_litmus/pull/236) ([david22swan](https://github.com/david22swan))
+- \(MAINT\) Ensure acceptance:localhost task also runs spec\_prep [\#206](https://github.com/puppetlabs/puppet_litmus/pull/206) ([RandomNoun7](https://github.com/RandomNoun7))
+
+## [0.14.0](https://github.com/puppetlabs/puppet_litmus/tree/0.14.0) (2020-01-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.13.1...0.14.0)
+
+### Added
+
 - \(feat\) check connectivity status, after testing completes [\#231](https://github.com/puppetlabs/puppet_litmus/pull/231) ([tphoney](https://github.com/tphoney))
 - \(feat\) new rake task to check nodes are available [\#230](https://github.com/puppetlabs/puppet_litmus/pull/230) ([tphoney](https://github.com/tphoney))
-- \(MAINT\) Ensure acceptance:localhost task also runs spec\_prep [\#206](https://github.com/puppetlabs/puppet_litmus/pull/206) ([RandomNoun7](https://github.com/RandomNoun7))
 
 ### Fixed
 
 - Improve error reporting [\#228](https://github.com/puppetlabs/puppet_litmus/pull/228) ([DavidS](https://github.com/DavidS))
 - \(MODULES-10018\) Extend RSpec config with PuppetLitmus [\#226](https://github.com/puppetlabs/puppet_litmus/pull/226) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(MODULES-10115\) Fix Windows endpoint declaration when using TARGET\_HOST [\#224](https://github.com/puppetlabs/puppet_litmus/pull/224) ([michaeltlombardi](https://github.com/michaeltlombardi))
+
 
 ## [0.13.1](https://github.com/puppetlabs/puppet_litmus/tree/0.13.1) (2019-12-11)
 
@@ -208,6 +216,7 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(FM-8185\) Use spinner when provisioning  [\#130](https://github.com/puppetlabs/puppet_litmus/pull/130) ([florindragos](https://github.com/florindragos))
 - \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
+- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - Addition of pe\_install rake task [\#124](https://github.com/puppetlabs/puppet_litmus/pull/124) ([HelenCampbell](https://github.com/HelenCampbell))
 
 ### Fixed
@@ -241,7 +250,6 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - \(feat\) better error message for agent\_install [\#114](https://github.com/puppetlabs/puppet_litmus/pull/114) ([tphoney](https://github.com/tphoney))
 - \(MODULES-9170\) allow for the new docker provisioner [\#113](https://github.com/puppetlabs/puppet_litmus/pull/113) ([tphoney](https://github.com/tphoney))
 
