@@ -13,7 +13,7 @@ script:
 - 'bundle exec rake $CHECK'
 bundler_args: --without system_tests
 rvm:
-  - 2.5.1
+  - 2.5.7
 jobs:
   include:
   - env: CHECK="rubocop"
@@ -23,7 +23,6 @@ jobs:
   - stage: acceptance
     env: PLATFORMS=deb_puppet6
     services: docker
-    rvm: 2.5.1
     before_script:
     - |
       git clone https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd

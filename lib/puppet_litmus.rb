@@ -31,6 +31,11 @@ module PuppetLitmus
     process_span.add_field('appveyor_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/builds/#{ENV['APPVEYOR_BUILD_ID']}")
     process_span.add_field('appveyor_repo_commit_message', ENV['APPVEYOR_REPO_COMMIT_MESSAGE'])
     process_span.add_field('appveyor_pull_request_head_commit', ENV['APPVEYOR_PULL_REQUEST_HEAD_COMMIT'])
+  elsif ENV['GITHUB_ACTIONS'] == 'true'
+    process_span.add_field('module_name', ENV['GITHUB_REPOSITORY'])
+    process_span.add_field('github_build_id', ENV['GITHUB_RUN_ID'])
+    process_span.add_field('github_build_url', "https://github.com/#{ENV['GITHUB_REPOSITORY']}/actions/runs/#{ENV['GITHUB_RUN_ID']}")
+    process_span.add_field('github_sha', ENV['GITHUB_SHA'])
   end
   at_exit do
     process_span.send
