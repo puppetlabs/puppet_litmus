@@ -68,15 +68,15 @@ module PuppetLitmus::RakeHelper
     folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
     module_tars = []
     folder_list.each do |folder|
-      file = File.new(File.join(source_folder, folder))
-      next if File.symlink?(file)
+      folder_handle = Dir.open(File.join(source_folder, folder))
+      next if File.symlink?(folder_handle)
 
       opts = {}
-      opts[:module_dir] = file.path
+      opts[:module_dir] = folder_handle.path
       opts[:'target-dir'] = File.join(Dir.pwd, 'pkg')
       opts[:force] = true
       # remove old build folder if exists, before we build afresh
-      FileUtils.rm_rf(builder.build_dir) if File.directory?(builder.build_dir)
+      FileUtils.rm_rf(opts[:'target-dir']) if File.directory?(opts[:'target-dir'])
 
       # build_module
       module_tar = build_module(opts)
