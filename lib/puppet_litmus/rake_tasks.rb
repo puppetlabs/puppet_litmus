@@ -187,19 +187,30 @@ namespace :litmus do
     raise "Source folder doesnt exist #{source_folder}" unless File.directory?(source_folder)
 
     module_tars = build_modules_in_folder(source_folder)
-    puts 'Building'
-    module_tars.each do |module_tar|
-      print "#{File.basename(module_tar)} "
-    end
     require 'bolt_spec/run'
     include BoltSpec::Run
-    puts "\nSending"
+    puts '\nInstalling'
     module_tars.each do |module_tar|
-      upload_file(module_tar.path, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash)
-      print "#{File.basename(module_tar)} "
-    end
-    puts "\nInstalling"
-    module_tars.each do |module_tar|
+      module_name = File.basename(module_tar)
+      local_path = module_tar.path.to_s
+      remote_path = "/tmp/#{module_name}"
+      puts "uploading and installing module #{module_name} to #{remote_path} on target(s) #{target_nodes}"
+      # upload module
+      upload_result = upload_file(
+        local_path,
+        remote_path,
+        target_nodes,
+        options: {},
+        config: nil,
+        inventory: inventory_hash,
+      )
+      # look for errors in result
+      upload_errors = check_bolt_errors(upload_result)
+      # let's report errors
+      unless upload_errors.empty?
+        raise "Upload of package #{module_name} failed. Errors per target: #{upload_errors}"
+      end
+
       # install_module
       install_module_command = "puppet module install --module_repository #{args[:module_repository]} --force /tmp/#{File.basename(module_tar)}"
       run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)

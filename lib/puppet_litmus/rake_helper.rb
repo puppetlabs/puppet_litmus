@@ -110,14 +110,16 @@ module PuppetLitmus::RakeHelper
   def build_modules_in_folder(source_folder)
     folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
     module_tars = []
+
+    target_dir = File.join(Dir.pwd, 'pkg')
+    # remove old build folder if exists, before we build afresh
+    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
+
     folder_list.each do |folder|
       folder_handle = Dir.open(File.join(source_folder, folder))
       next if File.symlink?(folder_handle)
 
       module_dir = folder_handle.path
-      target_dir = File.join(Dir.pwd, 'pkg')
-      # remove old build folder if exists, before we build afresh
-      FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
 
       # build_module
       module_tar = build_module(module_dir, target_dir)
@@ -319,5 +321,25 @@ module PuppetLitmus::RakeHelper
       warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
       provisioner.to_s
     end
+  end
+
+  # Parse out errors messages in result set returned by Bolt command.
+  #
+  # @param result_set [Array] result set returned by Bolt command.
+  # @return [Hash] Error messages grouped by target.
+  def check_bolt_errors(result_set)
+    errors = {}
+    # iterate through each error
+    result_set.each do |target_result|
+      status = target_result['status']
+      # jump to the next one when there is not fail
+      next if status != 'failure'
+
+      target = target_result['target']
+      # get some info from error
+      error_msg = target_result['result']['_error']['msg']
+      errors[target] = error_msg
+    end
+    errors
   end
 end
