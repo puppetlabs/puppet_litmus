@@ -55,7 +55,7 @@ module PuppetLitmus::RakeHelper
     require 'open3'
     stdout, stderr, status = Open3.capture3(command)
     error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-    raise error_message unless status.to_i.zero?
+    raise error_message unless status.success?
 
     stdout
   end

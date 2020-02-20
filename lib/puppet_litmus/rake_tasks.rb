@@ -371,7 +371,7 @@ namespace :litmus do
           end
           # because we cannot modify variables inside of Parallel
           results.each do |result|
-            if result.last.to_i.zero?
+            if result.last.success?
               success_list.push(result.first.scan(%r{.*})[2])
             else
               failure_list.push(result.first.scan(%r{.*})[2])
@@ -385,7 +385,7 @@ namespace :litmus do
             env = options[:env].nil? ? {} : options[:env]
             spinners.register("[:spinner] #{title}") do |sp|
               stdout, stderr, status = Open3.capture3(env, test)
-              if status.to_i.zero?
+              if status.success?
                 sp.success
                 success_list.push(title)
               else
