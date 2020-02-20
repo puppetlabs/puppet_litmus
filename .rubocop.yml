@@ -13,7 +13,7 @@ AllCops:
   - pkg/**/*
   - spec/fixtures/**/*
   - vendor/**/*
-Metrics/LineLength:
+Layout/LineLength:
   Description: People have wide screens, use them.
   Max: 200
 RSpec/BeforeAfterAll:
@@ -157,3 +157,12 @@ Layout/ClosingHeredocIndentation:
 # This cop breaks code coverage :(
 RSpec/AnyInstance:
   Enabled: false
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+module PuppetLitmus; end # rubocop:disable Style/Documentation
+
 # helper functions for manipulating and reading a bolt inventory file
 module PuppetLitmus::InventoryManipulation
   # Creates an inventory hash from the inventory.yaml.

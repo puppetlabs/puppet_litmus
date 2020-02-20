@@ -115,11 +115,11 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'no feature exists for the group, and returns hash with feature added' do
-      expect(described_class.add_feature_to_group(no_feature_hash, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => ['puppet-agent'], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.add_feature_to_group(no_feature_hash, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => ['puppet-agent'], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'feature exists for the group, and returns hash with feature removed' do
-      expect(described_class.remove_feature_from_group(feature_hash_group, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => [], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.remove_feature_from_group(feature_hash_group, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => [], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'write from inventory_hash to inventory_yaml file feature_hash_group' do
@@ -127,15 +127,15 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'empty feature exists for the group, and returns hash with feature added' do
-      expect(described_class.add_feature_to_group(empty_feature_hash_group, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => ['puppet-agent'], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.add_feature_to_group(empty_feature_hash_group, 'puppet-agent', 'ssh_nodes')).to eq('groups' => [{ 'features' => ['puppet-agent'], 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net' }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'no feature exists for the node, and returns hash with feature added' do
-      expect(described_class.add_feature_to_node(no_feature_hash, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => ['puppet-agent'] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.add_feature_to_node(no_feature_hash, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => ['puppet-agent'] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'feature exists for the node, and returns hash with feature removed' do
-      expect(described_class.remove_feature_from_node(feature_hash_node, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => [] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.remove_feature_from_node(feature_hash_node, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => [] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'write from inventory_hash to inventory_yaml file feature_hash_node' do
@@ -143,7 +143,7 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'empty feature exists for the node, and returns hash with feature added' do
-      expect(described_class.add_feature_to_node(empty_feature_hash_node, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => ['puppet-agent'] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Metrics/LineLength: Line is too long
+      expect(described_class.add_feature_to_node(empty_feature_hash_node, 'puppet-agent', 'test.delivery.puppetlabs.net')).to eq('groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'config' => { 'ssh' => { 'host-key-check' => false, 'password' => 'Qu@lity!', 'user' => 'root' }, 'transport' => 'ssh' }, 'facts' => { 'platform' => 'centos-5-x86_64', 'provisioner' => 'vmpooler' }, 'uri' => 'test.delivery.puppetlabs.net', 'features' => ['puppet-agent'] }] }, { 'name' => 'winrm_nodes', 'targets' => [] }]) # rubocop:disable Layout/LineLength: Line is too long
     end
 
     it 'write from inventory_hash to inventory_yaml file no feature_hash' do

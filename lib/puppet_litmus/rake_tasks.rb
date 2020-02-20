@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 namespace :litmus do
+  require 'puppet_litmus/inventory_manipulation'
   require 'puppet_litmus/rake_helper'
+  include PuppetLitmus::InventoryManipulation
   include PuppetLitmus::RakeHelper
   # Prints all supported OSes from metadata.json file.
   desc 'print all supported OSes from metadata'
@@ -324,8 +326,6 @@ namespace :litmus do
   namespace :acceptance do
     require 'rspec/core/rake_task'
     if File.file?('inventory.yaml')
-      require 'puppet_litmus/inventory_manipulation'
-      include PuppetLitmus::InventoryManipulation
       inventory_hash = inventory_hash_from_inventory_file
       targets = find_targets(inventory_hash, nil)
 
