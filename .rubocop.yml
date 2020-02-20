@@ -13,7 +13,7 @@ AllCops:
   - pkg/**/*
   - spec/fixtures/**/*
   - vendor/**/*
-Metrics/LineLength:
+Layout/LineLength:
   Description: People have wide screens, use them.
   Max: 200
 RSpec/BeforeAfterAll:
@@ -122,11 +122,6 @@ Lint/NestedMethodDefinition:
 RSpec/MessageSpies:
   Enabled: false
 
-# If neighbouring parameters are both hashes, it helps to have braces round both.
-Style/BracesAroundHashParameters:
-  Exclude:
-    - 'spec/puppet/resource_api/base_context_spec.rb'
-
 # requires 2.3's squiggly HEREDOC support, which we can't use, yet
 # see http://www.virtuouscode.com/2016/01/06/about-the-ruby-squiggly-heredoc-syntax/
 Layout/HeredocIndentation:
@@ -162,3 +157,12 @@ Layout/ClosingHeredocIndentation:
 # This cop breaks code coverage :(
 RSpec/AnyInstance:
   Enabled: false
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
