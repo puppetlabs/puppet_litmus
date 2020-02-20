@@ -23,7 +23,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
   describe '.apply_manifest' do
     context 'when specifying a hiera config' do
       let(:manifest) { "include '::doot'" }
-      let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+      let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
       let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
       it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
@@ -38,7 +38,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
     context 'when using detailed-exitcodes' do
       let(:manifest) { "include '::doot'" }
-      let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+      let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
       let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
 
       it 'uses detailed-exitcodes with expect_failures' do
@@ -86,7 +86,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
   describe '.run_shell' do
     let(:command_to_run) { "puts 'doot'" }
-    let(:result) { ['result' => { 'exit_code' => 0, 'exit_status' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:result) { ['value' => { 'exit_code' => 0, 'exit_status' => 0, 'stdout' => nil, 'stderr' => nil }] }
 
     it 'responds to run_shell' do
       expect(described_class).to respond_to(:run_shell).with(1..2).arguments
@@ -120,8 +120,8 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:remote) { '/remote_tmp' }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
     # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:result_success) {[{'node'=>'some.host','target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','result'=>{'_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\''}}]}
-    let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','result'=>{'_error'=>{'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR'}}}]}
+    let(:result_success) {[{'node'=>'some.host','target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','value'=>{'_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\''}}]}
+    let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','value'=>{'_error'=>{'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR'}}}]}
     # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
 
     it 'responds to run_shell' do
@@ -174,7 +174,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
   describe '.bolt_run_script' do
     let(:script) { '/tmp/script.sh' }
-    let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
+    let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
 
     it 'responds to bolt_run_script' do
       expect(described_class).to respond_to(:bolt_run_script).with(1..2).arguments
@@ -222,9 +222,9 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:config_data) { { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
     # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:result_unstructured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'success','result'=>{'_output'=>'SUCCESS!'}}]}
-    let(:result_structured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','result'=>{'key1'=>'foo','key2'=>'bar'}}]}
-    let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','result'=>{'_error'=>{'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{'exitcode'=>123}}}}]}
+    let(:result_unstructured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'success','value'=>{'_output'=>'SUCCESS!'}}]}
+    let(:result_structured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','value'=>{'key1'=>'foo','key2'=>'bar'}}]}
+    let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','value'=>{'_error'=>{'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{'exitcode'=>123}}}}]}
     # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
 
     it 'responds to bolt_run_task' do

@@ -119,7 +119,7 @@ module PuppetLitmus::RakeHelper
 
       bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
 
-      span.add_field('litmus.node_name', bolt_result&.first&.dig('result', 'node_name'))
+      span.add_field('litmus.node_name', bolt_result&.first&.dig('value', 'node_name'))
 
       bolt_result
     end
@@ -340,7 +340,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      error_msg = target_result['result']['_error']['msg']
+      error_msg = target_result['value']['_error']['msg']
       errors[target] = error_msg
     end
     errors

@@ -57,9 +57,9 @@ namespace :litmus do
       end
 
       if result.first['status'] != 'success'
-        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['result']['_output']}\n#{result.inspect}"
+        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['value']['_output']}\n#{result.inspect}"
       else
-        STDOUT.puts "#{result.first['result']['node_name']}, #{image}"
+        STDOUT.puts "#{result.first['value']['node_name']}, #{image}"
       end
       results << result
     end
@@ -96,7 +96,7 @@ namespace :litmus do
     else
       spinner.success
     end
-    puts "#{results.first['result']['node_name']}, #{args[:platform]}"
+    puts "#{results.first['value']['node_name']}, #{args[:platform]}"
   end
 
   # Install puppet agent on a collection of nodes
@@ -265,7 +265,7 @@ namespace :litmus do
     results = tear_down_nodes(targets, inventory_hash)
     results.each do |node, result|
       if result.first['status'] != 'success'
-        bad_results << "#{node}, #{result.first['result']['_error']['msg']}"
+        bad_results << "#{node}, #{result.first['value']['_error']['msg']}"
       else
         puts "#{node}: #{result.first['status']}"
       end
@@ -296,7 +296,7 @@ namespace :litmus do
     raise "Failed trying to run 'puppet module uninstall #{module_name}' against inventory." unless result.is_a?(Array)
 
     result.each do |node|
-      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
+      puts "#{node['node']} failed #{node['value']}" if node['status'] != 'success'
     end
 
     puts 'Uninstalled'
