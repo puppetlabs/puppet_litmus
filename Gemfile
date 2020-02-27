@@ -11,7 +11,7 @@ group :test do
   gem 'rubocop-rspec', '~> 1.38'
   gem 'codecov', '~> 0.1'
   gem 'simplecov', '~> 0.18'
- end
+end
 
 group :development do
   # TODO: Use gem instead of git. Section mapping is merged into master, but not yet released
