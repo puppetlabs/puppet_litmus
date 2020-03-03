@@ -1,0 +1,87 @@
+---
+version: 1.1.x.{build}
+branches:
+  only:
+    - master
+    - release
+clone_depth: 10
+init:
+  - SET
+  - 'mkdir C:\ProgramData\PuppetLabs\code && exit 0'
+  - 'mkdir C:\ProgramData\PuppetLabs\facter && exit 0'
+  - 'mkdir C:\ProgramData\PuppetLabs\hiera && exit 0'
+  - 'mkdir C:\ProgramData\PuppetLabs\puppet\var && exit 0'
+environment:
+  matrix:
+    -
+      RUBY_VERSION: 25-x64
+      CHECK: rubocop
+    -
+      RUBY_VERSION: 25
+      CHECK: spec
+      COVERAGE: yes
+    -
+      RUBY_VERSION: 25-x64
+      ACCEPTANCE: yes
+      TARGET_HOST: localhost
+    -
+      RUBY_VERSION: 25-x64
+      ACCEPTANCE: yes
+      TARGET_HOST: localhost
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+for:
+-
+  matrix:
+    only:
+      - ACCEPTANCE: yes
+  install:
+    - pwsh: |
+        $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
+        git clone https://github.com/puppetlabs/puppetlabs-motd motd
+        Push-Location motd
+        git reset --hard 88a0015287b943d448271f11b9d6ddc859ba5eca
+        if([string]::IsNullOrEmpty($ENV:APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME)) {
+          $URL = "'https://github.com/${ENV:APPVEYOR_REPO_NAME}'"
+          $Branch = "'${ENV:APPVEYOR_REPO_BRANCH}'"
+        } Else {
+          $URL = "'https://github.com/${ENV:APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME}'"
+          $Branch = "'${ENV:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH}'"
+        }
+        Write-Host $URL
+        Write-Host $Branch
+        "gem 'puppet_litmus', require: false, git: $URL, branch: $Branch" >> Gemfile
+        bundle install --with development --jobs 4 --retry 2 --path vendor/bundle --gemfile=./Gemfile
+        $ENV:BUNDLE_GEMFILE = './Gemfile'
+        Get-Content Gemfile.lock
+  test_script:
+    - pwsh: |
+        $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
+        $ENV:BUNDLE_GEMFILE = './Gemfile'
+        Push-Location motd
+        Get-Location
+        bundle exec puppet -V
+        ruby -v
+        gem -v
+        bundle -v
+        bundle exec rake spec_prep
+        bundle exec rake litmus:acceptance:localhost
+matrix:
+  fast_finish: true
+install:
+  - set PATH=C:\Ruby%RUBY_VERSION%\bin;%PATH%
+  - bundle install --jobs 4 --retry 2 --without system_tests
+  - type Gemfile.lock
+build: off
+test_script:
+  - bundle exec puppet -V
+  - ruby -v
+  - gem -v
+  - bundle -v
+  - bundle exec rake %CHECK%
+notifications:
+  - provider: Email
+    to:
+      - nobody@nowhere.com
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false
