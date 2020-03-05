@@ -129,4 +129,12 @@ RSpec.describe PuppetLitmus::RakeHelper do
       expect(name).to eq('foo-bar')
     end
   end
+
+  context 'with provisioner_task' do
+    described_class::SUPPORTED_PROVISIONERS.each do |supported_provisioner|
+      it "returns supported provisioner task name for #{supported_provisioner}" do
+        expect(described_class.provisioner_task(supported_provisioner)).to eq("provision::#{supported_provisioner}")
+      end
+    end
+  end
 end
