@@ -2,8 +2,6 @@
 
 require 'spec_helper'
 
-load File.expand_path('../../../lib/puppet_litmus/rake_helper.rb', __dir__)
-
 RSpec.describe PuppetLitmus::RakeHelper do
   context 'with provision_list' do
     let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }

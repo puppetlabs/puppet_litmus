@@ -3,6 +3,11 @@
 require 'rspec'
 require 'puppet_litmus'
 
+# Unfortunately this needs to be included as this is
+# how Litmus functions. We only include once here instead
+# of including for every single spec file.
+include PuppetLitmus # rubocop:disable Style/MixinUsage
+
 if ENV['COVERAGE'] == 'yes'
   require 'simplecov'
 

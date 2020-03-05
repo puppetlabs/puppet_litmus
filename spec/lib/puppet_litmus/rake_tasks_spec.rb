@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'rake'
-load File.expand_path('../../../lib/puppet_litmus/inventory_manipulation.rb', __dir__)
-include PuppetLitmus::InventoryManipulation # rubocop:disable Style/MixinUsage
+
 describe 'litmus rake tasks' do
   before(:all) do # rubocop:disable RSpec/BeforeAfterAll
     load File.expand_path('../../../lib/puppet_litmus/rake_tasks.rb', __dir__)
