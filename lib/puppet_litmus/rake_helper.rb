@@ -135,12 +135,12 @@ module PuppetLitmus::RakeHelper
   def tear_down(node_name, inventory_hash)
     # how do we know what provisioner to use
     node_facts = facts_from_node(inventory_hash, node_name)
-
-    if SUPPORTED_PROVISIONERS.include?(node_facts['provisioner'])
-      provision_task = "provision::#{node_facts['provisioner']}"
+    provisioner = node_facts['provisioner']
+    if SUPPORTED_PROVISIONERS.include?(provisioner)
+      provision_task = "provision::#{provisioner}"
     else
       STDERR.puts "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
-      provision_task = node_facts['provisioner']
+      provision_task = provisioner
     end
 
     params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
