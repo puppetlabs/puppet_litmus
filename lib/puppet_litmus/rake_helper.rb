@@ -92,7 +92,7 @@ module PuppetLitmus::RakeHelper
     if SUPPORTED_PROVISIONERS.include?(provisioner)
       provision_task = "provision::#{provisioner}"
     else
-      STDERR.puts "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
+      warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
       provision_task = provisioner
     end
 
@@ -101,7 +101,7 @@ module PuppetLitmus::RakeHelper
              else
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
              end
-    run_task("#{provision_task}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    run_task(provision_task.to_s, 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def provision_list(provision_hash, key)
@@ -139,7 +139,7 @@ module PuppetLitmus::RakeHelper
     if SUPPORTED_PROVISIONERS.include?(provisioner)
       provision_task = "provision::#{provisioner}"
     else
-      STDERR.puts "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
+      warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
       provision_task = provisioner
     end
 
