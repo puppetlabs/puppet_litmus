@@ -136,5 +136,9 @@ RSpec.describe PuppetLitmus::RakeHelper do
         expect(described_class.provisioner_task(supported_provisioner)).to eq("provision::#{supported_provisioner}")
       end
     end
+
+    it 'returns an unsupported provisioner name' do
+      expect(described_class.provisioner_task('my_org::custom_provisioner')).to eql('my_org::custom_provisioner')
+    end
   end
 end

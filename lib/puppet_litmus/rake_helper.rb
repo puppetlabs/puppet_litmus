@@ -88,6 +88,7 @@ module PuppetLitmus::RakeHelper
     include BoltSpec::Run
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
+
     params = if inventory_vars.nil?
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
              else
