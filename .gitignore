@@ -7,6 +7,3 @@
 /doc/
 /vendor/gems/
 /Gemfile.local
-.ruby-gemset
-.ruby-version
-*.code-workspace

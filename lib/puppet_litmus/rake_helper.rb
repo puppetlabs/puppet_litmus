@@ -94,7 +94,7 @@ module PuppetLitmus::RakeHelper
              else
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
              end
-    run_task(provisioner_task(provisioner).to_s, 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def provision_list(provision_hash, key)
