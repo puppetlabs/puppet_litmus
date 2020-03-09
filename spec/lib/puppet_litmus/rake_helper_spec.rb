@@ -2,6 +2,27 @@
 
 require 'spec_helper'
 
+RSpec.shared_examples 'supported provisioner' do |args|
+  let(:provisioner) { args[:provisioner] }
+  let(:platform) { args[:platform] }
+  let(:inventory_vars) { args[:inventory_vars] }
+  let(:provision_hash) { args[:provision_hash] }
+  let(:results) { args[:results] }
+  let(:params) { args[:params] }
+
+  it 'calls function' do
+    allow(File).to receive(:directory?).and_call_original
+    allow(File).to receive(:directory?)
+      .with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
+      .and_return(true)
+    allow_any_instance_of(BoltSpec::Run).to receive(:run_task)
+      .with("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      .and_return(results)
+    result = described_class.provision(provisioner, platform, inventory_vars)
+    expect(result).to eq(results)
+  end
+end
+
 RSpec.describe PuppetLitmus::RakeHelper do
   context 'with provision_list' do
     let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }
@@ -14,15 +35,29 @@ RSpec.describe PuppetLitmus::RakeHelper do
   end
 
   context 'with provision' do
-    let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }
-    let(:results) { [] }
-    let(:params) { { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => Dir.pwd } }
+    examples = [
+      {
+        provisioner: 'docker',
+        platform: 'waffleimage/centos7',
+        inventory_vars: nil,
+        provision_hash: { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } },
+        results: [],
+        params: { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => Dir.pwd },
+      },
+      {
+        provisioner: 'vagrant',
+        platform: 'centos7',
+        inventory_vars: nil,
+        provision_hash: { 'default' => { 'provisioner' => 'vagrant', 'images' => ['centos7'] } },
+        results: [],
+        params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => Dir.pwd },
+      },
+    ].freeze
 
-    it 'calls function' do
-      allow(File).to receive(:directory?).and_call_original
-      allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return(results)
-      described_class.provision('docker', 'waffleimage/centos7', nil)
+    examples.each do |e|
+      describe e[:provisioner] do
+        it_behaves_like 'supported provisioner', e
+      end
     end
   end
 
@@ -127,6 +162,18 @@ RSpec.describe PuppetLitmus::RakeHelper do
       allow(File).to receive(:read).with(File.join(Dir.pwd, 'metadata.json')).and_return(metadata)
       name = described_class.metadata_module_name
       expect(name).to eq('foo-bar')
+    end
+  end
+
+  context 'with provisioner_task' do
+    described_class::SUPPORTED_PROVISIONERS.each do |supported_provisioner|
+      it "returns supported provisioner task name for #{supported_provisioner}" do
+        expect(described_class.provisioner_task(supported_provisioner)).to eq("provision::#{supported_provisioner}")
+      end
+    end
+
+    it 'returns an unsupported provisioner name' do
+      expect(described_class.provisioner_task('my_org::custom_provisioner')).to eql('my_org::custom_provisioner')
     end
   end
 end

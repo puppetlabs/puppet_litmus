@@ -5,7 +5,7 @@ module PuppetLitmus; end # rubocop:disable Style/Documentation
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
-  VALID_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze
+  SUPPORTED_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze
 
   # Gets a string representing the operating system and version.
   #
@@ -89,16 +89,12 @@ module PuppetLitmus::RakeHelper
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
-    unless VALID_PROVISIONERS.include?(provisioner)
-      raise "Unknown provisioner '#{provisioner}', try #{VALID_PROVISIONERS.join('/')}"
-    end
-
     params = if inventory_vars.nil?
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
              else
                { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
              end
-    run_task("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def provision_list(provision_hash, key)
@@ -132,10 +128,8 @@ module PuppetLitmus::RakeHelper
   def tear_down(node_name, inventory_hash)
     # how do we know what provisioner to use
     node_facts = facts_from_node(inventory_hash, node_name)
-    return [] unless VALID_PROVISIONERS.include?(node_facts['provisioner'])
-
     params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-    run_task("provision::#{node_facts['provisioner']}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
   def install_agent(collection, targets, inventory_hash)
@@ -224,5 +218,14 @@ module PuppetLitmus::RakeHelper
     raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
 
     true
+  end
+
+  def provisioner_task(provisioner)
+    if SUPPORTED_PROVISIONERS.include?(provisioner)
+      "provision::#{provisioner}"
+    else
+      warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
+      provisioner.to_s
+    end
   end
 end
