@@ -2,6 +2,37 @@
 
 module PuppetLitmus; end # rubocop:disable Style/Documentation
 
+require 'honeycomb-beeline'
+Honeycomb.configure do |config|
+end
+process_span = Honeycomb.start_span(name: 'Litmus Testing')
+if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
+  process_span.add_field('module_name', ENV['TRAVIS_REPO_SLUG'])
+  process_span.add_field('ci.provider', 'travis')
+  process_span.add_field('ci.build_id', ENV['TRAVIS_BUILD_ID'])
+  process_span.add_field('ci.build_url', ENV['TRAVIS_BUILD_WEB_URL'])
+  process_span.add_field('ci.job_url', ENV['TRAVIS_JOB_WEB_URL'])
+  process_span.add_field('ci.commit_message', ENV['TRAVIS_COMMIT_MESSAGE'])
+  process_span.add_field('ci.sha', ENV['TRAVIS_PULL_REQUEST_SHA'] || ENV['TRAVIS_COMMIT'])
+elsif ENV['CI'] == 'True' && ENV['APPVEYOR'] == 'True'
+  process_span.add_field('module_name', ENV['APPVEYOR_PROJECT_SLUG'])
+  process_span.add_field('ci.provider', 'appveyor')
+  process_span.add_field('ci.build_id', ENV['APPVEYOR_BUILD_ID'])
+  process_span.add_field('ci.build_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/builds/#{ENV['APPVEYOR_BUILD_ID']}")
+  process_span.add_field('ci.job_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/build/job/#{ENV['APPVEYOR_JOB_ID']}")
+  process_span.add_field('ci.commit_message', ENV['APPVEYOR_REPO_COMMIT_MESSAGE'])
+  process_span.add_field('ci.sha', ENV['APPVEYOR_PULL_REQUEST_HEAD_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT'])
+elsif ENV['GITHUB_ACTIONS'] == 'true'
+  process_span.add_field('module_name', ENV['GITHUB_REPOSITORY'])
+  process_span.add_field('ci.provider', 'github')
+  process_span.add_field('ci.build_id', ENV['GITHUB_RUN_ID'])
+  process_span.add_field('ci.build_url', "https://github.com/#{ENV['GITHUB_REPOSITORY']}/actions/runs/#{ENV['GITHUB_RUN_ID']}")
+  process_span.add_field('ci.sha', ENV['GITHUB_SHA'])
+end
+at_exit do
+  process_span.send
+end
+
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
