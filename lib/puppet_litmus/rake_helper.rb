@@ -120,11 +120,8 @@ module PuppetLitmus::RakeHelper
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
-    params = if inventory_vars.nil?
-               { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
-             else
-               { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
-             end
+    params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
+    params['vars'] = inventory_vars unless inventory_vars.nil?
     run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
   end
 
