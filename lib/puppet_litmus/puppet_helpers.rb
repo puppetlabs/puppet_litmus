@@ -13,30 +13,27 @@ module PuppetLitmus::PuppetHelpers
     apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
   end
 
-  # rubocop:disable Layout/TrailingWhitespace
-
   # Applies a manifest. returning the result of that apply. Mimics the apply_manifest from beaker
-  # 
+  #
   # When you set the environment variable RSPEC_DEBUG, the output of your
   # puppet run will be displayed. If you have set the :debug flag, you will see the
   # full debug log. If you have **not** set the :debug flag, it will display the regular
   # output.
   #
   # @param manifest [String] puppet manifest code to be applied.
-  # @param opts [Hash] Alters the behaviour of the command. Valid options are:  
-  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.  
-  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.  
-  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.  
-  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.  
-  #  :manifest_file_location [Path] The place on the target system.  
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are:
+  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.
+  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.
+  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.
+  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.
+  #  :manifest_file_location [Path] The place on the target system.
   #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
-  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".  
-  #  :debug [Boolean] run puppet apply with the debug flag.  
-  #  :noop [Boolean] run puppet apply with the noop flag.  
+  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
+  #  :debug [Boolean] run puppet apply with the debug flag.
+  #  :noop [Boolean] run puppet apply with the noop flag.
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
-    # rubocop:enable Layout/TrailingWhitespace
     target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
     raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
     raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
@@ -184,17 +181,14 @@ module PuppetLitmus::PuppetHelpers
     end
   end
 
-  # rubocop:disable Layout/TrailingWhitespace
-
   # Runs a task against the target system.
   #
   # @param task_name [String] The name of the task to run.
   # @param params [Hash] key : value pairs to be passed to the task.
-  # @param opts [Hash] Alters the behaviour of the command. Valid options are  
-  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.  
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are
+  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
   #  :inventory_file [String] path to the inventory file to use with the task.
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
-  # rubocop:enable Layout/TrailingWhitespace
   def run_bolt_task(task_name, params = {}, opts = {})
     Honeycomb.start_span(name: 'litmus_runtask') do |span|
       config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
