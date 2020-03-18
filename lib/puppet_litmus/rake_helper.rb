@@ -122,7 +122,14 @@ module PuppetLitmus::RakeHelper
 
     params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
     params['vars'] = inventory_vars unless inventory_vars.nil?
-    run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+
+    Honeycomb.add_field_to_trace('litmus.provisioner', provisioner)
+    Honeycomb.start_span(name: 'provision') do |span|
+      span.add_field('litmus.provisioner.params', params)
+      span.add_field('litmus.provisioner.config', DEFAULT_CONFIG_DATA)
+
+      run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    end
   end
 
   def provision_list(provision_hash, key)
@@ -131,6 +138,8 @@ module PuppetLitmus::RakeHelper
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[key]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
     results = []
+
+    Honeycomb.current_span.add_field('litmus.images', provision_hash[key]['images'])
     provision_hash[key]['images'].each do |image|
       results << provision(provisioner, image, inventory_vars)
     end
@@ -166,6 +175,7 @@ module PuppetLitmus::RakeHelper
     params = if collection.nil?
                {}
              else
+               Honeycomb.current_span.add_field('litmus.collection', collection)
                { 'collection' => collection }
              end
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
