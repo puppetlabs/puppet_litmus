@@ -271,6 +271,7 @@ module PuppetLitmus::RakeHelper
       include BoltSpec::Run
       target_nodes = find_targets(inventory_hash, target_node_name)
       results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
+      span.add_field('litmus.bolt_result', results)
       failed = []
       results.each do |result|
         failed.push(result['target']) if result['status'] == 'failure'

@@ -74,18 +74,25 @@ module PuppetLitmus::PuppetHelpers
       command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
       command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
 
+      span.add_field('litmus.command_to_run', command_to_run)
+      span.add_field('litmus.target_node_name', target_node_name)
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      status = bolt_result.first['result']['exit_code']
+      span.add_field('litmus.bolt_result', bolt_result)
+
+      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
+                              stdout: bolt_result.first['result']['stdout'],
+                              stderr: bolt_result.first['result']['stderr'])
+      span.add_field('litmus.result', result.to_h)
+
+      status = result.exit_code
       if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
         report_puppet_apply_change(command_to_run, bolt_result)
       elsif !acceptable_exit_codes.include?(status)
         report_puppet_apply_error(command_to_run, bolt_result, acceptable_exit_codes)
       end
 
-      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
-                              stdout: bolt_result.first['result']['stdout'],
-                              stderr: bolt_result.first['result']['stderr'])
       yield result if block_given?
+
       if ENV['RSPEC_DEBUG']
         puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
         puts result.stderr
@@ -117,8 +124,12 @@ module PuppetLitmus::PuppetHelpers
         inventory_hash = inventory_hash_from_inventory_file
         manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+        span.add_field('litmus.bolt_result', bolt_result)
         raise bolt_result.first['result'].to_s unless bolt_result.first['status'] == 'success'
       end
+
+      span.add_field('litmus.manifest_file_location', manifest_file_location)
+
       manifest_file_location
     end
   end
@@ -139,8 +150,9 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      span.add_field('litmus.bolt_result', bolt_result)
+
       if bolt_result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
-        span.add_field('litmus_runshellfailure', bolt_result)
         raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}"
       end
 
@@ -148,8 +160,8 @@ module PuppetLitmus::PuppetHelpers
                               exit_status: bolt_result.first['result']['exit_code'],
                               stdout: bolt_result.first['result']['stdout'],
                               stderr: bolt_result.first['result']['stderr'])
+      span.add_field('litmus.result', result.to_h)
       yield result if block_given?
-      span.add_field('litmus_runshellsuccess', result)
       result
     end
   end
@@ -173,6 +185,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+      span.add_field('litmus.bolt_result', bolt_result)
 
       result_obj = {
         exit_code: 0,
@@ -194,8 +207,8 @@ module PuppetLitmus::PuppetHelpers
       result = OpenStruct.new(exit_code: result_obj[:exit_code],
                               stdout: result_obj[:stdout],
                               stderr: result_obj[:stderr])
+      span.add_field('litmus.result', result.to_h)
       yield result if block_given?
-      span.add_field('litmus_uploadfilesucess', result)
       result
     end
   end
@@ -260,7 +273,7 @@ module PuppetLitmus::PuppetHelpers
                               stderr: result_obj[:stderr],
                               result: result_obj[:result])
       yield result if block_given?
-      span.add_field('litmus_runtasksuccess', result)
+      span.add_field('litmus.result', result.to_h)
       result
     end
   end
@@ -293,7 +306,7 @@ module PuppetLitmus::PuppetHelpers
                               stdout: bolt_result.first['result']['stdout'],
                               stderr: bolt_result.first['result']['stderr'])
       yield result if block_given?
-      span.add_field('litmus_runscriptsuccess', result)
+      span.add_field('litmus.result', result.to_h)
       result
     end
   end
