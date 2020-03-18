@@ -74,17 +74,17 @@ module PuppetLitmus::PuppetHelpers
       command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
       command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
 
-      result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      status = result.first['result']['exit_code']
+      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      status = bolt_result.first['result']['exit_code']
       if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
-        report_puppet_apply_change(command_to_run, result)
+        report_puppet_apply_change(command_to_run, bolt_result)
       elsif !acceptable_exit_codes.include?(status)
-        report_puppet_apply_error(command_to_run, result, acceptable_exit_codes)
+        report_puppet_apply_error(command_to_run, bolt_result, acceptable_exit_codes)
       end
 
-      result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
-                              stdout: result.first['result']['stdout'],
-                              stderr: result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
+                              stdout: bolt_result.first['result']['stdout'],
+                              stderr: bolt_result.first['result']['stderr'])
       yield result if block_given?
       if ENV['RSPEC_DEBUG']
         puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
@@ -116,8 +116,8 @@ module PuppetLitmus::PuppetHelpers
         # transfer to TARGET_HOST
         inventory_hash = inventory_hash_from_inventory_file
         manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
-        result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
-        raise result.first['result'].to_s unless result.first['status'] == 'success'
+        bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+        raise bolt_result.first['result'].to_s unless bolt_result.first['status'] == 'success'
       end
       manifest_file_location
     end
@@ -138,16 +138,16 @@ module PuppetLitmus::PuppetHelpers
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
-        span.add_field('litmus_runshellfailure', result)
-        raise "shell failed\n`#{command_to_run}`\n======\n#{result}"
+      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      if bolt_result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+        span.add_field('litmus_runshellfailure', bolt_result)
+        raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}"
       end
 
-      result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
-                              exit_status: result.first['result']['exit_code'],
-                              stdout: result.first['result']['stdout'],
-                              stderr: result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
+                              exit_status: bolt_result.first['result']['exit_code'],
+                              stdout: bolt_result.first['result']['stdout'],
+                              stderr: bolt_result.first['result']['stderr'])
       yield result if block_given?
       span.add_field('litmus_runshellsuccess', result)
       result
@@ -172,23 +172,23 @@ module PuppetLitmus::PuppetHelpers
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+      bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
 
       result_obj = {
         exit_code: 0,
-        stdout: result.first['result']['_output'],
+        stdout: bolt_result.first['result']['_output'],
         stderr: nil,
-        result: result.first['result'],
+        result: bolt_result.first['result'],
       }
 
-      if result.first['status'] != 'success'
+      if bolt_result.first['status'] != 'success'
         if opts[:expect_failures] != true
-          span.add_field('litmus_uploadfilefailure', result)
-          raise "upload file failed\n======\n#{result}"
+          span.add_field('litmus_uploadfilefailure', bolt_result)
+          raise "upload file failed\n======\n#{bolt_result}"
         end
 
         result_obj[:exit_code] = 255
-        result_obj[:stderr]    = result.first['result']['_error']['msg']
+        result_obj[:stderr]    = bolt_result.first['result']['_error']['msg']
       end
 
       result = OpenStruct.new(exit_code: result_obj[:exit_code],
@@ -225,34 +225,34 @@ module PuppetLitmus::PuppetHelpers
                        end
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
+      bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
       result_obj = {
         exit_code: 0,
         stdout: nil,
         stderr: nil,
-        result: result.first['result'],
+        result: bolt_result.first['result'],
       }
 
-      if result.first['status'] == 'success'
+      if bolt_result.first['status'] == 'success'
         # stdout returns unstructured data if structured data is not available
-        result_obj[:stdout] = if result.first['result']['_output'].nil?
-                                result.first['result'].to_s
+        result_obj[:stdout] = if bolt_result.first['result']['_output'].nil?
+                                bolt_result.first['result'].to_s
                               else
-                                result.first['result']['_output']
+                                bolt_result.first['result']['_output']
                               end
 
       else
         if opts[:expect_failures] != true
-          span.add_field('litmus_runtaskfailure', result)
-          raise "task failed\n`#{task_name}`\n======\n#{result}"
+          span.add_field('litmus_runtaskfailure', bolt_result)
+          raise "task failed\n`#{task_name}`\n======\n#{bolt_result}"
         end
 
-        result_obj[:exit_code] = if result.first['result']['_error']['details'].nil?
+        result_obj[:exit_code] = if bolt_result.first['result']['_error']['details'].nil?
                                    255
                                  else
-                                   result.first['result']['_error']['details'].fetch('exitcode', 255)
+                                   bolt_result.first['result']['_error']['details'].fetch('exitcode', 255)
                                  end
-        result_obj[:stderr]    = result.first['result']['_error']['msg']
+        result_obj[:stderr]    = bolt_result.first['result']['_error']['msg']
       end
 
       result = OpenStruct.new(exit_code: result_obj[:exit_code],
@@ -282,16 +282,16 @@ module PuppetLitmus::PuppetHelpers
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
+      bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
-      if result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
-        span.add_field('litmus_runscriptfailure', result)
-        raise "script run failed\n`#{script}`\n======\n#{result}"
+      if bolt_result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+        span.add_field('litmus_runscriptfailure', bolt_result)
+        raise "script run failed\n`#{script}`\n======\n#{bolt_result}"
       end
 
-      result = OpenStruct.new(exit_code: result.first['result']['exit_code'],
-                              stdout: result.first['result']['stdout'],
-                              stderr: result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
+                              stdout: bolt_result.first['result']['stdout'],
+                              stderr: bolt_result.first['result']['stderr'])
       yield result if block_given?
       span.add_field('litmus_runscriptsuccess', result)
       result
@@ -310,14 +310,14 @@ module PuppetLitmus::PuppetHelpers
   # Report an error in the puppet run
   #
   # @param command [String] The puppet command causing the error.
-  # @param result  [Array] The result struct containing the result
-  def report_puppet_apply_error(command, result, acceptable_exit_codes)
+  # @param bolt_result  [Array] The result object from bolt
+  def report_puppet_apply_error(command, bolt_result, acceptable_exit_codes)
     puppet_apply_error = <<~ERROR
       apply manifest failed
       `#{command}`
-      with exit code #{result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
+      with exit code #{bolt_result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
       ====== Start output of failed Puppet apply ======
-      #{puppet_output(result)}
+      #{puppet_output(bolt_result)}
       ====== End output of failed Puppet apply ======
     ERROR
     raise puppet_apply_error
@@ -326,22 +326,22 @@ module PuppetLitmus::PuppetHelpers
   # Report an unexpected change in the puppet run
   #
   # @param command [String] The puppet command causing the error.
-  # @param result  [Array] The result struct containing the result
-  def report_puppet_apply_change(command, result)
+  # @param bolt_result  [Array] The result object from bolt
+  def report_puppet_apply_change(command, bolt_result)
     puppet_apply_changes = <<~ERROR
       apply manifest expected no changes
       `#{command}`
       ====== Start output of Puppet apply with unexpected changes ======
-      #{puppet_output(result)}
+      #{puppet_output(bolt_result)}
       ====== End output of Puppet apply with unexpected changes ======
     ERROR
     raise puppet_apply_changes
   end
 
   # Return the stdout of the puppet run
-  def puppet_output(result)
-    result.dig(0, 'result', 'stderr').to_s << \
-      result.dig(0, 'result', 'stdout').to_s
+  def puppet_output(bolt_result)
+    bolt_result.dig(0, 'result', 'stderr').to_s << \
+      bolt_result.dig(0, 'result', 'stdout').to_s
   end
 
   # Checks a puppet return status and returns true if it both
