@@ -124,12 +124,12 @@ RSpec.describe PuppetLitmus::RakeHelper do
     it 'node available' do
       allow(Open3).to receive(:capture3).with('cd .').and_return(['success', '', 0])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'success' }])
-      described_class.check_connectivity?(inventory_hash, nil)
+      described_class.check_connectivity?(inventory_hash, 'some.host')
     end
 
     it 'node unavailable' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'failure' }])
-      expect { described_class.check_connectivity?(inventory_hash, nil) }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
+      expect { described_class.check_connectivity?(inventory_hash, 'some.host') }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
     end
   end
 

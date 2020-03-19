@@ -196,9 +196,9 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       it 'does bolt_run_script against remote host without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
-        expect(described_class).to receive(:inventory_hash_from_inventory_file)
+        expect(described_class).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(described_class).to receive(:target_in_inventory?).and_return(true)
-        expect(described_class).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: nil).and_return(result)
+        expect(described_class).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: inventory_hash).and_return(result)
         expect { described_class.bolt_run_script(script) }.not_to raise_error
       end
     end

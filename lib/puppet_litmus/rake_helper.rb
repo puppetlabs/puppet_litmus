@@ -134,7 +134,11 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.inventory', params['inventory'])
       span.add_field('litmus.config', DEFAULT_CONFIG_DATA)
 
-      run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+
+      span.add_field('litmus.node_name', bolt_result&.first&.dig('result', 'node_name'))
+
+      bolt_result
     end
   end
 
@@ -174,10 +178,12 @@ module PuppetLitmus::RakeHelper
 
   def tear_down(node_name, inventory_hash)
     Honeycomb.start_span(name: 'litmus.tear_down') do |span|
-      span.add_field('litmus.node_name', node_name)
-
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
+
+      span.add_field('litmus.node_name', node_name)
+      span.add_field('litmus.platform', node_facts['platform'])
+
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
     end
@@ -271,7 +277,12 @@ module PuppetLitmus::RakeHelper
 
   def check_connectivity?(inventory_hash, target_node_name)
     Honeycomb.start_span(name: 'litmus.check_connectivity') do |span|
-      span.add_field('litmus.target_node_name', target_node_name)
+      # if we're only checking connectivity for a single node
+      if target_node_name
+        span.add_field('litmus.node_name', target_node_name)
+        span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
+      end
+
       require 'bolt_spec/run'
       include BoltSpec::Run
       target_nodes = find_targets(inventory_hash, target_node_name)
@@ -281,6 +292,7 @@ module PuppetLitmus::RakeHelper
       results.each do |result|
         failed.push(result['target']) if result['status'] == 'failure'
       end
+      span.add_field('litmus.connectivity_failed', failed)
       raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
 
       true

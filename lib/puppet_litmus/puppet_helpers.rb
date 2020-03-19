@@ -67,6 +67,9 @@ module PuppetLitmus::PuppetHelpers
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
+      span.add_field('litmus.node_name', target_node_name)
+      span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
+
       command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
       command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
       command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
@@ -122,6 +125,9 @@ module PuppetLitmus::PuppetHelpers
       else
         # transfer to TARGET_HOST
         inventory_hash = inventory_hash_from_inventory_file
+        span.add_field('litmus.node_name', target_node_name)
+        span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
+
         manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
         span.add_field('litmus.bolt_result', bolt_result)
@@ -148,6 +154,9 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
+      span.add_field('litmus.node_name', target_node_name)
+      span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
 
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -183,6 +192,9 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
+      span.add_field('litmus.node_name', target_node_name)
+      span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
 
       bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -237,6 +249,9 @@ module PuppetLitmus::PuppetHelpers
                          localhost_inventory_hash
                        end
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
+      span.add_field('litmus.node_name', target_node_name)
+      span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
 
       bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
       result_obj = {
@@ -294,6 +309,9 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
+      span.add_field('litmus.node_name', target_node_name)
+      span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
 
       bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
