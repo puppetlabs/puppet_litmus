@@ -242,7 +242,12 @@ module PuppetLitmus::RakeHelper
                     end
     run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    Honeycomb.start_span(name: 'install_module') do |span|
+      span.add_field('litmus.install_module_command', install_module_command)
+      span.add_field('litmus.target_nodes', target_nodes)
+
+      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    end
   end
 
   def metadata_module_name
