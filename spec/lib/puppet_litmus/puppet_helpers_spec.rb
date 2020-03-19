@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe PuppetLitmus::PuppetHelpers do
+  let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'targets' => [{ 'uri' => 'some.host', 'config' => { 'transport' => 'local' }, 'facts' => facts_hash }] }] } }
+  let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'targets' => [{ 'uri' => 'litmus_localhost', 'config' => { 'transport' => 'local' }, 'facts' => facts_hash }] }] } }
+  let(:facts_hash) { { 'provisioner' => 'docker', 'container_name' => 'litmusimage_debian_10-2222', 'platform' => 'litmusimage/debian:10' } }
+
   context 'with idempotent_apply' do
     let(:manifest) do
       "include '::doot'"
@@ -19,7 +23,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
   describe '.apply_manifest' do
     context 'when specifying a hiera config' do
       let(:manifest) { "include '::doot'" }
-      let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
       let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
@@ -35,7 +38,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
     context 'when using detailed-exitcodes' do
       let(:manifest) { "include '::doot'" }
-      let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
       let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
 
@@ -85,8 +87,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
   describe '.run_shell' do
     let(:command_to_run) { "puts 'doot'" }
     let(:result) { ['result' => { 'exit_code' => 0, 'exit_status' => 0, 'stdout' => nil, 'stderr' => nil }] }
-    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'name' => 'some.host' }] }] } }
-    let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
 
     it 'responds to run_shell' do
       expect(described_class).to respond_to(:run_shell).with(1..2).arguments
@@ -123,8 +123,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:result_success) {[{'node'=>'some.host','target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','result'=>{'_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\''}}]}
     let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','result'=>{'_error'=>{'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR'}}}]}
     # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'some.host', 'config' => { 'transport' => 'local' } }] }] } }
-    let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
 
     it 'responds to run_shell' do
       expect(described_class).to respond_to(:bolt_upload_file).with(2..3).arguments
@@ -177,8 +175,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
   describe '.bolt_run_script' do
     let(:script) { '/tmp/script.sh' }
     let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-    let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'some.host', 'config' => { 'transport' => 'local' } }] }] } }
-    let(:localhost_inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'litmus_localhost', 'config' => { 'transport' => 'local' } }] }] } }
 
     it 'responds to bolt_run_script' do
       expect(described_class).to respond_to(:bolt_run_script).with(1..2).arguments
@@ -230,7 +226,6 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:result_structured_task_success){ [{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','result'=>{'key1'=>'foo','key2'=>'bar'}}]}
     let(:result_failure) {[{'node'=>'some.host','target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','result'=>{'_error'=>{'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{'exitcode'=>123}}}}]}
     # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:inventory_hash) { { 'groups' => [{ 'name' => 'local', 'nodes' => [{ 'name' => 'some.host', 'config' => { 'transport' => 'local' } }] }] } }
 
     it 'responds to bolt_run_task' do
       expect(described_class).to respond_to(:run_bolt_task).with(2..3).arguments
