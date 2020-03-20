@@ -2,6 +2,37 @@
 
 module PuppetLitmus; end # rubocop:disable Style/Documentation
 
+require 'honeycomb-beeline'
+Honeycomb.configure do |config|
+end
+process_span = Honeycomb.start_span(name: 'Litmus Testing')
+if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
+  Honeycomb.add_field_to_trace('module_name', ENV['TRAVIS_REPO_SLUG'])
+  Honeycomb.add_field_to_trace('ci.provider', 'travis')
+  Honeycomb.add_field_to_trace('ci.build_id', ENV['TRAVIS_BUILD_ID'])
+  Honeycomb.add_field_to_trace('ci.build_url', ENV['TRAVIS_BUILD_WEB_URL'])
+  Honeycomb.add_field_to_trace('ci.job_url', ENV['TRAVIS_JOB_WEB_URL'])
+  Honeycomb.add_field_to_trace('ci.commit_message', ENV['TRAVIS_COMMIT_MESSAGE'])
+  Honeycomb.add_field_to_trace('ci.sha', ENV['TRAVIS_PULL_REQUEST_SHA'] || ENV['TRAVIS_COMMIT'])
+elsif ENV['CI'] == 'True' && ENV['APPVEYOR'] == 'True'
+  Honeycomb.add_field_to_trace('module_name', ENV['APPVEYOR_PROJECT_SLUG'])
+  Honeycomb.add_field_to_trace('ci.provider', 'appveyor')
+  Honeycomb.add_field_to_trace('ci.build_id', ENV['APPVEYOR_BUILD_ID'])
+  Honeycomb.add_field_to_trace('ci.build_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/builds/#{ENV['APPVEYOR_BUILD_ID']}")
+  Honeycomb.add_field_to_trace('ci.job_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/build/job/#{ENV['APPVEYOR_JOB_ID']}")
+  Honeycomb.add_field_to_trace('ci.commit_message', ENV['APPVEYOR_REPO_COMMIT_MESSAGE'])
+  Honeycomb.add_field_to_trace('ci.sha', ENV['APPVEYOR_PULL_REQUEST_HEAD_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT'])
+elsif ENV['GITHUB_ACTIONS'] == 'true'
+  Honeycomb.add_field_to_trace('module_name', ENV['GITHUB_REPOSITORY'])
+  Honeycomb.add_field_to_trace('ci.provider', 'github')
+  Honeycomb.add_field_to_trace('ci.build_id', ENV['GITHUB_RUN_ID'])
+  Honeycomb.add_field_to_trace('ci.build_url', "https://github.com/#{ENV['GITHUB_REPOSITORY']}/actions/runs/#{ENV['GITHUB_RUN_ID']}")
+  Honeycomb.add_field_to_trace('ci.sha', ENV['GITHUB_SHA'])
+end
+at_exit do
+  process_span.send
+end
+
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
@@ -52,12 +83,17 @@ module PuppetLitmus::RakeHelper
   # @param command [String] command to execute.
   # @return [Object] the standard out stream.
   def run_local_command(command)
-    require 'open3'
-    stdout, stderr, status = Open3.capture3(command)
-    error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
-    raise error_message unless status.to_i.zero?
+    Honeycomb.start_span(name: 'litmus.run_local_command') do |span|
+      span.add_field('litmus.command', command)
 
-    stdout
+      require 'open3'
+      stdout, stderr, status = Open3.capture3(command)
+      error_message = "Attempted to run\ncommand:'#{command}'\nstdout:#{stdout}\nstderr:#{stderr}"
+
+      raise error_message unless status.to_i.zero?
+
+      stdout
+    end
   end
 
   # Builds all the modules in a specified module
@@ -89,12 +125,21 @@ module PuppetLitmus::RakeHelper
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
-    params = if inventory_vars.nil?
-               { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
-             else
-               { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd, 'vars' => inventory_vars }
-             end
-    run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
+    params['vars'] = inventory_vars unless inventory_vars.nil?
+
+    Honeycomb.add_field_to_trace('litmus.provisioner', provisioner)
+    Honeycomb.start_span(name: 'litmus.provision') do |span|
+      span.add_field('litmus.platform', platform)
+      span.add_field('litmus.inventory', params['inventory'])
+      span.add_field('litmus.config', DEFAULT_CONFIG_DATA)
+
+      bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+
+      span.add_field('litmus.node_name', bolt_result&.first&.dig('result', 'node_name'))
+
+      bolt_result
+    end
   end
 
   def provision_list(provision_hash, key)
@@ -103,6 +148,8 @@ module PuppetLitmus::RakeHelper
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[key]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
     results = []
+
+    Honeycomb.current_span.add_field('litmus.images', provision_hash[key]['images'])
     provision_hash[key]['images'].each do |image|
       results << provision(provisioner, image, inventory_vars)
     end
@@ -110,40 +157,57 @@ module PuppetLitmus::RakeHelper
   end
 
   def tear_down_nodes(targets, inventory_hash)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
-    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-    raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
+    Honeycomb.start_span(name: 'litmus.tear_down_nodes') do |span|
+      span.add_field('litmus.targets', targets)
 
-    results = {}
-    targets.each do |node_name|
-      next if node_name == 'litmus_localhost'
+      require 'bolt_spec/run'
+      include BoltSpec::Run
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
-      result = tear_down(node_name, inventory_hash)
-      results[node_name] = result unless result == []
+      results = {}
+      targets.each do |node_name|
+        next if node_name == 'litmus_localhost'
+
+        result = tear_down(node_name, inventory_hash)
+        results[node_name] = result unless result == []
+      end
+      results
     end
-    results
   end
 
   def tear_down(node_name, inventory_hash)
-    # how do we know what provisioner to use
-    node_facts = facts_from_node(inventory_hash, node_name)
-    params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
-    run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    Honeycomb.start_span(name: 'litmus.tear_down') do |span|
+      # how do we know what provisioner to use
+      node_facts = facts_from_node(inventory_hash, node_name)
+
+      span.add_field('litmus.node_name', node_name)
+      span.add_field('litmus.platform', node_facts['platform'])
+
+      params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
+      run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+    end
   end
 
   def install_agent(collection, targets, inventory_hash)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
-    params = if collection.nil?
-               {}
-             else
-               { 'collection' => collection }
-             end
-    raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
+    Honeycomb.start_span(name: 'litmus.install_agent') do |span|
+      span.add_field('litmus.collection', collection)
+      span.add_field('litmus.targets', targets)
 
-    # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
-    run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      require 'bolt_spec/run'
+      include BoltSpec::Run
+      params = if collection.nil?
+                 {}
+               else
+                 Honeycomb.current_span.add_field('litmus.collection', collection)
+                 { 'collection' => collection }
+               end
+      raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" \
+       unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
+
+      # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
+      run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+    end
   end
 
   def configure_path(inventory_hash)
@@ -184,7 +248,12 @@ module PuppetLitmus::RakeHelper
                     end
     run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
-    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    Honeycomb.start_span(name: 'install_module') do |span|
+      span.add_field('litmus.install_module_command', install_module_command)
+      span.add_field('litmus.target_nodes', target_nodes)
+
+      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    end
   end
 
   def metadata_module_name
@@ -207,17 +276,27 @@ module PuppetLitmus::RakeHelper
   end
 
   def check_connectivity?(inventory_hash, target_node_name)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
-    target_nodes = find_targets(inventory_hash, target_node_name)
-    results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
-    failed = []
-    results.each do |result|
-      failed.push(result['target']) if result['status'] == 'failure'
-    end
-    raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
+    Honeycomb.start_span(name: 'litmus.check_connectivity') do |span|
+      # if we're only checking connectivity for a single node
+      if target_node_name
+        span.add_field('litmus.node_name', target_node_name)
+        span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
+      end
 
-    true
+      require 'bolt_spec/run'
+      include BoltSpec::Run
+      target_nodes = find_targets(inventory_hash, target_node_name)
+      results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
+      span.add_field('litmus.bolt_result', results)
+      failed = []
+      results.each do |result|
+        failed.push(result['target']) if result['status'] == 'failure'
+      end
+      span.add_field('litmus.connectivity_failed', failed)
+      raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
+
+      true
+    end
   end
 
   def provisioner_task(provisioner)
