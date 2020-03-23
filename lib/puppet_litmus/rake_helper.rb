@@ -5,7 +5,9 @@ module PuppetLitmus; end # rubocop:disable Style/Documentation
 require 'honeycomb-beeline'
 Honeycomb.configure do |config|
 end
-process_span = Honeycomb.start_span(name: 'Litmus Testing')
+process_span = Honeycomb.start_span(name: 'Litmus Testing', serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
+ENV['HTTP_X_HONEYCOMB_TRACE'] = process_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
+Honeycomb.add_field_to_trace('litmus.pid', Process.pid)
 if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
   Honeycomb.add_field_to_trace('module_name', ENV['TRAVIS_REPO_SLUG'])
   Honeycomb.add_field_to_trace('ci.provider', 'travis')
@@ -84,6 +86,7 @@ module PuppetLitmus::RakeHelper
   # @return [Object] the standard out stream.
   def run_local_command(command)
     Honeycomb.start_span(name: 'litmus.run_local_command') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.command', command)
 
       require 'open3'
@@ -130,6 +133,7 @@ module PuppetLitmus::RakeHelper
 
     Honeycomb.add_field_to_trace('litmus.provisioner', provisioner)
     Honeycomb.start_span(name: 'litmus.provision') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.platform', platform)
       span.add_field('litmus.inventory', params['inventory'])
       span.add_field('litmus.config', DEFAULT_CONFIG_DATA)
@@ -158,6 +162,7 @@ module PuppetLitmus::RakeHelper
 
   def tear_down_nodes(targets, inventory_hash)
     Honeycomb.start_span(name: 'litmus.tear_down_nodes') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.targets', targets)
 
       require 'bolt_spec/run'
@@ -178,6 +183,7 @@ module PuppetLitmus::RakeHelper
 
   def tear_down(node_name, inventory_hash)
     Honeycomb.start_span(name: 'litmus.tear_down') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       # how do we know what provisioner to use
       node_facts = facts_from_node(inventory_hash, node_name)
 
@@ -191,6 +197,7 @@ module PuppetLitmus::RakeHelper
 
   def install_agent(collection, targets, inventory_hash)
     Honeycomb.start_span(name: 'litmus.install_agent') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.collection', collection)
       span.add_field('litmus.targets', targets)
 
@@ -249,6 +256,7 @@ module PuppetLitmus::RakeHelper
     run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
     install_module_command = "puppet module install /tmp/#{File.basename(module_tar)}"
     Honeycomb.start_span(name: 'install_module') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.install_module_command', install_module_command)
       span.add_field('litmus.target_nodes', target_nodes)
 
@@ -277,6 +285,7 @@ module PuppetLitmus::RakeHelper
 
   def check_connectivity?(inventory_hash, target_node_name)
     Honeycomb.start_span(name: 'litmus.check_connectivity') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       # if we're only checking connectivity for a single node
       if target_node_name
         span.add_field('litmus.node_name', target_node_name)

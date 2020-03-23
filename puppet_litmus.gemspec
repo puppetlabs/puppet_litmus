@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'parallel'
   spec.add_runtime_dependency 'rspec'
   spec.add_runtime_dependency 'honeycomb-beeline'
+  spec.add_runtime_dependency 'rspec_honeycomb_formatter'
 end

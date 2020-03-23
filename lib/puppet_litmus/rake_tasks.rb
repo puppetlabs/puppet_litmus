@@ -339,7 +339,7 @@ namespace :litmus do
         payloads = []
         # Generate list of targets to provision
         targets.each do |target|
-          test = 'bundle exec rspec ./spec/acceptance --format progress'
+          test = 'bundle exec rspec ./spec/acceptance --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter'
           title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
           options = {
             env: {
@@ -366,6 +366,7 @@ namespace :litmus do
           require 'parallel'
           results = Parallel.map(payloads) do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
+            ENV['HTTP_X_HONEYCOMB_TRACE'] = Honecomb.current_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
             stdout, stderr, status = Open3.capture3(env, test)
             ["\n================\n#{title}\n", stdout, stderr, status]
           end
@@ -384,6 +385,7 @@ namespace :litmus do
           payloads.each do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
             spinners.register("[:spinner] #{title}") do |sp|
+              ENV['HTTP_X_HONEYCOMB_TRACE'] = Honecomb.current_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
               stdout, stderr, status = Open3.capture3(env, test)
               if status.to_i.zero?
                 sp.success
