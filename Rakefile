@@ -1,3 +1,4 @@
+require 'bundler/gem_tasks'
 require 'rubocop/rake_task'
 require 'github_changelog_generator/task'
 require 'puppet_litmus/version'
