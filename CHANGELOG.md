@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.16.0](https://github.com/puppetlabs/puppet_litmus/tree/0.16.0) (2020-03-05)
+## [0.17.0](https://github.com/puppetlabs/puppet_litmus/tree/0.17.0) (2020-03-24)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.16.0...0.17.0)
+
+### Added
+
+- \(IAC-373\) link spans to an existing trace using HTTP\_X\_HONEYCOMB\_TRACE [\#265](https://github.com/puppetlabs/puppet_litmus/pull/265) ([DavidS](https://github.com/DavidS))
+- \(IAC-537\) capture more info for honeycomb [\#264](https://github.com/puppetlabs/puppet_litmus/pull/264) ([DavidS](https://github.com/DavidS))
+- Open Litmus to use custom provisioners [\#262](https://github.com/puppetlabs/puppet_litmus/pull/262) ([jmangt](https://github.com/jmangt))
+
+## [0.16.0](https://github.com/puppetlabs/puppet_litmus/tree/0.16.0) (2020-03-09)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.15.0...0.16.0)
 
@@ -302,6 +312,10 @@ All notable changes to this project will be documented in this file. The format 
 ## [0.1.0](https://github.com/puppetlabs/puppet_litmus/tree/0.1.0) (2019-04-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.0.1...0.1.0)
+
+### Changed
+
+- \(FM-7470\) change method names, use upload\_file [\#91](https://github.com/puppetlabs/puppet_litmus/pull/91) ([tphoney](https://github.com/tphoney))
 
 ### Added
 
