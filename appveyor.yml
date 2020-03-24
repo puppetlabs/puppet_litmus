@@ -55,6 +55,7 @@ for:
         Get-Content Gemfile.lock
   test_script:
     - pwsh: |
+        $ErrorActionPreference = 'Stop'
         $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
         $ENV:BUNDLE_GEMFILE = './Gemfile'
         Push-Location motd
@@ -64,7 +65,9 @@ for:
         gem -v
         bundle -v
         bundle exec rake spec_prep
+        if(-not $?) { Write-Error -Message "spec_prep failed" }
         bundle exec rake litmus:acceptance:localhost
+        if(-not $?) { Write-Error -Message "litmus:acceptance:localhost failed" }
 matrix:
   fast_finish: true
 install:

@@ -37,6 +37,7 @@ module PuppetLitmus::InventoryManipulation
               'uri' => 'litmus_localhost',
               'config' => { 'transport' => 'local' },
               'feature' => 'puppet-agent',
+              'facts' => { 'platform' => 'localhost' },
             },
           ],
         },
