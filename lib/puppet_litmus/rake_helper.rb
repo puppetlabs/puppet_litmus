@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-module PuppetLitmus; end # rubocop:disable Style/Documentation
-
 require 'honeycomb-beeline'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
@@ -340,5 +338,19 @@ module PuppetLitmus::RakeHelper
       errors[target] = error_msg
     end
     errors
+  end
+
+  # Parse out errors messages in result set returned by Bolt command. If there are errors, raise them.
+  #
+  # @param result_set [Array] result set returned by Bolt command.
+  # @param error_msg [String] error message to raise when errors are detected. The actual errors will be appended.
+  def raise_bolt_errors(result_set, error_msg)
+    errors = check_bolt_errors(result_set)
+
+    unless errors.empty?
+      raise "#{error_msg}\nErrors: #{errors}"
+    end
+
+    nil
   end
 end

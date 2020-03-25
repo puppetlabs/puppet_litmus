@@ -232,8 +232,7 @@ namespace :litmus do
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
     result = install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
-
-    raise "Failed trying to run 'puppet module install /tmp/#{File.basename(module_tar)}' against inventory." unless result.is_a?(Array)
+    raise_bolt_errors(result, "Installation of package #{module_tar} failed.")
 
     result.each do |node|
       puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
