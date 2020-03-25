@@ -226,21 +226,20 @@ module PuppetLitmus::RakeHelper
   end
 
   def install_module(inventory_hash, target_node_name, module_tar, module_repository = 'https://forgeapi.puppetlabs.com')
-    require 'bolt_spec/run'
-    include BoltSpec::Run
-    target_nodes = find_targets(inventory_hash, target_node_name)
-    target_string = if target_node_name.nil?
-                      'all'
-                    else
-                      target_node_name
-                    end
-    run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
-    install_module_command = "puppet module install --module_repository #{module_repository} /tmp/#{File.basename(module_tar)}"
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
-      span.add_field('litmus.install_module_command', install_module_command)
-      span.add_field('litmus.target_nodes', target_nodes)
+      span.add_field('litmus.target_node_name', target_node_name)
+      span.add_field('litmus.module_tar', module_tar)
 
+      include BoltSpec::Run
+
+      target_nodes = find_targets(inventory_hash, target_node_name)
+      span.add_field('litmus.target_nodes', target_nodes)
+      bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash)
+      check_bolt_errors(bolt_result)
+
+      install_module_command = "puppet module install --module_repository #{module_repository} /tmp/#{File.basename(module_tar)}"
+      span.add_field('litmus.install_module_command', install_module_command)
       run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
     end
   end
