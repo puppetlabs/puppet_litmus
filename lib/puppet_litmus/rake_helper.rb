@@ -4,6 +4,10 @@ module PuppetLitmus; end # rubocop:disable Style/Documentation
 
 require 'honeycomb-beeline'
 Honeycomb.configure do |config|
+  # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
+  unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
+    config.client = Libhoney::NullClient.new
+  end
 end
 process_span = Honeycomb.start_span(name: 'Litmus Testing', serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
 ENV['HTTP_X_HONEYCOMB_TRACE'] = process_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
