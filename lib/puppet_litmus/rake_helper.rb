@@ -185,12 +185,12 @@ module PuppetLitmus::RakeHelper
     Honeycomb.start_span(name: 'litmus.tear_down') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       # how do we know what provisioner to use
-      node_facts = facts_from_node(inventory_hash, node_name)
 
       span.add_field('litmus.node_name', node_name)
-      span.add_field('litmus.platform', node_facts['platform'])
+      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, node_name)
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
+      node_facts = facts_from_node(inventory_hash, node_name)
       run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
     end
   end
@@ -289,7 +289,7 @@ module PuppetLitmus::RakeHelper
       # if we're only checking connectivity for a single node
       if target_node_name
         span.add_field('litmus.node_name', target_node_name)
-        span.add_field('litmus.platform', facts_from_node(inventory_hash, target_node_name)['platform'])
+        PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
       end
 
       require 'bolt_spec/run'
