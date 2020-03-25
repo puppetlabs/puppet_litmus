@@ -103,31 +103,6 @@ module PuppetLitmus::RakeHelper
     end
   end
 
-  # Builds all the modules in a specified module
-  #
-  # @param source_folder [String] the folder to get the modules from
-  # @return [Array] an array of module tar's
-  def build_modules_in_folder(source_folder)
-    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
-    module_tars = []
-
-    target_dir = File.join(Dir.pwd, 'pkg')
-    # remove old build folder if exists, before we build afresh
-    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
-
-    folder_list.each do |folder|
-      folder_handle = Dir.open(File.join(source_folder, folder))
-      next if File.symlink?(folder_handle)
-
-      module_dir = folder_handle.path
-
-      # build_module
-      module_tar = build_module(module_dir, target_dir)
-      module_tars.push(File.new(module_tar))
-    end
-    module_tars
-  end
-
   def provision(provisioner, platform, inventory_vars)
     require 'bolt_spec/run'
     include BoltSpec::Run
@@ -268,6 +243,31 @@ module PuppetLitmus::RakeHelper
 
       run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
     end
+  end
+
+  # Builds all the modules in a specified module
+  #
+  # @param source_folder [String] the folder to get the modules from
+  # @return [Array] an array of module tar's
+  def build_modules_in_folder(source_folder)
+    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
+    module_tars = []
+
+    target_dir = File.join(Dir.pwd, 'pkg')
+    # remove old build folder if exists, before we build afresh
+    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
+
+    folder_list.each do |folder|
+      folder_handle = Dir.open(File.join(source_folder, folder))
+      next if File.symlink?(folder_handle)
+
+      module_dir = folder_handle.path
+
+      # build_module
+      module_tar = build_module(module_dir, target_dir)
+      module_tars.push(File.new(module_tar))
+    end
+    module_tars
   end
 
   def metadata_module_name
