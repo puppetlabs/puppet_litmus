@@ -32,6 +32,7 @@ module PuppetLitmus::PuppetHelpers
   #  :manifest_file_location [Path] The place on the target system.
   #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
+  #  :trace [Boolean] run puppet apply with the trace flag (defaults to `true`).
   #  :debug [Boolean] run puppet apply with the debug flag.
   #  :noop [Boolean] run puppet apply with the noop flag.
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
@@ -47,6 +48,8 @@ module PuppetLitmus::PuppetHelpers
       raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
       raise 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`' if
         [opts[:catch_changes], opts[:expect_changes], opts[:catch_failures], opts[:expect_failures]].compact.length > 1
+
+      opts = { trace: true }.merge(opts)
 
       if opts[:catch_changes]
         use_detailed_exit_codes = true
@@ -73,6 +76,7 @@ module PuppetLitmus::PuppetHelpers
       PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
 
       command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
+      command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
       command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
       command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
       command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
