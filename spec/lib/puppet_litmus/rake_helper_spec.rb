@@ -102,7 +102,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
     let(:module_tar) { '/tmp/foo.tar.gz' }
     let(:targets) { ['some.host'] }
-    let(:install_module_command) { "puppet module install --module_repository https://forgeapi.puppetlabs.com #{module_tar}" }
+    let(:install_module_command) { "puppet module install --module_repository 'https://forgeapi.puppetlabs.com' #{module_tar}" }
 
     it 'calls function' do
       allow_any_instance_of(BoltSpec::Run).to receive(:upload_file).with(module_tar, module_tar, targets, options: {}, config: nil, inventory: inventory_hash).and_return([])
