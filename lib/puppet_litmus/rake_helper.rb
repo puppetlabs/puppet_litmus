@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'bolt_spec/run'
 require 'honeycomb-beeline'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
@@ -102,8 +103,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def provision(provisioner, platform, inventory_vars)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
+    include ::BoltSpec::Run
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
@@ -144,8 +144,7 @@ module PuppetLitmus::RakeHelper
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.targets', targets)
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
       raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
@@ -180,8 +179,7 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.collection', collection)
       span.add_field('litmus.targets', targets)
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       params = if collection.nil?
                  {}
                else
@@ -229,7 +227,7 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.target_node_name', target_node_name)
       span.add_field('litmus.module_tar', module_tar)
 
-      include BoltSpec::Run
+      include ::BoltSpec::Run
 
       target_nodes = find_targets(inventory_hash, target_node_name)
       span.add_field('litmus.target_nodes', target_nodes)
@@ -278,8 +276,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
+    include ::BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
     target_nodes = find_targets(inventory_hash, target_node_name)
     install_module_command = "puppet module uninstall #{module_name}"
@@ -295,8 +292,7 @@ module PuppetLitmus::RakeHelper
         PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
       end
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       target_nodes = find_targets(inventory_hash, target_node_name)
       results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', results)
