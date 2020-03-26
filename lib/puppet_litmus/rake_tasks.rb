@@ -171,7 +171,8 @@ namespace :litmus do
   # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'install_module - build and install module'
-  task :install_modules_from_directory, [:source, :target_node_name] do |_task, args|
+  task :install_modules_from_directory, [:source, :target_node_name, :module_repository] do |_task, args|
+    args.with_defaults(source: nil, target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -200,7 +201,7 @@ namespace :litmus do
     puts "\nInstalling"
     module_tars.each do |module_tar|
       # install_module
-      install_module_command = "puppet module install --force /tmp/#{File.basename(module_tar)}"
+      install_module_command = "puppet module install --module_repository #{args[:module_repository]} --force /tmp/#{File.basename(module_tar)}"
       run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
       print "#{File.basename(module_tar)} "
     end
@@ -224,7 +225,8 @@ namespace :litmus do
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'install_module - build and install module'
-  task :install_module, [:target_node_name] do |_task, args|
+  task :install_module, [:target_node_name, :module_repository] do |_task, args|
+    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -238,7 +240,7 @@ namespace :litmus do
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
-    result = install_module(inventory_hash, args[:target_node_name], module_tar)
+    result = install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
 
     raise "Failed trying to run 'puppet module install /tmp/#{File.basename(module_tar)}' against inventory." unless result.is_a?(Array)
 
@@ -254,11 +256,12 @@ namespace :litmus do
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   # @param :collection [String] parameters to pass to the puppet agent install command.
   desc 'provision_install - provision a list of machines, install an agent, and the module.'
-  task :provision_install, [:key, :collection] do |_task, args|
+  task :provision_install, [:key, :collection, :module_repository] do |_task, args|
+    args.with_defaults(module_repository: 'https://forgeapi.puppetlabs.com')
     Rake::Task['spec_prep'].invoke
     Rake::Task['litmus:provision_list'].invoke(args[:key])
     Rake::Task['litmus:install_agent'].invoke(args[:collection])
-    Rake::Task['litmus:install_module'].invoke
+    Rake::Task['litmus:install_module'].invoke(nil, args[:module_repository])
   end
 
   # Decommissions test machines.
@@ -318,9 +321,10 @@ namespace :litmus do
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'reinstall_module - reinstall module'
-  task :reinstall_module, [:target_node_name] do |_task, args|
+  task :reinstall_module, [:target_node_name, :module_repository] do |_task, args|
+    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
-    Rake::Task['litmus:install_module'].invoke(args[:target_node_name])
+    Rake::Task['litmus:install_module'].invoke(args[:target_node_name], args[:module_repository])
   end
 
   namespace :acceptance do

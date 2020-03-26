@@ -102,7 +102,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
     let(:module_tar) { '/tmp/foo.tar.gz' }
     let(:targets) { ['some.host'] }
-    let(:install_module_command) { "puppet module install /tmp/#{File.basename(module_tar)}" }
+    let(:install_module_command) { "puppet module install --module_repository https://forgeapi.puppetlabs.com /tmp/#{File.basename(module_tar)}" }
 
     it 'calls function' do
       allow(Open3).to receive(:capture3).with("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml")
