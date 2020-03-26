@@ -25,14 +25,20 @@ jobs:
     services: docker
     before_script:
     - |
+      set -e
       git clone https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
       cd puppetlabs-motd
       git reset --hard 88a0015287b943d448271f11b9d6ddc859ba5eca
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
-      bundle install --with development --path vendor/bundle --gemfile=./Gemfile
-      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:provision_list[default]'
-      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:install_agent'
-      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:install_module'
-      BUNDLE_GEMFILE=./Gemfile bundle exec rake 'litmus:add_feature[test_123]'
+      # override travis' defaults
+      unset BUNDLE_GEMFILE
+      bundle config set gemfile ./Gemfile
+      bundle config set path '../vendor/bundle'
+      bundle config set with development
+      bundle install
+      bundle exec rake 'litmus:provision_list[default]'
+      bundle exec rake 'litmus:install_agent'
+      bundle exec rake 'litmus:install_module'
+      bundle exec rake 'litmus:add_feature[test_123]'
     script:
-    - BUNDLE_GEMFILE=./Gemfile bundle exec rake litmus:acceptance:parallel
+    - bundle exec rake litmus:acceptance:parallel
