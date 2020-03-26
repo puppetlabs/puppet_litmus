@@ -229,6 +229,10 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.target_node_name', target_node_name)
       span.add_field('litmus.module_tar', module_tar)
 
+      # make sure the target module is not installed
+      # otherwise `puppet module install` might silently skip it
+      uninstall_module(inventory_hash.clone, target_node_name, force: true)
+
       include ::BoltSpec::Run
 
       target_nodes = find_targets(inventory_hash, target_node_name)
@@ -280,11 +284,12 @@ module PuppetLitmus::RakeHelper
     metadata['name']
   end
 
-  def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil)
+  def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil, **opts)
     include ::BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
     target_nodes = find_targets(inventory_hash, target_node_name)
     install_module_command = "puppet module uninstall #{module_name}"
+    install_module_command += ' --force' if opts[:force]
     run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
   end
 

@@ -102,10 +102,16 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
     let(:module_tar) { '/tmp/foo.tar.gz' }
     let(:targets) { ['some.host'] }
+    let(:uninstall_module_command) { 'puppet module uninstall foo --force' }
     let(:install_module_command) { "puppet module install --module_repository 'https://forgeapi.puppetlabs.com' #{module_tar}" }
 
     it 'calls function' do
       allow_any_instance_of(BoltSpec::Run).to receive(:upload_file).with(module_tar, module_tar, targets, options: {}, config: nil, inventory: inventory_hash).and_return([])
+      allow(File).to receive(:exist?).with(File.join(Dir.pwd, 'metadata.json')).and_return(true)
+      allow(File).to receive(:read).with(File.join(Dir.pwd, 'metadata.json')).and_return(JSON.dump({ name: 'foo' }))
+      allow(Open3).to receive(:capture3).with("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes all --inventoryfile inventory.yaml")
+                                        .and_return(['success', '', 0])
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(install_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       described_class.install_module(inventory_hash, nil, module_tar)
     end
