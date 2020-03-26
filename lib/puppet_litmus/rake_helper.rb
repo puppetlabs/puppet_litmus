@@ -190,7 +190,9 @@ module PuppetLitmus::RakeHelper
        unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
       # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
-      run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      bolt_result = run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      raise_bolt_errors(bolt_result, 'Installation of agent failed.')
+      bolt_result
     end
   end
 
@@ -232,11 +234,14 @@ module PuppetLitmus::RakeHelper
       target_nodes = find_targets(inventory_hash, target_node_name)
       span.add_field('litmus.target_nodes', target_nodes)
       bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash)
-      check_bolt_errors(bolt_result)
+      raise_bolt_errors(bolt_result, 'Failed to upload module.')
 
       install_module_command = "puppet module install --module_repository #{module_repository} /tmp/#{File.basename(module_tar)}"
       span.add_field('litmus.install_module_command', install_module_command)
-      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+
+      bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+      raise_bolt_errors(bolt_result, "Installation of package #{module_tar} failed.")
+      bolt_result
     end
   end
 

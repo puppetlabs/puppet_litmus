@@ -231,12 +231,7 @@ namespace :litmus do
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
-    result = install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
-    raise_bolt_errors(result, "Installation of package #{module_tar} failed.")
-
-    result.each do |node|
-      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
-    end
+    install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
 
     puts 'Installed'
   end
