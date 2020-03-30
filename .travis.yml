@@ -43,3 +43,4 @@ jobs:
       bundle exec rake 'litmus:add_feature[test_123]'
     script:
     - bundle exec rake litmus:acceptance:parallel
+    - bundle exec rake litmus:tear_down

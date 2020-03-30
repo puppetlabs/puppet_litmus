@@ -2,6 +2,7 @@
 
 require 'bolt_spec/run'
 require 'honeycomb-beeline'
+require 'puppet_litmus/honeycomb_utils'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
   unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
