@@ -41,7 +41,8 @@ end
 
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
-  DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }.freeze
+  # DEFAULT_CONFIG_DATA should be frozen for our safety, but it needs to work around https://github.com/puppetlabs/bolt/pull/1696
+  DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } # .freeze # rubocop:disable Style/MutableConstant
   SUPPORTED_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze
 
   # Gets a string representing the operating system and version.
@@ -120,7 +121,7 @@ module PuppetLitmus::RakeHelper
 
       bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
 
-      span.add_field('litmus.node_name', bolt_result&.first&.dig('result', 'node_name'))
+      span.add_field('litmus.node_name', bolt_result&.first&.dig('value', 'node_name'))
 
       bolt_result
     end
@@ -341,7 +342,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      error_msg = target_result['result']['_error']['msg']
+      error_msg = target_result['value']['_error']['msg']
       errors[target] = error_msg
     end
     errors

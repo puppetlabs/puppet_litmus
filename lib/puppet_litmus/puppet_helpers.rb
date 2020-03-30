@@ -88,9 +88,9 @@ module PuppetLitmus::PuppetHelpers
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
 
-      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
-                              stdout: bolt_result.first['result']['stdout'],
-                              stderr: bolt_result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                              stdout: bolt_result.first['value']['stdout'],
+                              stderr: bolt_result.first['value']['stderr'])
       span.add_field('litmus.result', result.to_h)
 
       status = result.exit_code
@@ -138,7 +138,7 @@ module PuppetLitmus::PuppetHelpers
         manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
         span.add_field('litmus.bolt_result', bolt_result)
-        raise bolt_result.first['result'].to_s unless bolt_result.first['status'] == 'success'
+        raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
       end
 
       span.add_field('litmus.manifest_file_location', manifest_file_location)
@@ -169,14 +169,14 @@ module PuppetLitmus::PuppetHelpers
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
 
-      if bolt_result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+      if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
         raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}"
       end
 
-      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
-                              exit_status: bolt_result.first['result']['exit_code'],
-                              stdout: bolt_result.first['result']['stdout'],
-                              stderr: bolt_result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                              exit_status: bolt_result.first['value']['exit_code'],
+                              stdout: bolt_result.first['value']['stdout'],
+                              stderr: bolt_result.first['value']['stderr'])
       span.add_field('litmus.result', result.to_h)
       yield result if block_given?
       result
@@ -210,9 +210,9 @@ module PuppetLitmus::PuppetHelpers
 
       result_obj = {
         exit_code: 0,
-        stdout: bolt_result.first['result']['_output'],
+        stdout: bolt_result.first['value']['_output'],
         stderr: nil,
-        result: bolt_result.first['result'],
+        result: bolt_result.first['value'],
       }
 
       if bolt_result.first['status'] != 'success'
@@ -222,7 +222,7 @@ module PuppetLitmus::PuppetHelpers
         end
 
         result_obj[:exit_code] = 255
-        result_obj[:stderr]    = bolt_result.first['result']['_error']['msg']
+        result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
       end
 
       result = OpenStruct.new(exit_code: result_obj[:exit_code],
@@ -268,15 +268,15 @@ module PuppetLitmus::PuppetHelpers
         exit_code: 0,
         stdout: nil,
         stderr: nil,
-        result: bolt_result.first['result'],
+        result: bolt_result.first['value'],
       }
 
       if bolt_result.first['status'] == 'success'
         # stdout returns unstructured data if structured data is not available
-        result_obj[:stdout] = if bolt_result.first['result']['_output'].nil?
-                                bolt_result.first['result'].to_s
+        result_obj[:stdout] = if bolt_result.first['value']['_output'].nil?
+                                bolt_result.first['value'].to_s
                               else
-                                bolt_result.first['result']['_output']
+                                bolt_result.first['value']['_output']
                               end
 
       else
@@ -285,12 +285,12 @@ module PuppetLitmus::PuppetHelpers
           raise "task failed\n`#{task_name}`\n======\n#{bolt_result}"
         end
 
-        result_obj[:exit_code] = if bolt_result.first['result']['_error']['details'].nil?
+        result_obj[:exit_code] = if bolt_result.first['value']['_error']['details'].nil?
                                    255
                                  else
-                                   bolt_result.first['result']['_error']['details'].fetch('exitcode', 255)
+                                   bolt_result.first['value']['_error']['details'].fetch('exitcode', 255)
                                  end
-        result_obj[:stderr]    = bolt_result.first['result']['_error']['msg']
+        result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
       end
 
       result = OpenStruct.new(exit_code: result_obj[:exit_code],
@@ -326,14 +326,14 @@ module PuppetLitmus::PuppetHelpers
 
       bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
-      if bolt_result.first['result']['exit_code'] != 0 && opts[:expect_failures] != true
+      if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
         span.add_field('litmus_runscriptfailure', bolt_result)
         raise "script run failed\n`#{script}`\n======\n#{bolt_result}"
       end
 
-      result = OpenStruct.new(exit_code: bolt_result.first['result']['exit_code'],
-                              stdout: bolt_result.first['result']['stdout'],
-                              stderr: bolt_result.first['result']['stderr'])
+      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                              stdout: bolt_result.first['value']['stdout'],
+                              stderr: bolt_result.first['value']['stderr'])
       yield result if block_given?
       span.add_field('litmus.result', result.to_h)
       result
@@ -357,7 +357,7 @@ module PuppetLitmus::PuppetHelpers
     puppet_apply_error = <<~ERROR
       apply manifest failed
       `#{command}`
-      with exit code #{bolt_result.first['result']['exit_code']} (expected: #{acceptable_exit_codes})
+      with exit code #{bolt_result.first['value']['exit_code']} (expected: #{acceptable_exit_codes})
       ====== Start output of failed Puppet apply ======
       #{puppet_output(bolt_result)}
       ====== End output of failed Puppet apply ======
@@ -382,8 +382,8 @@ module PuppetLitmus::PuppetHelpers
 
   # Return the stdout of the puppet run
   def puppet_output(bolt_result)
-    bolt_result.dig(0, 'result', 'stderr').to_s << \
-      bolt_result.dig(0, 'result', 'stdout').to_s
+    bolt_result.dig(0, 'value', 'stderr').to_s << \
+      bolt_result.dig(0, 'value', 'stdout').to_s
   end
 
   # Checks a puppet return status and returns true if it both

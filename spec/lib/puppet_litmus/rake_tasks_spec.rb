@@ -64,7 +64,7 @@ describe 'litmus rake tasks' do
                    'action' => 'task',
                    'object' => 'provision::docker',
                    'status' => 'success',
-                   'result' => { 'status' => 'ok', 'node_name' => 'localhost:2222' } }]
+                   'value' => { 'status' => 'ok', 'node_name' => 'localhost:2222' } }]
 
       allow(File).to receive(:directory?).with(any_args).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)

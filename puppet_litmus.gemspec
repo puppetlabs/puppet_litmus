@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
     Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.
   EOF
   spec.summary = 'Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.'
-  spec.add_runtime_dependency 'bolt',        ['>= 1.13.1', '< 2.0.0']
+  spec.add_runtime_dependency 'bolt',        ['>= 2.0.1', '< 3.0.0']
   spec.add_runtime_dependency 'puppet-modulebuilder', '~> 0.1'
   spec.add_runtime_dependency 'tty-spinner', ['>= 0.5.0', '< 1.0.0']
   spec.add_runtime_dependency 'docker-api',  ['>= 1.34', '< 2.0.0']
