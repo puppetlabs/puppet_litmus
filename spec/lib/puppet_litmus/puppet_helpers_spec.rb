@@ -24,7 +24,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when specifying a hiera config' do
       let(:manifest) { "include '::doot'" }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
+      let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
       it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
@@ -39,7 +39,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when using detailed-exitcodes' do
       let(:manifest) { "include '::doot'" }
       let(:result) { ['result' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
+      let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
 
       it 'uses detailed-exitcodes with expect_failures' do
         expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
