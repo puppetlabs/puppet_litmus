@@ -37,10 +37,9 @@ describe 'litmus rake tasks' do
       expect(File).to receive(:directory?).with(target_folder).and_return(true)
       expect_any_instance_of(Object).to receive(:build_modules_in_folder).with(target_folder).and_return([dummy_tar])
       expect(STDOUT).to receive(:puts).with('Building')
-      expect(STDOUT).to receive(:puts).with("\nSending")
-      expect_any_instance_of(Object).to receive(:upload_file).once
+      expect_any_instance_of(Object).to receive(:upload_file).once.and_return([])
       expect(STDOUT).to receive(:puts).with("\nInstalling")
-      expect_any_instance_of(Object).to receive(:run_command).once
+      expect_any_instance_of(Object).to receive(:run_command).once.and_return([])
       Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end

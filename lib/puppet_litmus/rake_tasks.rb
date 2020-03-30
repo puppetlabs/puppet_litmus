@@ -186,24 +186,15 @@ namespace :litmus do
                     end
     raise "Source folder doesnt exist #{source_folder}" unless File.directory?(source_folder)
 
-    module_tars = build_modules_in_folder(source_folder)
     puts 'Building'
-    module_tars.each do |module_tar|
-      print "#{File.basename(module_tar)} "
-    end
+    module_tars = build_modules_in_folder(source_folder)
     require 'bolt_spec/run'
     include BoltSpec::Run
-    puts "\nSending"
-    module_tars.each do |module_tar|
-      upload_file(module_tar.path, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash)
-      print "#{File.basename(module_tar)} "
-    end
     puts "\nInstalling"
     module_tars.each do |module_tar|
-      # install_module
-      install_module_command = "puppet module install --module_repository #{args[:module_repository]} --force /tmp/#{File.basename(module_tar)}"
-      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
-      print "#{File.basename(module_tar)} "
+      target_nodes.each do |target_node_name|
+        install_module(inventory_hash, target_node_name, module_tar, args[:module_repository])
+      end
     end
   end
 
@@ -240,13 +231,7 @@ namespace :litmus do
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
-    result = install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
-
-    raise "Failed trying to run 'puppet module install /tmp/#{File.basename(module_tar)}' against inventory." unless result.is_a?(Array)
-
-    result.each do |node|
-      puts "#{node['node']} failed #{node['result']}" if node['status'] != 'success'
-    end
+    install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
 
     puts 'Installed'
   end

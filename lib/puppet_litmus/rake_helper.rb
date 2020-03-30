@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-module PuppetLitmus; end # rubocop:disable Style/Documentation
-
+require 'bolt_spec/run'
 require 'honeycomb-beeline'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
@@ -103,32 +102,8 @@ module PuppetLitmus::RakeHelper
     end
   end
 
-  # Builds all the modules in a specified module
-  #
-  # @param source_folder [String] the folder to get the modules from
-  # @return [Array] an array of module tar's
-  def build_modules_in_folder(source_folder)
-    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
-    module_tars = []
-    folder_list.each do |folder|
-      folder_handle = Dir.open(File.join(source_folder, folder))
-      next if File.symlink?(folder_handle)
-
-      module_dir = folder_handle.path
-      target_dir = File.join(Dir.pwd, 'pkg')
-      # remove old build folder if exists, before we build afresh
-      FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
-
-      # build_module
-      module_tar = build_module(module_dir, target_dir)
-      module_tars.push(File.new(module_tar))
-    end
-    module_tars
-  end
-
   def provision(provisioner, platform, inventory_vars)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
+    include ::BoltSpec::Run
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
@@ -169,8 +144,7 @@ module PuppetLitmus::RakeHelper
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.targets', targets)
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
       raise "the provision module was not found in #{config_data['modulepath']}, please amend the .fixtures.yml file" unless File.directory?(File.join(config_data['modulepath'], 'provision'))
 
@@ -205,8 +179,7 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.collection', collection)
       span.add_field('litmus.targets', targets)
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       params = if collection.nil?
                  {}
                else
@@ -217,7 +190,9 @@ module PuppetLitmus::RakeHelper
        unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
       # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
-      run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      bolt_result = run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      raise_bolt_errors(bolt_result, 'Installation of agent failed.')
+      bolt_result
     end
   end
 
@@ -249,23 +224,50 @@ module PuppetLitmus::RakeHelper
   end
 
   def install_module(inventory_hash, target_node_name, module_tar, module_repository = 'https://forgeapi.puppetlabs.com')
-    require 'bolt_spec/run'
-    include BoltSpec::Run
-    target_nodes = find_targets(inventory_hash, target_node_name)
-    target_string = if target_node_name.nil?
-                      'all'
-                    else
-                      target_node_name
-                    end
-    run_local_command("bundle exec bolt file upload \"#{module_tar}\" /tmp/#{File.basename(module_tar)} --nodes #{target_string} --inventoryfile inventory.yaml")
-    install_module_command = "puppet module install --module_repository #{module_repository} /tmp/#{File.basename(module_tar)}"
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
-      span.add_field('litmus.install_module_command', install_module_command)
-      span.add_field('litmus.target_nodes', target_nodes)
+      span.add_field('litmus.target_node_name', target_node_name)
+      span.add_field('litmus.module_tar', module_tar)
 
-      run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+      include ::BoltSpec::Run
+
+      target_nodes = find_targets(inventory_hash, target_node_name)
+      span.add_field('litmus.target_nodes', target_nodes)
+      bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
+      raise_bolt_errors(bolt_result, 'Failed to upload module.')
+
+      install_module_command = "puppet module install --module_repository '#{module_repository}' /tmp/#{File.basename(module_tar)}"
+      span.add_field('litmus.install_module_command', install_module_command)
+
+      bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
+      raise_bolt_errors(bolt_result, "Installation of package #{module_tar} failed.")
+      bolt_result
     end
+  end
+
+  # Builds all the modules in a specified module
+  #
+  # @param source_folder [String] the folder to get the modules from
+  # @return [Array] an array of module tar's
+  def build_modules_in_folder(source_folder)
+    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
+    module_tars = []
+
+    target_dir = File.join(Dir.pwd, 'pkg')
+    # remove old build folder if exists, before we build afresh
+    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
+
+    folder_list.each do |folder|
+      folder_handle = Dir.open(File.join(source_folder, folder))
+      next if File.symlink?(folder_handle)
+
+      module_dir = folder_handle.path
+
+      # build_module
+      module_tar = build_module(module_dir, target_dir)
+      module_tars.push(File.new(module_tar))
+    end
+    module_tars
   end
 
   def metadata_module_name
@@ -279,8 +281,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil)
-    require 'bolt_spec/run'
-    include BoltSpec::Run
+    include ::BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
     target_nodes = find_targets(inventory_hash, target_node_name)
     install_module_command = "puppet module uninstall #{module_name}"
@@ -296,8 +297,7 @@ module PuppetLitmus::RakeHelper
         PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
       end
 
-      require 'bolt_spec/run'
-      include BoltSpec::Run
+      include ::BoltSpec::Run
       target_nodes = find_targets(inventory_hash, target_node_name)
       results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', results)
@@ -319,5 +319,39 @@ module PuppetLitmus::RakeHelper
       warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
       provisioner.to_s
     end
+  end
+
+  # Parse out errors messages in result set returned by Bolt command.
+  #
+  # @param result_set [Array] result set returned by Bolt command.
+  # @return [Hash] Error messages grouped by target.
+  def check_bolt_errors(result_set)
+    errors = {}
+    # iterate through each error
+    result_set.each do |target_result|
+      status = target_result['status']
+      # jump to the next one when there is not fail
+      next if status != 'failure'
+
+      target = target_result['target']
+      # get some info from error
+      error_msg = target_result['result']['_error']['msg']
+      errors[target] = error_msg
+    end
+    errors
+  end
+
+  # Parse out errors messages in result set returned by Bolt command. If there are errors, raise them.
+  #
+  # @param result_set [Array] result set returned by Bolt command.
+  # @param error_msg [String] error message to raise when errors are detected. The actual errors will be appended.
+  def raise_bolt_errors(result_set, error_msg)
+    errors = check_bolt_errors(result_set)
+
+    unless errors.empty?
+      raise "#{error_msg}\nErrors: #{errors}"
+    end
+
+    nil
   end
 end
