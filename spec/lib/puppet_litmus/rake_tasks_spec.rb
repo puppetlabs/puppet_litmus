@@ -32,6 +32,9 @@ describe 'litmus rake tasks' do
     let(:dummy_tar) { File.new('spec/data/doot.tar.gz') }
 
     it 'happy path' do
+      allow(File).to receive(:exist?).with(File.join(Dir.pwd, 'metadata.json')).and_return(true)
+      allow(File).to receive(:read).with(File.join(Dir.pwd, 'metadata.json')).and_return(JSON.dump({ name: 'foo' }))
+
       stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
       expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
       expect(File).to receive(:directory?).with(target_folder).and_return(true)
@@ -39,7 +42,7 @@ describe 'litmus rake tasks' do
       expect(STDOUT).to receive(:puts).with('Building')
       expect_any_instance_of(Object).to receive(:upload_file).once.and_return([])
       expect(STDOUT).to receive(:puts).with("\nInstalling")
-      expect_any_instance_of(Object).to receive(:run_command).once.and_return([])
+      expect_any_instance_of(Object).to receive(:run_command).twice.and_return([])
       Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end

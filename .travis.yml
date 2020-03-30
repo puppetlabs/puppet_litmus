@@ -39,6 +39,7 @@ jobs:
       bundle exec rake 'litmus:provision_list[default]'
       bundle exec rake 'litmus:install_agent'
       bundle exec rake 'litmus:install_module'
+      bundle exec rake 'litmus:install_module'
       bundle exec rake 'litmus:add_feature[test_123]'
     script:
     - bundle exec rake litmus:acceptance:parallel
