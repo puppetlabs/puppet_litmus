@@ -2,9 +2,29 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.17.0](https://github.com/puppetlabs/puppet_litmus/tree/0.17.0) (2020-03-24)
+## [0.18.0](https://github.com/puppetlabs/puppet_litmus/tree/0.18.0) (2020-03-31)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.16.0...0.17.0)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.17.0...0.18.0)
+
+### Added
+
+- Allow users to install modules from a private forge repository [\#260](https://github.com/puppetlabs/puppet_litmus/pull/260) ([jmangt](https://github.com/jmangt))
+- move to using bolt v2 [\#254](https://github.com/puppetlabs/puppet_litmus/pull/254) ([tphoney](https://github.com/tphoney))
+
+### Fixed
+
+- Use 'target' instead of 'node' in bolt result hashes [\#279](https://github.com/puppetlabs/puppet_litmus/pull/279) ([DavidS](https://github.com/DavidS))
+- \(DOCS\) README edit pass [\#278](https://github.com/puppetlabs/puppet_litmus/pull/278) ([clairecadman](https://github.com/clairecadman))
+- \(IAC-187\) force installing modules [\#275](https://github.com/puppetlabs/puppet_litmus/pull/275) ([DavidS](https://github.com/DavidS))
+- Add `--trace` by default to all `puppet apply` commands [\#274](https://github.com/puppetlabs/puppet_litmus/pull/274) ([DavidS](https://github.com/DavidS))
+- Fix missing require in `litmus:tear\_down` [\#273](https://github.com/puppetlabs/puppet_litmus/pull/273) ([DavidS](https://github.com/DavidS))
+- \(IAC-658\) suppress libhoney warning [\#272](https://github.com/puppetlabs/puppet_litmus/pull/272) ([DavidS](https://github.com/DavidS))
+- \(IAC-660\) make the platform fact optional [\#271](https://github.com/puppetlabs/puppet_litmus/pull/271) ([DavidS](https://github.com/DavidS))
+- Improve rake task install\_module and install\_modules\_from\_directory [\#247](https://github.com/puppetlabs/puppet_litmus/pull/247) ([findmyname666](https://github.com/findmyname666))
+
+## [v0.17.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.17.0) (2020-03-24)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.16.0...v0.17.0)
 
 ### Added
 
