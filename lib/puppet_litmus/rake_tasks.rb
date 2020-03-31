@@ -57,7 +57,7 @@ namespace :litmus do
       end
 
       if result.first['status'] != 'success'
-        failed_image_message += "=====\n#{result.first['node']}\n#{result.first['value']['_output']}\n#{result.inspect}"
+        failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
       else
         STDOUT.puts "#{result.first['value']['node_name']}, #{image}"
       end
@@ -119,11 +119,11 @@ namespace :litmus do
     results = install_agent(args[:collection], targets, inventory_hash)
     results.each do |result|
       if result['status'] != 'success'
-        command_to_run = "bolt task run puppet_agent::install --targets #{result['node']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
-        raise "Failed on #{result['node']}\n#{result}\ntry running '#{command_to_run}'"
+        command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
+        raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'"
       else
         # add puppet-agent feature to successful nodes
-        inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['node'])
+        inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
       end
     end
     # update the inventory with the puppet-agent feature set per node
@@ -134,7 +134,7 @@ namespace :litmus do
 
     results.each do |result|
       if result['status'] != 'success'
-        puts "Failed on #{result['node']}\n#{result}"
+        puts "Failed on #{result['target']}\n#{result}"
       end
     end
   end
@@ -296,7 +296,7 @@ namespace :litmus do
     raise "Failed trying to run 'puppet module uninstall #{module_name}' against inventory." unless result.is_a?(Array)
 
     result.each do |node|
-      puts "#{node['node']} failed #{node['value']}" if node['status'] != 'success'
+      puts "#{node['target']} failed #{node['value']}" if node['status'] != 'success'
     end
 
     puts 'Uninstalled'

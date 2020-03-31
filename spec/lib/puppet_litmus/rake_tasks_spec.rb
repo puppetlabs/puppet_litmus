@@ -59,8 +59,7 @@ describe 'litmus rake tasks' do
 
   context 'with litmus:provision task' do
     it 'happy path' do
-      results = [{ 'node' => 'localhost',
-                   'target' => 'localhost',
+      results = [{ 'target' => 'localhost',
                    'action' => 'task',
                    'object' => 'provision::docker',
                    'status' => 'success',
