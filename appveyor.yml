@@ -36,8 +36,10 @@ for:
       - ACCEPTANCE: yes
   install:
     - pwsh: |
+        $ErrorActionPreference = 'Stop'
         $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
         git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd motd
+        if(-not $?) { Write-Error -Message "failed to clone motd" }
         Push-Location motd
         if([string]::IsNullOrEmpty($ENV:APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME)) {
           $URL = "'https://github.com/${ENV:APPVEYOR_REPO_NAME}'"
@@ -49,14 +51,21 @@ for:
         Write-Host $URL
         Write-Host $Branch
         "gem 'puppet_litmus', require: false, git: $URL, branch: $Branch" >> Gemfile
-        bundle install --with development --jobs 4 --retry 2 --path vendor/bundle --gemfile=./Gemfile
-        $ENV:BUNDLE_GEMFILE = './Gemfile'
+
+        bundle config gemfile ./Gemfile
+        if(-not $?) { Write-Error -Message "failed to set gemfile" }
+        bundle config path '../vendor/bundle'
+        if(-not $?) { Write-Error -Message "failed to set path" }
+        bundle config with development
+        if(-not $?) { Write-Error -Message "failed to set with development" }
+
+        bundle install --jobs 4 --retry 2
+        if(-not $?) { Write-Error -Message "failed to install gems" }
         Get-Content Gemfile.lock
   test_script:
     - pwsh: |
         $ErrorActionPreference = 'Stop'
         $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
-        $ENV:BUNDLE_GEMFILE = './Gemfile'
         Push-Location motd
         Get-Location
         bundle exec puppet -V
