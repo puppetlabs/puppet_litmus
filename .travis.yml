@@ -31,10 +31,10 @@ jobs:
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
       # override travis' defaults
       unset BUNDLE_GEMFILE
-      bundle config set gemfile ./Gemfile
-      bundle config set path '../vendor/bundle'
-      bundle config set with development
-      bundle install
+      bundle config gemfile ./Gemfile
+      bundle config path '../vendor/bundle'
+      bundle config with development
+      bundle install --jobs 4 --retry 2
       bundle exec rake 'litmus:provision_list[default]'
       bundle exec rake 'litmus:install_agent'
       bundle exec rake 'litmus:install_module'
