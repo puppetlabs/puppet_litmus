@@ -41,6 +41,11 @@ end
 
 # helper methods for the litmus rake tasks
 module PuppetLitmus::RakeHelper
+  extend PuppetLitmus::InventoryManipulation
+  extend BoltSpec::Run
+
+  module_function
+
   # DEFAULT_CONFIG_DATA should be frozen for our safety, but it needs to work around https://github.com/puppetlabs/bolt/pull/1696
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } # .freeze # rubocop:disable Style/MutableConstant
   SUPPORTED_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze

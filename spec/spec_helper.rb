@@ -1,12 +1,6 @@
 # frozen_string_literal: true
 
 require 'rspec'
-require 'puppet_litmus'
-
-# Unfortunately this needs to be included as this is
-# how Litmus functions. We only include once here instead
-# of including for every single spec file.
-include PuppetLitmus # rubocop:disable Style/MixinUsage
 
 if ENV['COVERAGE'] == 'yes'
   require 'simplecov'
@@ -36,4 +30,11 @@ if ENV['COVERAGE'] == 'yes'
       system("git check-ignore --quiet #{f.filename}")
     end
   end
+end
+
+# This is basically how `configure!` sets up RSpec in tests.
+require 'puppet_litmus'
+RSpec.configure do |config|
+  config.include PuppetLitmus
+  config.extend PuppetLitmus
 end

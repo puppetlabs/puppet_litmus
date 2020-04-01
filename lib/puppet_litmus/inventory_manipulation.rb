@@ -4,6 +4,8 @@ module PuppetLitmus; end # rubocop:disable Style/Documentation
 
 # helper functions for manipulating and reading a bolt inventory file
 module PuppetLitmus::InventoryManipulation
+  module_function
+
   # Creates an inventory hash from the inventory.yaml.
   #
   # @param inventory_full_path [String] path to the inventory.yaml file

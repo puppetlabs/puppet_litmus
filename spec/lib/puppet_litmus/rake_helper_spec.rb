@@ -13,10 +13,10 @@ RSpec.shared_examples 'supported provisioner' do |args|
   it 'calls function' do
     allow(File).to receive(:directory?).and_call_original
     allow(File).to receive(:directory?)
-      .with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
+      .with(File.join(default_modulepath, 'provision'))
       .and_return(true)
     allow_any_instance_of(BoltSpec::Run).to receive(:run_task)
-      .with("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      .with("provision::#{provisioner}", 'localhost', params, config: { 'modulepath' => default_modulepath }, inventory: nil)
       .and_return(results)
     result = described_class.provision(provisioner, platform, inventory_vars)
     expect(result).to eq(results)
@@ -24,6 +24,8 @@ RSpec.shared_examples 'supported provisioner' do |args|
 end
 
 RSpec.describe PuppetLitmus::RakeHelper do
+  let(:default_modulepath) { File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+
   context 'with provision_list' do
     let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }
     let(:results) { [] }
@@ -71,8 +73,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:params) { { 'action' => 'tear_down', 'node_name' => 'some.host', 'inventory' => Dir.pwd } }
 
     it 'calls function' do
-      allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return([])
+      allow(File).to receive(:directory?).with(File.join(default_modulepath, 'provision')).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: { 'modulepath' => default_modulepath }, inventory: nil).and_return([])
       described_class.tear_down_nodes(targets, inventory_hash)
     end
   end
@@ -87,8 +89,14 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:params) { { 'collection' => 'puppet6' } }
 
     it 'calls function' do
-      allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
+      allow(File).to receive(:directory?).with(File.join(default_modulepath, 'puppet_agent')).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(
+        'puppet_agent::install',
+        targets,
+        params,
+        config: { 'modulepath' => default_modulepath },
+        inventory: inventory_hash,
+      ).and_return([])
       described_class.install_agent('puppet6', targets, inventory_hash)
     end
   end
