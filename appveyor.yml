@@ -37,9 +37,8 @@ for:
   install:
     - pwsh: |
         $ENV:PATH = "C:\Ruby${ENV:RUBY_VERSION}\bin;${ENV:PATH}"
-        git clone https://github.com/puppetlabs/puppetlabs-motd motd
+        git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd motd
         Push-Location motd
-        git reset --hard 88a0015287b943d448271f11b9d6ddc859ba5eca
         if([string]::IsNullOrEmpty($ENV:APPVEYOR_PULL_REQUEST_HEAD_REPO_NAME)) {
           $URL = "'https://github.com/${ENV:APPVEYOR_REPO_NAME}'"
           $Branch = "'${ENV:APPVEYOR_REPO_BRANCH}'"

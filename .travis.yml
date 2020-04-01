@@ -26,9 +26,8 @@ jobs:
     before_script:
     - |
       set -e
-      git clone https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
+      git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
       cd puppetlabs-motd
-      git reset --hard 88a0015287b943d448271f11b9d6ddc859ba5eca
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
       # override travis' defaults
       unset BUNDLE_GEMFILE
