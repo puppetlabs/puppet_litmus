@@ -354,8 +354,12 @@ namespace :litmus do
 
           require 'parallel'
           results = Parallel.map(payloads) do |title, test, options|
+            # avoid sending the parent process' main span in the sub-processes
+            # https://www.ruby-forum.com/t/at-exit-inherited-across-fork/122473/2
+            at_exit { exit! }
+
             env = options[:env].nil? ? {} : options[:env]
-            ENV['HTTP_X_HONEYCOMB_TRACE'] = Honecomb.current_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
+            env['HTTP_X_HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
             stdout, stderr, status = Open3.capture3(env, test)
             ["\n================\n#{title}\n", stdout, stderr, status]
           end
@@ -373,8 +377,8 @@ namespace :litmus do
           spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
           payloads.each do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
+            env['HTTP_X_HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
             spinners.register("[:spinner] #{title}") do |sp|
-              ENV['HTTP_X_HONEYCOMB_TRACE'] = Honecomb.current_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
               stdout, stderr, status = Open3.capture3(env, test)
               if status.to_i.zero?
                 sp.success
