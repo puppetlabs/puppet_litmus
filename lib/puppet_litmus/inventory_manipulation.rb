@@ -235,7 +235,7 @@ module PuppetLitmus::InventoryManipulation
   #
   # @param inventory_hash [Hash] hash of the inventory.yaml file
   # @param feature_name [String] feature to locate in the node
-  # node_name [String] node of nodes to limit the search for the node_name in
+  # @param node_name [String] node of nodes to limit the search for the node_name in
   # @return inventory.yaml file with feature removed from the node.
   # @return [Hash] inventory_hash with feature added to node if node_name exists in inventory hash.
   def remove_feature_from_node(inventory_hash, feature_name, node_name)
@@ -256,5 +256,14 @@ module PuppetLitmus::InventoryManipulation
   #  @return inventory.yaml file with feature added to group.
   def write_to_inventory_file(inventory_hash, inventory_full_path)
     File.open(inventory_full_path, 'wb+') { |f| f.write(inventory_hash.to_yaml) }
+  end
+
+  # Add the `litmus.platform` with platform information for the target
+  #
+  # @param inventory_hash [Hash] hash of the inventory.yaml file
+  # @param node_name [String] node of nodes to limit the search for the node_name in
+  def add_platform_field(inventory_hash, node_name)
+    facts = facts_from_node(inventory_hash, node_name)
+    Honeycomb.current_span.add_field('litmus.platform', facts&.dig('platform'))
   end
 end

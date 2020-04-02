@@ -73,7 +73,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
 
       command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
       command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
@@ -133,7 +133,7 @@ module PuppetLitmus::PuppetHelpers
         # transfer to TARGET_HOST
         inventory_hash = inventory_hash_from_inventory_file
         span.add_field('litmus.node_name', target_node_name)
-        PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+        add_platform_field(inventory_hash, target_node_name)
 
         manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
@@ -164,7 +164,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
 
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -203,7 +203,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
 
       bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -261,7 +261,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
 
       bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
       result_obj = {
@@ -322,7 +322,7 @@ module PuppetLitmus::PuppetHelpers
       raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
 
       bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
