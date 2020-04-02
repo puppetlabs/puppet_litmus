@@ -13,12 +13,12 @@ RSpec.shared_examples 'supported provisioner' do |args|
   it 'calls function' do
     allow(File).to receive(:directory?).and_call_original
     allow(File).to receive(:directory?)
-      .with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
+      .with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
       .and_return(true)
     allow_any_instance_of(BoltSpec::Run).to receive(:run_task)
-      .with("provision::#{provisioner}", 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      .with("provision::#{provisioner}", 'localhost', params, config: described_class::DEFAULT_CONFIG_DATA, inventory: nil)
       .and_return(results)
-    result = described_class.provision(provisioner, platform, inventory_vars)
+    result = provision(provisioner, platform, inventory_vars)
     expect(result).to eq(results)
   end
 end
@@ -29,8 +29,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:results) { [] }
 
     it 'calls function' do
-      expect(described_class).to receive(:provision).with('docker', 'waffleimage/centos7', nil).and_return(results)
-      described_class.provision_list(provision_hash, 'default')
+      expect(self).to receive(:provision).with('docker', 'waffleimage/centos7', nil).and_return(results)
+      provision_list(provision_hash, 'default')
     end
   end
 
@@ -71,9 +71,9 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:params) { { 'action' => 'tear_down', 'node_name' => 'some.host', 'inventory' => Dir.pwd } }
 
     it 'calls function' do
-      allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil).and_return([])
-      described_class.tear_down_nodes(targets, inventory_hash)
+      allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::docker', 'localhost', params, config: described_class::DEFAULT_CONFIG_DATA, inventory: nil).and_return([])
+      tear_down_nodes(targets, inventory_hash)
     end
   end
 
@@ -87,9 +87,9 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:params) { { 'collection' => 'puppet6' } }
 
     it 'calls function' do
-      allow(File).to receive(:directory?).with(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
-      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
-      described_class.install_agent('puppet6', targets, inventory_hash)
+      allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: described_class::DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
+      install_agent('puppet6', targets, inventory_hash)
     end
   end
 
@@ -113,7 +113,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
                                         .and_return(['success', '', 0])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(install_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
-      described_class.install_module(inventory_hash, nil, module_tar)
+      install_module(inventory_hash, nil, module_tar)
     end
   end
 
@@ -129,12 +129,12 @@ RSpec.describe PuppetLitmus::RakeHelper do
     it 'node available' do
       allow(Open3).to receive(:capture3).with('cd .').and_return(['success', '', 0])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'success' }])
-      described_class.check_connectivity?(inventory_hash, 'some.host')
+      check_connectivity?(inventory_hash, 'some.host')
     end
 
     it 'node unavailable' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'failure' }])
-      expect { described_class.check_connectivity?(inventory_hash, 'some.host') }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
+      expect { check_connectivity?(inventory_hash, 'some.host') }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
     end
   end
 
@@ -149,13 +149,13 @@ RSpec.describe PuppetLitmus::RakeHelper do
 
     it 'uninstalls module' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
-      expect(described_class).to receive(:metadata_module_name).and_return('foo-bar')
-      described_class.uninstall_module(inventory_hash, nil)
+      expect(self).to receive(:metadata_module_name).and_return('foo-bar')
+      uninstall_module(inventory_hash, nil)
     end
 
     it 'and custom name' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
-      described_class.uninstall_module(inventory_hash, nil, 'foo-bar')
+      uninstall_module(inventory_hash, nil, 'foo-bar')
     end
   end
 
@@ -165,7 +165,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     it 'reads module name' do
       allow(File).to receive(:exist?).with(File.join(Dir.pwd, 'metadata.json')).and_return(true)
       allow(File).to receive(:read).with(File.join(Dir.pwd, 'metadata.json')).and_return(metadata)
-      name = described_class.metadata_module_name
+      name = metadata_module_name
       expect(name).to eq('foo-bar')
     end
   end
@@ -173,12 +173,12 @@ RSpec.describe PuppetLitmus::RakeHelper do
   context 'with provisioner_task' do
     described_class::SUPPORTED_PROVISIONERS.each do |supported_provisioner|
       it "returns supported provisioner task name for #{supported_provisioner}" do
-        expect(described_class.provisioner_task(supported_provisioner)).to eq("provision::#{supported_provisioner}")
+        expect(provisioner_task(supported_provisioner)).to eq("provision::#{supported_provisioner}")
       end
     end
 
     it 'returns an unsupported provisioner name' do
-      expect(described_class.provisioner_task('my_org::custom_provisioner')).to eql('my_org::custom_provisioner')
+      expect(provisioner_task('my_org::custom_provisioner')).to eql('my_org::custom_provisioner')
     end
   end
 end

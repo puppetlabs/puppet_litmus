@@ -2,7 +2,6 @@
 
 require 'bolt_spec/run'
 require 'honeycomb-beeline'
-require 'puppet_litmus/honeycomb_utils'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
   unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
@@ -167,7 +166,7 @@ module PuppetLitmus::RakeHelper
       # how do we know what provisioner to use
 
       span.add_field('litmus.node_name', node_name)
-      PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, node_name)
+      add_platform_field(inventory_hash, node_name)
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       node_facts = facts_from_node(inventory_hash, node_name)
@@ -301,7 +300,7 @@ module PuppetLitmus::RakeHelper
       # if we're only checking connectivity for a single node
       if target_node_name
         span.add_field('litmus.node_name', target_node_name)
-        PuppetLitmus::HoneycombUtils.add_platform_field(inventory_hash, target_node_name)
+        add_platform_field(inventory_hash, target_node_name)
       end
 
       include ::BoltSpec::Run
