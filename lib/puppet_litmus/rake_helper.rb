@@ -119,8 +119,8 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.config', DEFAULT_CONFIG_DATA)
 
       bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
-
       span.add_field('litmus.node_name', bolt_result&.first&.dig('value', 'node_name'))
+      raise_bolt_errors(bolt_result, "provisioning of #{platform} failed.")
 
       bolt_result
     end
@@ -170,7 +170,9 @@ module PuppetLitmus::RakeHelper
 
       params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
       node_facts = facts_from_node(inventory_hash, node_name)
-      run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      bolt_result = run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      raise_bolt_errors(bolt_result, "tear_down of #{node_name} failed.")
+      bolt_result
     end
   end
 
@@ -291,7 +293,10 @@ module PuppetLitmus::RakeHelper
     target_nodes = find_targets(inventory_hash, target_node_name)
     install_module_command = "puppet module uninstall #{module_name}"
     install_module_command += ' --force' if opts[:force]
-    run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash)
+    # `puppet module uninstall --force` fails if the module is not installed. Ignore errors when force is set
+    raise_bolt_errors(bolt_result, "uninstalling #{module_name} failed.") unless opts[:force]
+    bolt_result
   end
 
   def check_connectivity?(inventory_hash, target_node_name)
