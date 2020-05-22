@@ -247,7 +247,7 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
-      raise_bolt_errors(bolt_result, "Installation of package #{module_tar} failed.")
+      raise_bolt_errors(bolt_result, "Installation of package #{File.basename(module_tar)} failed.")
       bolt_result
     end
   end
