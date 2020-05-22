@@ -335,7 +335,7 @@ module PuppetLitmus::RakeHelper
   # Parse out errors messages in result set returned by Bolt command.
   #
   # @param result_set [Array] result set returned by Bolt command.
-  # @return [Hash] Error messages grouped by target.
+  # @return [Hash] Errors grouped by target.
   def check_bolt_errors(result_set)
     errors = {}
     # iterate through each error
@@ -346,8 +346,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      error_msg = target_result['value']['_error']['msg']
-      errors[target] = error_msg
+      errors[target] = target_result['value']['_error']
     end
     errors
   end
