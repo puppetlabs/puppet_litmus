@@ -240,10 +240,10 @@ module PuppetLitmus::RakeHelper
 
       target_nodes = find_targets(inventory_hash, target_node_name)
       span.add_field('litmus.target_nodes', target_nodes)
-      bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
+      bolt_result = upload_file(module_tar, File.basename(module_tar), target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
       raise_bolt_errors(bolt_result, 'Failed to upload module.')
 
-      install_module_command = "puppet module install --module_repository '#{module_repository}' /tmp/#{File.basename(module_tar)}"
+      install_module_command = "puppet module install --module_repository '#{module_repository}' #{File.basename(module_tar)}"
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
