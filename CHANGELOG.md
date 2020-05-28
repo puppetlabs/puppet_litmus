@@ -2,9 +2,20 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.18.1](https://github.com/puppetlabs/puppet_litmus/tree/0.18.1) (2020-04-02)
+## [0.18.2](https://github.com/puppetlabs/puppet_litmus/tree/0.18.2) (2020-05-28)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.0...0.18.1)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.1...0.18.2)
+
+### Fixed
+
+- \(IAC-825\) - Adding net-ssh 5 dependent gems [\#297](https://github.com/puppetlabs/puppet_litmus/pull/297) ([pmcmaw](https://github.com/pmcmaw))
+- Use default working directory for all uploads to SUTs [\#296](https://github.com/puppetlabs/puppet_litmus/pull/296) ([DavidS](https://github.com/DavidS))
+- Log the filename instead of the file object when install fails [\#294](https://github.com/puppetlabs/puppet_litmus/pull/294) ([mmarod](https://github.com/mmarod))
+- Catch more errors in rake\_helpers [\#286](https://github.com/puppetlabs/puppet_litmus/pull/286) ([DavidS](https://github.com/DavidS))
+
+## [v0.18.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.1) (2020-04-02)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.0...v0.18.1)
 
 ### Fixed
 
@@ -270,7 +281,6 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(FM-8185\) Use spinner when provisioning  [\#130](https://github.com/puppetlabs/puppet_litmus/pull/130) ([florindragos](https://github.com/florindragos))
 - \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
-- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - Addition of pe\_install rake task [\#124](https://github.com/puppetlabs/puppet_litmus/pull/124) ([HelenCampbell](https://github.com/HelenCampbell))
 
 ### Fixed
@@ -304,6 +314,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - \(feat\) better error message for agent\_install [\#114](https://github.com/puppetlabs/puppet_litmus/pull/114) ([tphoney](https://github.com/tphoney))
 - \(MODULES-9170\) allow for the new docker provisioner [\#113](https://github.com/puppetlabs/puppet_litmus/pull/113) ([tphoney](https://github.com/tphoney))
 
