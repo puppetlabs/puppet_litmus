@@ -135,7 +135,7 @@ module PuppetLitmus::PuppetHelpers
         span.add_field('litmus.node_name', target_node_name)
         add_platform_field(inventory_hash, target_node_name)
 
-        manifest_file_location = "/tmp/#{File.basename(manifest_file)}"
+        manifest_file_location = File.basename(manifest_file)
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
         span.add_field('litmus.bolt_result', bolt_result)
         raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'

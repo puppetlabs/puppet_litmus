@@ -240,10 +240,10 @@ module PuppetLitmus::RakeHelper
 
       target_nodes = find_targets(inventory_hash, target_node_name)
       span.add_field('litmus.target_nodes', target_nodes)
-      bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
+      bolt_result = upload_file(module_tar, File.basename(module_tar), target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
       raise_bolt_errors(bolt_result, 'Failed to upload module.')
 
-      install_module_command = "puppet module install --module_repository '#{module_repository}' /tmp/#{File.basename(module_tar)}"
+      install_module_command = "puppet module install --module_repository '#{module_repository}' #{File.basename(module_tar)}"
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
@@ -335,7 +335,7 @@ module PuppetLitmus::RakeHelper
   # Parse out errors messages in result set returned by Bolt command.
   #
   # @param result_set [Array] result set returned by Bolt command.
-  # @return [Hash] Error messages grouped by target.
+  # @return [Hash] Errors grouped by target.
   def check_bolt_errors(result_set)
     errors = {}
     # iterate through each error
@@ -346,8 +346,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      error_msg = target_result['value']['_error']['msg']
-      errors[target] = error_msg
+      errors[target] = target_result['value']['_error']
     end
     errors
   end
