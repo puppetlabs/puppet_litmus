@@ -24,7 +24,7 @@ Install Litmus as a gem by running ```gem install puppet_litmus```.
 
 ## Documentation
 
-For documentation, see our [Litmus Wiki](https://github.com/puppetlabs/puppet_litmus/wiki).
+For documentation, see our [Litmus Docs Site](https://puppetlabs.github.io/litmus/).
 
 ## Other Resources
 
