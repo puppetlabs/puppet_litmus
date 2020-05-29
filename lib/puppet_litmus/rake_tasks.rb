@@ -17,7 +17,7 @@ namespace :litmus do
   end
 
   # Provisions a list of OSes from provision.yaml file e.g. 'bundle exec rake litmus:provision_list[default]'.
-  # @See https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml
+  # @See https://puppetlabs.github.io/litmus/Litmus-core-commands.html#provisioning-via-yaml
   #
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
@@ -25,7 +25,7 @@ namespace :litmus do
     raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
 
     provision_hash = YAML.load_file('./provision.yaml')
-    raise "No key #{args[:key]} in ./provision.yaml, see https://github.com/puppetlabs/puppet_litmus/wiki/Overview-of-Litmus#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
+    raise "No key #{args[:key]} in ./provision.yaml, see https://puppetlabs.github.io/litmus/Litmus-core-commands.html#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
 
     Rake::Task['spec_prep'].invoke
 
