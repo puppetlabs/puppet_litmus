@@ -20,7 +20,7 @@ namespace :litmus do
   # @See https://puppetlabs.github.io/litmus/Litmus-core-commands.html#provisioning-via-yaml
   #
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
-  desc "provision list of machines from provision.yaml file. 'bundle exec rake 'litmus:provision_list[default]'"
+  desc 'provision list of machines from provision.yaml file'
   task :provision_list, [:key] do |_task, args|
     raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
 
@@ -71,7 +71,7 @@ namespace :litmus do
   #
   # @param :provisioner [String] provisioner to use in provisioning given platform.
   # @param :platform [String] OS platform for container or VM to use.
-  desc "provision container/VM - abs/docker/vagrant/vmpooler eg 'bundle exec rake 'litmus:provision[vmpooler, ubuntu-1604-x86_64]'"
+  desc 'provision a test system using the given provisioner and platform name. See the puppetlabs-provision module tasks for more documentation'
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     Rake::Task['spec_prep'].invoke
     if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
@@ -103,7 +103,7 @@ namespace :litmus do
   #
   # @param :collection [String] parameters to pass to the puppet agent install command.
   # @param :target_node_name [Array] nodes on which to install puppet agent.
-  desc 'install puppet agent, [:collection, :target_node_name]'
+  desc 'install a puppet agent to all or a specified set of targets'
   task :install_agent, [:collection, :target_node_name] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target_node_name])
@@ -143,7 +143,7 @@ namespace :litmus do
   #
   # @param :target_node_name [Array] nodes on which to add the feature.
   # @param :added_feature [String] the feature which you wish to add.
-  desc 'add_feature, [:added_feature, :target_node_name]'
+  desc 'add a feature tag to a node'
   task :add_feature, [:added_feature, :target_node_name] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target_node_name])
@@ -170,7 +170,7 @@ namespace :litmus do
   #
   # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  desc 'install_module - build and install module'
+  desc 'build and install all modules from a directory'
   task :install_modules_from_directory, [:source, :target_node_name, :module_repository] do |_task, args|
     args.with_defaults(source: nil, target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     inventory_hash = inventory_hash_from_inventory_file
@@ -201,7 +201,7 @@ namespace :litmus do
   # Check that the nodes in the inventory are still contactable
   #
   # @param :target_node_name [Array] nodes on which to check connnectivity
-  desc 'check_connectivity - build and install module'
+  desc 'check the connectivity to all provisioned targets'
   task :check_connectivity, [:target_node_name] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
@@ -215,7 +215,7 @@ namespace :litmus do
   # Install the puppet module under test on a collection of nodes
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  desc 'install_module - build and install module'
+  desc 'build the module under test and install it onto targets'
   task :install_module, [:target_node_name, :module_repository] do |_task, args|
     args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     inventory_hash = inventory_hash_from_inventory_file
@@ -240,7 +240,7 @@ namespace :litmus do
   #
   # @param :key [String] key that maps to a value for a provisioner and an image to be used for each OS provisioned.
   # @param :collection [String] parameters to pass to the puppet agent install command.
-  desc 'provision_install - provision a list of machines, install an agent, and the module.'
+  desc 'provision a list of machines, install an agent, and the module.'
   task :provision_install, [:key, :collection, :module_repository] do |_task, args|
     args.with_defaults(module_repository: 'https://forgeapi.puppetlabs.com')
     Rake::Task['spec_prep'].invoke
@@ -252,7 +252,7 @@ namespace :litmus do
   # Decommissions test machines.
   #
   # @param :target [Array] nodes to remove from test environemnt and decommission.
-  desc 'tear-down - decommission machines'
+  desc 'destroy provisioned targets'
   task :tear_down, [:target] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     targets = find_targets(inventory_hash, args[:target])
@@ -282,7 +282,7 @@ namespace :litmus do
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   # @param :module_name [String] module name to be uninstalled
-  desc 'uninstall_module - uninstall module'
+  desc 'uninstall a specific module'
   task :uninstall_module, [:target_node_name, :module_name] do |_task, args|
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
@@ -305,7 +305,7 @@ namespace :litmus do
   # Reinstall the puppet module under test on a collection of nodes
   #
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  desc 'reinstall_module - reinstall module'
+  desc 'reinstall the module under test'
   task :reinstall_module, [:target_node_name, :module_repository] do |_task, args|
     args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
     Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
