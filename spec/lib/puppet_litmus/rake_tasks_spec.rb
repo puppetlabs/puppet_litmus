@@ -29,7 +29,7 @@ describe 'litmus rake tasks' do
   context 'with litmus:install_modules_from_directory' do
     let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'uri' => 'some.host' }] }] } }
     let(:target_folder) { File.join(Dir.pwd, 'spec/fixtures/modules') }
-    let(:dummy_tar) { File.new('spec/data/doot.tar.gz') }
+    let(:dummy_tar) { 'spec/data/doot.tar.gz' }
 
     it 'happy path' do
       allow(File).to receive(:exist?).with(File.join(Dir.pwd, 'metadata.json')).and_return(true)
@@ -39,10 +39,11 @@ describe 'litmus rake tasks' do
       expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
       expect(File).to receive(:directory?).with(target_folder).and_return(true)
       expect_any_instance_of(Object).to receive(:build_modules_in_folder).with(target_folder).and_return([dummy_tar])
-      expect(STDOUT).to receive(:puts).with('Building')
+      expect(STDOUT).to receive(:puts).with(start_with('Building all modules in'))
       expect_any_instance_of(Object).to receive(:upload_file).once.and_return([])
-      expect(STDOUT).to receive(:puts).with("\nInstalling")
+      expect(STDOUT).to receive(:puts).with(start_with('Installing \'spec/data/doot.tar.gz\''))
       expect_any_instance_of(Object).to receive(:run_command).twice.and_return([])
+      expect(STDOUT).to receive(:puts).with(start_with('Installed \'spec/data/doot.tar.gz\''))
       Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end

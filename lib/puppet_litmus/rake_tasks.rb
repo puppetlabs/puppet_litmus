@@ -180,14 +180,14 @@ namespace :litmus do
     end
 
     module_tar = build_module
-    puts 'Built'
+    puts "Built '#{module_tar}'"
 
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
     install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
 
-    puts 'Installed'
+    puts "Installed '#{module_tar}' on #{args[:target_node_name]}"
   end
 
   # Install the puppet modules from a source directory to nodes. It does not install dependencies.
@@ -210,14 +210,15 @@ namespace :litmus do
                     end
     raise "Source folder doesnt exist #{source_folder}" unless File.directory?(source_folder)
 
-    puts 'Building'
+    puts "Building all modules in #{source_folder.inspect}"
     module_tars = build_modules_in_folder(source_folder)
     require 'bolt_spec/run'
     include BoltSpec::Run
-    puts "\nInstalling"
     module_tars.each do |module_tar|
+      puts "Installing '#{module_tar}'"
       target_nodes.each do |target_node_name|
         install_module(inventory_hash, target_node_name, module_tar, args[:module_repository])
+        puts "Installed '#{module_tar}' on #{target_node_name}"
       end
     end
   end

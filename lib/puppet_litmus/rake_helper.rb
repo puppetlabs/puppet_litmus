@@ -219,6 +219,7 @@ module PuppetLitmus::RakeHelper
     source_dir = module_dir || Dir.pwd
     dest_dir = target_dir || File.join(source_dir, 'pkg')
 
+    puts "Building #{source_dir} into #{dest_dir}"
     builder = Puppet::Modulebuilder::Builder.new(source_dir, dest_dir, nil)
     # Force the metadata to be read. Raises if metadata could not be found
     _metadata = builder.metadata
