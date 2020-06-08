@@ -17,11 +17,8 @@ rvm:
 jobs:
   include:
   - env: CHECK="rubocop"
-    stage: static
   - env: CHECK='spec' COVERAGE='yes'
-    stage: spec
-  - stage: acceptance
-    env: PLATFORMS=deb_puppet6
+  - env: PLATFORMS=deb_puppet6
     services: docker
     before_script:
     - |
