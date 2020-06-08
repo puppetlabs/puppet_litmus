@@ -103,7 +103,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
     let(:module_tar) { '/tmp/foo.tar.gz' }
     let(:targets) { ['some.host'] }
     let(:uninstall_module_command) { 'puppet module uninstall foo --force' }
-    let(:install_module_command) { "puppet module install --module_repository 'https://forgeapi.puppetlabs.com' #{module_tar}" }
+    let(:install_module_command) { "puppet module install --module_repository 'https://forgeapi.example.com' #{module_tar}" }
 
     it 'calls function' do
       allow_any_instance_of(BoltSpec::Run).to receive(:upload_file).with(module_tar, module_tar, targets, options: {}, config: nil, inventory: inventory_hash).and_return([])
@@ -113,7 +113,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
                                         .and_return(['success', '', 0])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(uninstall_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(install_module_command, targets, config: nil, inventory: inventory_hash).and_return([])
-      install_module(inventory_hash, nil, module_tar)
+      install_module(inventory_hash, nil, module_tar, 'https://forgeapi.example.com')
     end
   end
 

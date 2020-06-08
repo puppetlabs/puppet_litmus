@@ -171,7 +171,7 @@ namespace :litmus do
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'build the module under test and install it onto targets'
   task :install_module, [:target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
+    args.with_defaults(target_node_name: nil, module_repository: nil)
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -196,7 +196,7 @@ namespace :litmus do
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'build and install all modules from a directory'
   task :install_modules_from_directory, [:source, :target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(source: nil, target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
+    args.with_defaults(source: nil, target_node_name: nil, module_repository: nil)
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -251,7 +251,7 @@ namespace :litmus do
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'reinstall the module under test'
   task :reinstall_module, [:target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
+    args.with_defaults(target_node_name: nil, module_repository: nil)
     Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
     Rake::Task['litmus:install_module'].invoke(args[:target_node_name], args[:module_repository])
   end
@@ -276,7 +276,7 @@ namespace :litmus do
   # @param :collection [String] parameters to pass to the puppet agent install command.
   desc 'provision a list of machines, install an agent, and the module.'
   task :provision_install, [:key, :collection, :module_repository] do |_task, args|
-    args.with_defaults(module_repository: 'https://forgeapi.puppetlabs.com')
+    args.with_defaults(module_repository: nil)
     Rake::Task['spec_prep'].invoke
     Rake::Task['litmus:provision_list'].invoke(args[:key])
     Rake::Task['litmus:install_agent'].invoke(args[:collection])
