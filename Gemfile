@@ -14,7 +14,6 @@ group :test do
 end
 
 group :development do
-  # TODO: Use gem instead of git. Section mapping is merged into master, but not yet released
   gem 'github_changelog_generator'
   gem 'honeycomb-beeline'
   gem 'pry'

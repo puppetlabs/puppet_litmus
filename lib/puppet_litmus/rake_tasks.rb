@@ -166,6 +166,30 @@ namespace :litmus do
     puts 'Feature added'
   end
 
+  # Install the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  desc 'build the module under test and install it onto targets'
+  task :install_module, [:target_node_name, :module_repository] do |_task, args|
+    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+
+    module_tar = build_module
+    puts 'Built'
+
+    # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
+    raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
+
+    install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
+
+    puts 'Installed'
+  end
+
   # Install the puppet modules from a source directory to nodes. It does not install dependencies.
   #
   # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
@@ -198,6 +222,40 @@ namespace :litmus do
     end
   end
 
+  # Uninstall the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  # @param :module_name [String] module name to be uninstalled
+  desc 'uninstall a specific module'
+  task :uninstall_module, [:target_node_name, :module_name] do |_task, args|
+    inventory_hash = inventory_hash_from_inventory_file
+    target_nodes = find_targets(inventory_hash, args[:target_node_name])
+    if target_nodes.empty?
+      puts 'No targets found'
+      exit 0
+    end
+
+    result = uninstall_module(inventory_hash, args[:target_node_name], args[:module_name])
+
+    raise "Failed trying to run 'puppet module uninstall #{module_name}' against inventory." unless result.is_a?(Array)
+
+    result.each do |node|
+      puts "#{node['target']} failed #{node['value']}" if node['status'] != 'success'
+    end
+
+    puts 'Uninstalled'
+  end
+
+  # Reinstall the puppet module under test on a collection of nodes
+  #
+  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
+  desc 'reinstall the module under test'
+  task :reinstall_module, [:target_node_name, :module_repository] do |_task, args|
+    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
+    Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
+    Rake::Task['litmus:install_module'].invoke(args[:target_node_name], args[:module_repository])
+  end
+
   # Check that the nodes in the inventory are still contactable
   #
   # @param :target_node_name [Array] nodes on which to check connnectivity
@@ -210,30 +268,6 @@ namespace :litmus do
       exit 0
     end
     check_connectivity?(inventory_hash, args[:target_node_name])
-  end
-
-  # Install the puppet module under test on a collection of nodes
-  #
-  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  desc 'build the module under test and install it onto targets'
-  task :install_module, [:target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
-    inventory_hash = inventory_hash_from_inventory_file
-    target_nodes = find_targets(inventory_hash, args[:target_node_name])
-    if target_nodes.empty?
-      puts 'No targets found'
-      exit 0
-    end
-
-    module_tar = build_module
-    puts 'Built'
-
-    # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
-    raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
-
-    install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
-
-    puts 'Installed'
   end
 
   # Provision a list of machines, install a puppet agent, and install the puppet module under test on a collection of nodes
@@ -276,40 +310,6 @@ namespace :litmus do
     bad_results.each do |result|
       puts result
     end
-  end
-
-  # Uninstall the puppet module under test on a collection of nodes
-  #
-  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  # @param :module_name [String] module name to be uninstalled
-  desc 'uninstall a specific module'
-  task :uninstall_module, [:target_node_name, :module_name] do |_task, args|
-    inventory_hash = inventory_hash_from_inventory_file
-    target_nodes = find_targets(inventory_hash, args[:target_node_name])
-    if target_nodes.empty?
-      puts 'No targets found'
-      exit 0
-    end
-
-    result = uninstall_module(inventory_hash, args[:target_node_name], args[:module_name])
-
-    raise "Failed trying to run 'puppet module uninstall #{module_name}' against inventory." unless result.is_a?(Array)
-
-    result.each do |node|
-      puts "#{node['target']} failed #{node['value']}" if node['status'] != 'success'
-    end
-
-    puts 'Uninstalled'
-  end
-
-  # Reinstall the puppet module under test on a collection of nodes
-  #
-  # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
-  desc 'reinstall the module under test'
-  task :reinstall_module, [:target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(target_node_name: nil, module_repository: 'https://forgeapi.puppetlabs.com')
-    Rake::Task['litmus:uninstall_module'].invoke(args[:target_node_name])
-    Rake::Task['litmus:install_module'].invoke(args[:target_node_name], args[:module_repository])
   end
 
   namespace :acceptance do
