@@ -226,6 +226,31 @@ module PuppetLitmus::RakeHelper
     builder.build
   end
 
+  # Builds all the modules in a specified module
+  #
+  # @param source_folder [String] the folder to get the modules from
+  # @return [Array] an array of module tar's
+  def build_modules_in_folder(source_folder)
+    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
+    module_tars = []
+
+    target_dir = File.join(Dir.pwd, 'pkg')
+    # remove old build folder if exists, before we build afresh
+    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
+
+    folder_list.each do |folder|
+      folder_handle = Dir.open(File.join(source_folder, folder))
+      next if File.symlink?(folder_handle)
+
+      module_dir = folder_handle.path
+
+      # build_module
+      module_tar = build_module(module_dir, target_dir)
+      module_tars.push(File.new(module_tar))
+    end
+    module_tars
+  end
+
   def install_module(inventory_hash, target_node_name, module_tar, module_repository = 'https://forgeapi.puppetlabs.com')
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
@@ -250,31 +275,6 @@ module PuppetLitmus::RakeHelper
       raise_bolt_errors(bolt_result, "Installation of package #{File.basename(module_tar)} failed.")
       bolt_result
     end
-  end
-
-  # Builds all the modules in a specified module
-  #
-  # @param source_folder [String] the folder to get the modules from
-  # @return [Array] an array of module tar's
-  def build_modules_in_folder(source_folder)
-    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
-    module_tars = []
-
-    target_dir = File.join(Dir.pwd, 'pkg')
-    # remove old build folder if exists, before we build afresh
-    FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
-
-    folder_list.each do |folder|
-      folder_handle = Dir.open(File.join(source_folder, folder))
-      next if File.symlink?(folder_handle)
-
-      module_dir = folder_handle.path
-
-      # build_module
-      module_tar = build_module(module_dir, target_dir)
-      module_tars.push(File.new(module_tar))
-    end
-    module_tars
   end
 
   def metadata_module_name
