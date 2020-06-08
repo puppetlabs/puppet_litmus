@@ -291,7 +291,7 @@ module PuppetLitmus::RakeHelper
   # @param inventory_hash [Hash] the pre-loaded inventory
   # @param target_node_name [String] the name of the target where the module should be uninstalled
   # @param module_to_remove [String] the name of the module to remove. Defaults to the module under test.
-  # @param opts [Hash] additional options to pass on to `puppet module install`
+  # @param opts [Hash] additional options to pass on to `puppet module uninstall`
   def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil, **opts)
     include ::BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
