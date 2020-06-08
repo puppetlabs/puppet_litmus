@@ -22,7 +22,7 @@ jobs:
     services: docker
     before_script:
     - |
-      set -e
+      set -ex
       git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
       cd puppetlabs-motd
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
