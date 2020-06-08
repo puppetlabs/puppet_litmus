@@ -351,7 +351,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      errors[target] = target_result['value']['_error']
+      errors[target] = target_result['value']
     end
     errors
   end
@@ -364,7 +364,7 @@ module PuppetLitmus::RakeHelper
     errors = check_bolt_errors(result_set)
 
     unless errors.empty?
-      raise "#{error_msg}\nErrors: #{errors}"
+      raise "#{error_msg}\nResults: #{errors}"
     end
 
     nil
