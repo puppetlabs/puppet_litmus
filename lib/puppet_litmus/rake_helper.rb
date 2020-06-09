@@ -209,47 +209,56 @@ module PuppetLitmus::RakeHelper
     results
   end
 
+  # Build the module in `module_dir` and put the resulting compressed tarball into `target_dir`.
+  #
   # @param opts Hash of options to build the module
   # @param module_dir [String] The path of the module to build. If missing defaults to Dir.pwd
-  # @param target_dir [String] The path the module will be built into. The default is <source_dir>/pkg
+  # @param target_dir [String] The path the module will be built into. The default is <module_dir>/pkg
   # @return [String] The path to the built module
   def build_module(module_dir = nil, target_dir = nil)
     require 'puppet/modulebuilder'
 
-    source_dir = module_dir || Dir.pwd
-    dest_dir = target_dir || File.join(source_dir, 'pkg')
+    module_dir ||= Dir.pwd
+    target_dir ||= File.join(source_dir, 'pkg')
 
-    puts "Building #{source_dir} into #{dest_dir}"
-    builder = Puppet::Modulebuilder::Builder.new(source_dir, dest_dir, nil)
+    puts "Building '#{module_dir}' into '#{target_dir}''"
+    builder = Puppet::Modulebuilder::Builder.new(module_dir, target_dir, nil)
+
     # Force the metadata to be read. Raises if metadata could not be found
     _metadata = builder.metadata
 
     builder.build
   end
 
-  # Builds all the modules in a specified module
+  # Builds all the modules in a specified directory
   #
-  # @param source_folder [String] the folder to get the modules from
+  # @param source_dir [String] the directory to get the modules from
+  # @param target_dir [String] temporary location to store tarballs before uploading. This directory will be cleaned before use. The default is <source_dir>/pkg
   # @return [Array] an array of module tar's
-  def build_modules_in_folder(source_folder)
-    folder_list = Dir.entries(source_folder).reject { |f| File.directory? f }
+  def build_modules_in_dir(source_dir, target_dir = nil)
+    dir_list = Dir.entries(source_dir).reject { |f| File.directory? f }
     module_tars = []
 
-    target_dir = File.join(Dir.pwd, 'pkg')
-    # remove old build folder if exists, before we build afresh
+    target_dir ||= File.join(Dir.pwd, 'pkg')
+    # remove old build dir if exists, before we build afresh
     FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
 
-    folder_list.each do |folder|
-      folder_handle = Dir.open(File.join(source_folder, folder))
-      next if File.symlink?(folder_handle)
+    dir_list.each do |dir|
+      dir_handle = Dir.open(File.join(source_dir, dir))
+      next if File.symlink?(dir_handle)
 
-      module_dir = folder_handle.path
+      module_dir = dir_handle.path
 
       # build_module
       module_tar = build_module(module_dir, target_dir)
       module_tars.push(File.new(module_tar))
     end
     module_tars
+  end
+
+  # @deprecated Use `build_modules_in_dir` instead
+  def build_modules_in_folder(source_folder)
+    build_modules_in_dir(source_folder)
   end
 
   # Install a specific module tarball to the specified target.
