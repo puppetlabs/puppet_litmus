@@ -22,7 +22,7 @@ jobs:
     services: docker
     before_script:
     - |
-      set -ex
+      set -x
       git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
       cd puppetlabs-motd
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
@@ -37,6 +37,7 @@ jobs:
       bundle exec rake 'litmus:install_module'
       bundle exec rake 'litmus:install_module'
       bundle exec rake 'litmus:add_feature[test_123]'
+      set +x
     script:
     - bundle exec rake litmus:acceptance:parallel
     - bundle exec rake litmus:tear_down

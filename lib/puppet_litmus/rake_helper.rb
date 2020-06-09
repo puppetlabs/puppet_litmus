@@ -252,7 +252,15 @@ module PuppetLitmus::RakeHelper
     module_tars
   end
 
-  def install_module(inventory_hash, target_node_name, module_tar, module_repository = 'https://forgeapi.puppetlabs.com')
+  # Install a specific module tarball to the specified target.
+  # This method installs dependencies using a forge repository.
+  #
+  # @param inventory_hash [Hash] the pre-loaded inventory
+  # @param target_node_name [String] the name of the target where the module should be installed
+  # @param module_tar [String] the filename of the module tarball to upload
+  # @param module_repository [String] the URL for the forge to use for downloading modules. Defaults to the public Forge API.
+  # @return a bolt result
+  def install_module(inventory_hash, target_node_name, module_tar, module_repository = nil)
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
       span.add_field('litmus.target_node_name', target_node_name)
@@ -269,7 +277,8 @@ module PuppetLitmus::RakeHelper
       bolt_result = upload_file(module_tar, File.basename(module_tar), target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
       raise_bolt_errors(bolt_result, 'Failed to upload module.')
 
-      install_module_command = "puppet module install --module_repository '#{module_repository}' #{File.basename(module_tar)}"
+      module_repository_opts = "--module_repository '#{module_repository}'" unless module_repository.nil?
+      install_module_command = "puppet module install #{module_repository_opts} #{File.basename(module_tar)}"
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
@@ -292,7 +301,7 @@ module PuppetLitmus::RakeHelper
   # @param inventory_hash [Hash] the pre-loaded inventory
   # @param target_node_name [String] the name of the target where the module should be uninstalled
   # @param module_to_remove [String] the name of the module to remove. Defaults to the module under test.
-  # @param opts [Hash] additional options to pass on to `puppet module install`
+  # @param opts [Hash] additional options to pass on to `puppet module uninstall`
   def uninstall_module(inventory_hash, target_node_name, module_to_remove = nil, **opts)
     include ::BoltSpec::Run
     module_name = module_to_remove || metadata_module_name
