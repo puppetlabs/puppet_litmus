@@ -203,15 +203,15 @@ namespace :litmus do
       puts 'No targets found'
       exit 0
     end
-    source_folder = if args[:source].nil?
-                      './spec/fixtures/modules'
-                    else
-                      File.expand_path(args[:source])
-                    end
-    raise "Source folder doesnt exist #{source_folder}" unless File.directory?(source_folder)
+    source_dir = if args[:source].nil?
+                   './spec/fixtures/modules'
+                 else
+                   File.expand_path(args[:source])
+                 end
+    raise "Source directory doesn't exist #{source_dir}" unless File.directory?(source_dir)
 
-    puts "Building all modules in #{source_folder.inspect}"
-    module_tars = build_modules_in_folder(source_folder)
+    puts "Building all modules in #{source_dir.inspect}"
+    module_tars = build_modules_in_dir(source_dir)
     require 'bolt_spec/run'
     include BoltSpec::Run
     module_tars.each do |module_tar|
