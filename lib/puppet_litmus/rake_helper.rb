@@ -2,6 +2,7 @@
 
 require 'bolt_spec/run'
 require 'honeycomb-beeline'
+require 'puppet_litmus/version'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
   unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
@@ -11,6 +12,7 @@ end
 process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
 ENV['HTTP_X_HONEYCOMB_TRACE'] = process_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
 Honeycomb.add_field_to_trace('litmus.pid', Process.pid)
+Honeycomb.add_field_to_trace('litmus.version', PuppetLitmus::VERSION)
 if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
   Honeycomb.add_field_to_trace('module_name', ENV['TRAVIS_REPO_SLUG'])
   Honeycomb.add_field_to_trace('ci.provider', 'travis')
