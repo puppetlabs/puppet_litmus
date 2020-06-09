@@ -381,7 +381,8 @@ module PuppetLitmus::RakeHelper
     errors = check_bolt_errors(result_set)
 
     unless errors.empty?
-      raise "#{error_msg}\nResults: #{errors}"
+      formatted_results = errors.map { |k, v| "  #{k}: #{v.inspect}" }.join("\n")
+      raise "#{error_msg}\nResults:\n#{formatted_results}}"
     end
 
     nil
