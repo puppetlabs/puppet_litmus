@@ -234,24 +234,17 @@ module PuppetLitmus::RakeHelper
   #
   # @param source_dir [String] the directory to get the modules from
   # @param target_dir [String] temporary location to store tarballs before uploading. This directory will be cleaned before use. The default is <source_dir>/pkg
-  # @return [Array] an array of module tar's
+  # @return [Array] an array of module tars' filenames
   def build_modules_in_dir(source_dir, target_dir = nil)
-    dir_list = Dir.entries(source_dir).reject { |f| File.directory? f }
-    module_tars = []
-
     target_dir ||= File.join(Dir.pwd, 'pkg')
     # remove old build dir if exists, before we build afresh
     FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
 
-    dir_list.each do |dir|
-      dir_handle = Dir.open(File.join(source_dir, dir))
-      next if File.symlink?(dir_handle)
+    module_tars = Dir.entries(source_dir).map do |dir|
+      next if ['.', '..'].include? dir
+      next unless File.directory? dir
 
-      module_dir = dir_handle.path
-
-      # build_module
-      module_tar = build_module(module_dir, target_dir)
-      module_tars.push(File.new(module_tar))
+      build_module(File.join(source_dir, dir), target_dir)
     end
     module_tars
   end
