@@ -219,6 +219,7 @@ module PuppetLitmus::RakeHelper
     source_dir = module_dir || Dir.pwd
     dest_dir = target_dir || File.join(source_dir, 'pkg')
 
+    puts "Building #{source_dir} into #{dest_dir}"
     builder = Puppet::Modulebuilder::Builder.new(source_dir, dest_dir, nil)
     # Force the metadata to be read. Raises if metadata could not be found
     _metadata = builder.metadata
@@ -351,7 +352,7 @@ module PuppetLitmus::RakeHelper
 
       target = target_result['target']
       # get some info from error
-      errors[target] = target_result['value']['_error']
+      errors[target] = target_result['value']
     end
     errors
   end
@@ -364,7 +365,7 @@ module PuppetLitmus::RakeHelper
     errors = check_bolt_errors(result_set)
 
     unless errors.empty?
-      raise "#{error_msg}\nErrors: #{errors}"
+      raise "#{error_msg}\nResults: #{errors}"
     end
 
     nil
