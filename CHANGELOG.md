@@ -2,9 +2,22 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [0.18.2](https://github.com/puppetlabs/puppet_litmus/tree/0.18.2) (2020-05-28)
+## [v0.18.3](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.3) (2020-06-10)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.1...0.18.2)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.2...v0.18.3)
+
+### Fixed
+
+- Improve bolt error formatting [\#307](https://github.com/puppetlabs/puppet_litmus/pull/307) ([DavidS](https://github.com/DavidS))
+- install\_module: update module\_repository default use to puppet's default [\#305](https://github.com/puppetlabs/puppet_litmus/pull/305) ([DavidS](https://github.com/DavidS))
+- Improve diagnostics output [\#304](https://github.com/puppetlabs/puppet_litmus/pull/304) ([DavidS](https://github.com/DavidS))
+- Copy-edit docs strings for consistency and accuracy [\#302](https://github.com/puppetlabs/puppet_litmus/pull/302) ([DavidS](https://github.com/DavidS))
+- Fix install\_modules\_from\_directory symlink handling [\#301](https://github.com/puppetlabs/puppet_litmus/pull/301) ([DavidS](https://github.com/DavidS))
+- Update wiki links to new docs site [\#299](https://github.com/puppetlabs/puppet_litmus/pull/299) ([DavidS](https://github.com/DavidS))
+
+## [v0.18.2](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.2) (2020-05-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.1...v0.18.2)
 
 ### Fixed
 
