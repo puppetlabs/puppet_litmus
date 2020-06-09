@@ -8,7 +8,7 @@ Honeycomb.configure do |config|
     config.client = Libhoney::NullClient.new
   end
 end
-process_span = Honeycomb.start_span(name: 'Litmus Testing', serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
+process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
 ENV['HTTP_X_HONEYCOMB_TRACE'] = process_span.to_trace_header unless ENV['HTTP_X_HONEYCOMB_TRACE']
 Honeycomb.add_field_to_trace('litmus.pid', Process.pid)
 if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
