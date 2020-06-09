@@ -240,13 +240,15 @@ module PuppetLitmus::RakeHelper
     # remove old build dir if exists, before we build afresh
     FileUtils.rm_rf(target_dir) if File.directory?(target_dir)
 
-    module_tars = Dir.entries(source_dir).map do |dir|
-      next if ['.', '..'].include? dir
-      next unless File.directory? dir
+    module_tars = Dir.entries(source_dir).map do |entry|
+      next if ['.', '..'].include? entry
 
-      build_module(File.join(source_dir, dir), target_dir)
+      module_dir = File.join(source_dir, entry)
+      next unless File.directory? module_dir
+
+      build_module(module_dir, target_dir)
     end
-    module_tars
+    module_tars.compact
   end
 
   # @deprecated Use `build_modules_in_dir` instead
@@ -268,9 +270,10 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.target_node_name', target_node_name)
       span.add_field('litmus.module_tar', module_tar)
 
-      # make sure the target module is not installed
+      # make sure the module to install is not installed
       # otherwise `puppet module install` might silently skip it
-      uninstall_module(inventory_hash.clone, target_node_name, force: true)
+      module_name = File.basename(module_tar, '.tar.gz').split('-', 3)[0..1].join('-')
+      uninstall_module(inventory_hash.clone, target_node_name, module_name, force: true)
 
       include ::BoltSpec::Run
 
