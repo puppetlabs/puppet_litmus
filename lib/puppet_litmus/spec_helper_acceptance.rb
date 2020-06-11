@@ -66,7 +66,7 @@ module PuppetLitmus
                end
         set :host,        options[:host_name] || host
         set :ssh_options, options
-        set :request_pty, true
+        set :request_pty, false
       elsif target_in_group(inventory_hash, ENV['TARGET_HOST'], 'winrm_nodes')
         require 'winrm'
 
