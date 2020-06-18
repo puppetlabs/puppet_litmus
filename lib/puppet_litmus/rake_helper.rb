@@ -12,7 +12,11 @@ end
 process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV['HTTP_X_HONEYCOMB_TRACE'])
 ENV['HTTP_X_HONEYCOMB_TRACE'] = process_span.to_trace_header
 Honeycomb.add_field_to_trace('litmus.pid', Process.pid)
-Honeycomb.add_field_to_trace('litmus.version', PuppetLitmus::VERSION)
+if defined? PuppetLitmus::VERSION
+  Honeycomb.add_field_to_trace('litmus.version', PuppetLitmus::VERSION)
+else
+  Honeycomb.add_field_to_trace('litmus.version', 'undefined')
+end
 if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
   Honeycomb.add_field_to_trace('module_name', ENV['TRAVIS_REPO_SLUG'])
   Honeycomb.add_field_to_trace('ci.provider', 'travis')
