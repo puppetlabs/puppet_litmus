@@ -28,6 +28,4 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'rspec'
   spec.add_runtime_dependency 'honeycomb-beeline'
   spec.add_runtime_dependency 'rspec_honeycomb_formatter'
-  spec.add_runtime_dependency 'ed25519', ['>= 1.2', '< 2.0']
-  spec.add_runtime_dependency 'bcrypt_pbkdf', ['>= 1.0', '< 2.0']
 end
