@@ -12,13 +12,17 @@ before_install:
 script:
 - 'bundle exec rake $CHECK'
 bundler_args: --without system_tests
-rvm:
-  - 2.5.7
 jobs:
   include:
   - env: CHECK="rubocop"
+    rvm: 2.5.7
   - env: CHECK='spec' COVERAGE='yes'
-  - env: PLATFORMS=deb_puppet6
+    rvm: 2.5.7
+  - env: CHECK='spec' COVERAGE='yes'
+    rvm: 2.7
+  - &acceptance
+    env: PLATFORMS=deb_puppet6
+    rvm: 2.5.7
     services: docker
     before_script:
     - |
@@ -43,3 +47,5 @@ jobs:
     script:
     - bundle exec rake litmus:acceptance:parallel
     - bundle exec rake litmus:tear_down
+  - <<: *acceptance
+    rvm: 2.7
