@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.18.4](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.4) (2020-07-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.3...v0.18.4)
+
+### Fixed
+
+- \(IAC-896\) - Revert "\(IAC-825\) - Adding net-ssh 5 dependent gems" [\#313](https://github.com/puppetlabs/puppet_litmus/pull/313) ([pmcmaw](https://github.com/pmcmaw))
+- Protect version reporting from undefined-ness [\#312](https://github.com/puppetlabs/puppet_litmus/pull/312) ([DavidS](https://github.com/DavidS))
+- Ignore stderr of serverspec commands by setting request\_pty to false [\#309](https://github.com/puppetlabs/puppet_litmus/pull/309) ([lswith](https://github.com/lswith))
+
 ## [v0.18.3](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.3) (2020-06-10)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.2...v0.18.3)
