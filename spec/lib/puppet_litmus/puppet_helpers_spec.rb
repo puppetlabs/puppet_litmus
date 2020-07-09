@@ -324,4 +324,73 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       end
     end
   end
+
+  describe '.run_bolt_plan' do
+    let(:plan_name) { 'testplan' }
+    let(:params) { { 'target' => 'some.host', 'param1' => 'value1' } }
+    let(:config_data) { { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } }
+    let(:result_plan_success) { { 'status' => 'success', 'value' => %w[foo bar baz] } }
+    let(:result_plan_failure) { { 'status' => 'failure', 'value' => { 'msg' => 'oops' } } }
+
+    it 'responds to bolt_run_plan' do
+      expect(self).to respond_to(:run_bolt_plan).with(2..3).arguments
+    end
+
+    context 'when bolt returns success' do
+      it 'does bolt_plan_run gives no runtime error for success' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(self).to receive(:target_in_inventory?).and_return(true)
+        expect(self).to receive(:run_plan).with(plan_name, params, config: config_data, inventory: inventory_hash).and_return(result_plan_success)
+        expect { run_bolt_plan(plan_name, params, opts: {}) }.not_to raise_error
+      end
+
+      it 'does bolt_plan_run gives no runtime error for success, for a named inventory file' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('jim.yaml').and_return(true)
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(self).to receive(:target_in_inventory?).and_return(true)
+        expect(self).to receive(:run_plan).with(plan_name, params, config: config_data, inventory: inventory_hash).and_return(result_plan_success)
+        expect { run_bolt_plan(plan_name, params, inventory_file: 'jim.yaml') }.not_to raise_error
+      end
+
+      it 'does bolt_plan_run gives correct property values for successful run' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(self).to receive(:target_in_inventory?).and_return(true)
+        expect(self).to receive(:run_plan).with(plan_name, params, config: config_data, inventory: inventory_hash).and_return(result_plan_success)
+        run_bolt_plan(plan_name, params, opts: {}) do |r|
+          expect(r.status).to eq('success')
+          expect(r.result).to be_kind_of(Array)
+          expect(r.stdout).to eq(result_plan_success['value'].join("\n"))
+          expect(r.exit_code).to eq(0)
+        end
+      end
+    end
+
+    context 'when bolt returns failure' do
+      it 'does bolt_plan_run gives runtime error for failure' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(self).to receive(:target_in_inventory?).and_return(true)
+        expect(self).to receive(:run_plan).with(plan_name, params, config: config_data, inventory: inventory_hash).and_return(result_plan_failure)
+        expect { run_bolt_plan(plan_name, params, opts: {}) }.to raise_error(RuntimeError, %r{plan failed})
+      end
+
+      it 'returns the exit code and error message when expecting failure' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        expect(self).to receive(:target_in_inventory?).and_return(true)
+        expect(self).to receive(:run_plan).with(plan_name, params, config: config_data, inventory: inventory_hash).and_return(result_plan_failure)
+        run_bolt_plan(plan_name, params, expect_failures: true) do |r|
+          expect(r.exit_code).to be(1)
+          expect(r.stderr).to be('oops')
+        end
+      end
+    end
+  end
 end

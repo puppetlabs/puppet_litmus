@@ -339,6 +339,72 @@ module PuppetLitmus::PuppetHelpers
     end
   end
 
+  # Runs a plan against the target system.
+  #
+  # @param plan_name [String] The name of the task to run.
+  # @param params [Hash] key : value pairs to be passed to the task.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are
+  #  :expect_failures [Boolean] doesnt return an exit code of non-zero if the command failed.
+  #  :inventory_file [String] path to the inventory file to use with the task.
+  # @return [Object] A result object from the task.The values available are stdout, stderr and result.
+  def run_bolt_plan(plan_name, params = {}, opts = {})
+    Honeycomb.start_span(name: 'litmus.run_plan') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      span.add_field('litmus.plan_name', plan_name)
+      span.add_field('litmus.params', params)
+      span.add_field('litmus.opts', opts)
+
+      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
+                         inventory_hash_from_inventory_file(opts[:inventory_file])
+                       elsif File.exist?('inventory.yaml')
+                         inventory_hash_from_inventory_file('inventory.yaml')
+                       else
+                         localhost_inventory_hash
+                       end
+      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+
+      span.add_field('litmus.node_name', target_node_name)
+      add_platform_field(inventory_hash, target_node_name)
+
+      bolt_result = run_plan(plan_name, params, config: config_data, inventory: inventory_hash)
+      # Plans don't provide stdout and stderr streams. They only have a result.
+      # They don't provide an exit code either, just a 'status' value, but we
+      # fake one for backward compatibility and for ease of checking success or
+      # failure in tests. We also create a fake stdout which is just the result
+      # array joined to a single string, and we fake stderr by taking just the
+      # 'msg' property of the result if there is a failure.
+      result_obj = {
+        status: bolt_result['status'],
+        result: bolt_result['value'],
+        stderr: nil,
+        exit_code: 0,
+      }
+
+      stdout_value = bolt_result['value'].respond_to?(:join) ? bolt_result['value'].join("\n") : bolt_result['value']
+      result_obj[:stdout] = stdout_value
+
+      if bolt_result['status'] != 'success'
+        if opts[:expect_failures] != true
+          span.add_field('litmus_runplanfailure', bolt_result)
+          raise "plan failed\n`#{plan_name}`\n======\n#{bolt_result}"
+        end
+        result_obj[:stderr] = bolt_result['value']['msg']
+        result_obj[:exit_code] = 1
+      end
+
+      result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                              status: result_obj[:status],
+                              result: result_obj[:result],
+                              stdout: result_obj[:stdout],
+                              stderr: result_obj[:stderr])
+      yield result if block_given?
+      span.add_field('litmus.result', result.to_h)
+      result
+    end
+  end
+
   # Runs a script against the target system.
   #
   # @param script [String] The path to the script on the source machine
