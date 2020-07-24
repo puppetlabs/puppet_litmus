@@ -269,8 +269,9 @@ module PuppetLitmus::RakeHelper
   # @param target_node_name [String] the name of the target where the module should be installed
   # @param module_tar [String] the filename of the module tarball to upload
   # @param module_repository [String] the URL for the forge to use for downloading modules. Defaults to the public Forge API.
+  # @param ignore_dependencies [Boolean] flag used to ignore module dependencies defaults to false.
   # @return a bolt result
-  def install_module(inventory_hash, target_node_name, module_tar, module_repository = nil)
+  def install_module(inventory_hash, target_node_name, module_tar, module_repository = nil, ignore_dependencies = false)
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.target_node_name', target_node_name)
@@ -290,6 +291,7 @@ module PuppetLitmus::RakeHelper
 
       module_repository_opts = "--module_repository '#{module_repository}'" unless module_repository.nil?
       install_module_command = "puppet module install #{module_repository_opts} #{File.basename(module_tar)}"
+      install_module_command += ' --ignore-dependencies --force' if ignore_dependencies.to_s.downcase == "true" 
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)

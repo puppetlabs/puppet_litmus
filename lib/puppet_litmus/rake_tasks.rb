@@ -195,8 +195,8 @@ namespace :litmus do
   # @param :source [String] source directory to look in (ignores symlinks) defaults do './spec/fixtures/modules'.
   # @param :target_node_name [Array] nodes on which to install a puppet module for testing.
   desc 'build and install all modules from a directory'
-  task :install_modules_from_directory, [:source, :target_node_name, :module_repository] do |_task, args|
-    args.with_defaults(source: nil, target_node_name: nil, module_repository: nil)
+  task :install_modules_from_directory, [:source, :target_node_name, :module_repository, :ignore_dependencies] do |_task, args|
+    args.with_defaults(source: nil, target_node_name: nil, module_repository: nil, ignore_dependencies: false)
     inventory_hash = inventory_hash_from_inventory_file
     target_nodes = find_targets(inventory_hash, args[:target_node_name])
     if target_nodes.empty?
@@ -217,7 +217,7 @@ namespace :litmus do
     module_tars.each do |module_tar|
       puts "Installing '#{module_tar}'"
       target_nodes.each do |target_node_name|
-        install_module(inventory_hash, target_node_name, module_tar, args[:module_repository])
+        install_module(inventory_hash, target_node_name, module_tar, args[:module_repository], args[:ignore_dependencies])
         puts "Installed '#{module_tar}' on #{target_node_name}"
       end
     end
