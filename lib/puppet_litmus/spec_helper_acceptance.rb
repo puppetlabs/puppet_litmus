@@ -35,6 +35,7 @@ module PuppetLitmus
         options[:port] = node_config.dig('ssh', 'port') unless node_config.dig('ssh', 'port').nil?
         options[:keys] = node_config.dig('ssh', 'private-key') unless node_config.dig('ssh', 'private-key').nil?
         options[:password] = node_config.dig('ssh', 'password') unless node_config.dig('ssh', 'password').nil?
+        run_as = node_config.dig('ssh', 'run-as') unless node_config.dig('ssh', 'run-as').nil?
         # Support both net-ssh 4 and 5.
         # rubocop:disable Metrics/BlockNesting
         options[:verify_host_key] = if node_config.dig('ssh', 'host-key-check').nil?
@@ -67,6 +68,8 @@ module PuppetLitmus
         set :host,        options[:host_name] || host
         set :ssh_options, options
         set :request_pty, false
+        set :sudo_password, options[:password] if run_as
+        puts "Running tests as #{run_as}" if run_as
       elsif target_in_group(inventory_hash, ENV['TARGET_HOST'], 'winrm_nodes')
         require 'winrm'
 
