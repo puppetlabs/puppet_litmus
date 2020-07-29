@@ -291,7 +291,7 @@ module PuppetLitmus::RakeHelper
 
       module_repository_opts = "--module_repository '#{module_repository}'" unless module_repository.nil?
       install_module_command = "puppet module install #{module_repository_opts} #{File.basename(module_tar)}"
-      install_module_command += ' --ignore-dependencies --force' if ignore_dependencies.to_s.downcase == "true" 
+      install_module_command += ' --ignore-dependencies --force' if ignore_dependencies.to_s.downcase == 'true'
       span.add_field('litmus.install_module_command', install_module_command)
 
       bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
