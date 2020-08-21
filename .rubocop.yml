@@ -27,6 +27,9 @@ RSpec/HookArgument:
 RSpec/SubjectStub:
   Exclude:
     - 'spec/puppet/resource_api/base_context_spec.rb'
+RSpec/MultipleMemoizedHelpers:
+  Exclude:
+    - spec/lib/**/*.rb
 Style/BlockDelimiters:
   Description: Prefer braces for chaining. Mostly an aesthetical choice. Better to
     be consistent then.

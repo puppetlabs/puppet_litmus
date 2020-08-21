@@ -321,15 +321,21 @@ namespace :litmus do
 
       # Run acceptance tests against all machines in the inventory file in parallel.
       desc 'Run tests in parallel against all machines in the inventory file'
-      task :parallel do
+      task :parallel, [:tag] do |_task, args|
+        args.with_defaults(tag: nil)
         if targets.empty?
           puts 'No targets found'
           exit 0
         end
+        tag_value = if args[:tag].nil?
+                      nil
+                    else
+                      "--tag #{args[:tag]}"
+                    end
         payloads = []
         # Generate list of targets to provision
         targets.each do |target|
-          test = 'bundle exec rspec ./spec/acceptance --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter'
+          test = "bundle exec rspec ./spec/acceptance #{tag_value} --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter"
           title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
           options = {
             env: {
@@ -411,8 +417,9 @@ namespace :litmus do
         desc "Run serverspec against #{target}"
         next if target == 'litmus_localhost'
 
-        RSpec::Core::RakeTask.new(target.to_sym) do |t|
+        RSpec::Core::RakeTask.new(target.to_sym, :tag) do |t, args|
           t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+          t.rspec_opts = "--tag #{args[:tag]}" unless args[:tag].nil?
           ENV['TARGET_HOST'] = target
         end
       end
@@ -421,8 +428,9 @@ namespace :litmus do
     # add localhost separately
     desc 'Run serverspec against localhost, USE WITH CAUTION, this action can be potentially dangerous.'
     host = 'localhost'
-    RSpec::Core::RakeTask.new(host.to_sym) do |t|
+    RSpec::Core::RakeTask.new(host.to_sym, :tag) do |t, args|
       t.pattern = 'spec/acceptance/**{,/*/**}/*_spec.rb'
+      t.rspec_opts = "--tag #{args[:tag]}" unless args[:tag].nil?
       Rake::Task['spec_prep'].invoke
       ENV['TARGET_HOST'] = host
     end
