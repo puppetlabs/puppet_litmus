@@ -113,10 +113,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:local) { '/tmp' }
     let(:remote) { '/remote_tmp' }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
-    # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:result_success) {[{'target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','value'=>{'_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\''}}]}
-    let(:result_failure) {[{'target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','value'=>{'_error'=>{'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR'}}}]}
-    # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
+    # rubocop:disable Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
+    let(:result_success) { [{ 'target'=>'some.host','action'=>'upload','object'=>'C:\foo\bar.ps1','status'=>'success','value'=>{ '_output'=>'Uploaded \'C:\foo\bar.ps1\' to \'some.host:C:\bar\'' } }] }
+    let(:result_failure) { [{ 'target'=>'some.host','action'=>nil,'object'=>nil,'status'=>'failure','value'=>{ '_error'=>{ 'kind'=>'puppetlabs.tasks/task_file_error','msg'=>'No such file or directory @ rb_sysopen - /nonexistant/file/path','details'=>{},'issue_code'=>'WRITE_ERROR' } } }] }
+    # rubocop:enable, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
 
     it 'responds to run_shell' do
       expect(self).to respond_to(:bolt_upload_file).with(2..3).arguments
@@ -212,11 +212,11 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:params) { { 'action' => 'install', 'name' => 'foo' } }
     let(:config_data) { { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } }
     # Ignore rubocop because these hashes are representative of output from an external method and editing them leads to test failures.
-    # rubocop:disable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
-    let(:result_unstructured_task_success){ [{'target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'success','value'=>{'_output'=>'SUCCESS!'}}]}
-    let(:result_structured_task_success){ [{'target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','value'=>{'key1'=>'foo','key2'=>'bar'}}]}
-    let(:result_failure) {[{'target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','value'=>{'_error'=>{'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{'exitcode'=>123}}}}]}
-    # rubocop:enable Layout/SpaceInsideHashLiteralBraces, Layout/SpaceBeforeBlockBraces, Layout/SpaceInsideBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
+    # rubocop:disable Layout/SpaceBeforeBlockBraces
+    let(:result_unstructured_task_success){ [{ 'target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'success','value'=>{ '_output'=>'SUCCESS!' } }] }
+    let(:result_structured_task_success){ [{ 'target'=>'some.host','action'=>'task','object'=>'testtask::structured','status'=>'success','value'=>{ 'key1'=>'foo','key2'=>'bar' } }] }
+    let(:result_failure) { [{ 'target'=>'some.host','action'=>'task','object'=>'testtask::unstructured','status'=>'failure','value'=>{ '_error'=>{ 'msg'=>'FAILURE!','kind'=>'puppetlabs.tasks/task-error','details'=>{ 'exitcode'=>123 } } } }] }
+    # rubocop:enable Layout/SpaceBeforeBlockBraces, Layout/SpaceAroundOperators, Layout/LineLength, Layout/SpaceAfterComma
 
     it 'responds to bolt_run_task' do
       expect(self).to respond_to(:run_bolt_task).with(2..3).arguments
