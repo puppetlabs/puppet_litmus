@@ -286,4 +286,42 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       end
     end
   end
+
+  describe '.write_file' do
+    let(:content) { 'foo' }
+    let(:destination) { '/tmp/foo' }
+    let(:owner) { 'foo:foo' }
+    let(:local_path) { '/tmp/local_foo' }
+
+    before(:each) do
+      allow_any_instance_of(File).to receive(:path).and_return(local_path)
+    end
+
+    it 'responds to write_file' do
+      expect(self).to respond_to(:write_file).with(2).arguments
+    end
+
+    context 'without setting owner' do
+      it 'call upload file with the correct params' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        result = instance_double('result')
+        allow(result).to receive(:first).and_return({ 'status' => 'success' })
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+        result = write_file(content, destination)
+        expect(result).to be true
+      end
+    end
+
+    context 'when upload encounters an error' do
+      it 'call upload file with the correct params' do
+        stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
+        expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+        result = instance_double('result')
+        allow(result).to receive(:first).and_return({ 'status' => 'failure', 'value' => 'foo error' })
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+        expect { write_file(content, destination) }.to raise_error 'foo error'
+      end
+    end
+  end
 end

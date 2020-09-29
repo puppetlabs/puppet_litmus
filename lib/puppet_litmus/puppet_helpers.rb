@@ -147,6 +147,42 @@ module PuppetLitmus::PuppetHelpers
     end
   end
 
+  # Writes a string variable to a file on a target node at a specified path.
+  #
+  # @param content [String] String data to write to the file.
+  # @param destination [String] The path on the target node to write the file.
+  # @return [Bool] Success. The file was succesfully writtne on the target.
+  def write_file(content, destination)
+    Honeycomb.start_span(name: 'litmus.write_file') do |span|
+      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      span.add_field('litmus.destination', destination)
+
+      require 'tmpdir'
+      target_node_name = ENV['TARGET_HOST']
+
+      Tempfile.create('litmus') do |tmp_file|
+        tmp_file.write(content)
+        tmp_file.flush
+        if target_node_name.nil? || target_node_name == 'localhost'
+          require 'fileutils'
+          # no need to transfer
+          FileUtils.cp(tmp_file.path, destination)
+        else
+          # transfer to TARGET_HOST
+          inventory_hash = inventory_hash_from_inventory_file
+          span.add_field('litmus.node_name', target_node_name)
+          add_platform_field(inventory_hash, target_node_name)
+
+          bolt_result = upload_file(tmp_file.path, destination, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+          span.add_field('litmus.bolt_result.file_upload', bolt_result)
+          raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
+        end
+      end
+
+      true
+    end
+  end
+
   # Runs a command against the target system
   #
   # @param command_to_run [String] The command to execute.
