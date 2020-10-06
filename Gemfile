@@ -11,6 +11,7 @@ group :test do
   gem 'rubocop-rspec', '~> 1.38'
   gem 'codecov', '~> 0.1'
   gem 'simplecov', '~> 0.18'
+  gem 'bolt', '<=2.23.0'
 end
 
 group :development do
