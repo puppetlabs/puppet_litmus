@@ -418,7 +418,7 @@ module PuppetLitmus::PuppetHelpers
 
   # Return the stdout of the puppet run
   def puppet_output(bolt_result)
-    bolt_result.dig(0, 'value', 'stderr').to_s << \
+    bolt_result.dig(0, 'value', 'stderr').to_s + \
       bolt_result.dig(0, 'value', 'stdout').to_s
   end
 

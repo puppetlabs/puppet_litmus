@@ -50,7 +50,12 @@ for:
         }
         Write-Host $URL
         Write-Host $Branch
+
+        (Get-Content Gemfile).Replace('gem "puppet_litmus"', '# gem "puppet_litmus"') | Set-Content Gemfile
+
         "gem 'puppet_litmus', require: false, git: $URL, branch: $Branch" >> Gemfile
+
+        type Gemfile
 
         bundle config gemfile ./Gemfile
         if(-not $?) { Write-Error -Message "failed to set gemfile" }
