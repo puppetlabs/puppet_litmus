@@ -12,9 +12,12 @@ Gem::Specification.new do |spec|
   spec.files       = Dir[
     'README.md',
     'LICENSE',
+    'exe/**/*',
     'lib/**/*',
     'spec/**/*',
   ]
+  spec.bindir        = "exe"
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.test_files  = Dir['spec/**/*']
   spec.description = <<-EOF
     Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.

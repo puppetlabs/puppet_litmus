@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# this script creates a build matrix for github actions from the claimed supported platforms in metadata.json
+
+require 'json'
+
+IMAGE_TABLE = {
+  'RedHat-6' => 'rhel-6-v20200618',
+  'RedHat-7' => 'rhel-7-v20200618',
+  'RedHat-8' => 'rhel-8-v20200811',
+  'SLES-12' => 'sles-12-sp5-v20200610',
+  'SLES-15' => 'sles-15-sp1-v20200610',
+  'Windows-2012 R2' => 'windows-server-2012-r2-dc-core-v20200609',
+  'Windows-2016' => 'windows-server-2016-dc-core-v20200609',
+  'Windows-2019' => 'windows-server-2019-dc-core-v20200609',
+}.freeze
+
+DOCKER_PLATFORMS = [
+  'CentOS-6',
+  'CentOS-7',
+  'CentOS-8',
+  'Debian-10',
+  'Debian-8',
+  'Debian-9',
+  'OracleLinux-6',
+  'OracleLinux-7',
+  'Scientific-6',
+  'Scientific-7',
+  'Ubuntu-14.04',
+  'Ubuntu-16.04',
+  'Ubuntu-18.04',
+  'Ubuntu-20.04',
+].freeze
+
+matrix = {
+  platform: [],
+  collection: %w[
+    puppet5
+    puppet6
+    puppet7-nightly
+  ],
+}
+
+metadata = JSON.parse(File.read('metadata.json'))
+metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
+  os = sup['operatingsystem']
+  sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
+    image_key = "#{os}-#{ver}"
+    if IMAGE_TABLE.key? image_key
+      matrix[:platform] << IMAGE_TABLE[image_key]
+    elsif DOCKER_PLATFORMS.include? image_key
+      puts "Expecting #{image_key} test using docker on travis"
+    else
+      puts "::warning::Cannot find image for #{image_key}"
+    end
+  end
+end
+
+puts "::set-output name=matrix::#{JSON.generate(matrix)}"
+
+puts "Created matrix with #{matrix[:platform].length * matrix[:collection].length} cells."
