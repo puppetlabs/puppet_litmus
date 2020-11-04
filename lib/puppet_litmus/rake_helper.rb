@@ -48,7 +48,7 @@ end
 module PuppetLitmus::RakeHelper
   # DEFAULT_CONFIG_DATA should be frozen for our safety, but it needs to work around https://github.com/puppetlabs/bolt/pull/1696
   DEFAULT_CONFIG_DATA ||= { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } # .freeze # rubocop:disable Style/MutableConstant
-  SUPPORTED_PROVISIONERS ||= %w[abs docker docker_exp vagrant vmpooler].freeze
+  SUPPORTED_PROVISIONERS ||= %w[abs docker docker_exp provision_service vagrant vmpooler].freeze
 
   # Gets a string representing the operating system and version.
   #
