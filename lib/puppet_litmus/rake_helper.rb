@@ -271,7 +271,7 @@ module PuppetLitmus::RakeHelper
   # @param module_repository [String] the URL for the forge to use for downloading modules. Defaults to the public Forge API.
   # @param ignore_dependencies [Boolean] flag used to ignore module dependencies defaults to false.
   # @return a bolt result
-  def install_module(inventory_hash, target_node_name, module_tar, module_repository = nil, ignore_dependencies = false)
+  def install_module(inventory_hash, target_node_name, module_tar, module_repository = nil, ignore_dependencies = false) # rubocop:disable Style/OptionalBooleanParameter
     Honeycomb.start_span(name: 'install_module') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.target_node_name', target_node_name)
