@@ -18,7 +18,7 @@ module PuppetLitmus::InventoryManipulation
     raise "There is no inventory file at '#{inventory_full_path}'." unless File.exist?(inventory_full_path)
 
     inventory_hash = YAML.load_file(inventory_full_path)
-    raise "Inventory file is incompatible (version 2 and up). Try the 'bolt project migrate' command." if inventory_hash.dig('version').nil? || (inventory_hash['version'] < 2)
+    raise "Inventory file is incompatible (version 2 and up). Try the 'bolt project migrate' command." if inventory_hash['version'].nil? || (inventory_hash['version'] < 2)
 
     inventory_hash
   end
@@ -50,12 +50,11 @@ module PuppetLitmus::InventoryManipulation
   # @param targets [Array]
   # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
-    targets = if targets.nil?
-                inventory_hash.to_s.scan(%r{uri"=>"(\S*)"}).flatten
-              else
-                [targets]
-              end
-    targets
+    if targets.nil?
+      inventory_hash.to_s.scan(%r{uri"=>"(\S*)"}).flatten
+    else
+      [targets]
+    end
   end
 
   # Determines if a node_name exists in a group in the inventory_hash.

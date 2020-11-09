@@ -19,9 +19,9 @@ describe 'litmus rake tasks' do
                    'template-ref' => 'heads/master-0-g7827fc2' }
       expect(File).to receive(:read).with(any_args).once
       expect(JSON).to receive(:parse).with(any_args).and_return(metadata)
-      expect(STDOUT).to receive(:puts).with('redhat-5-x86_64')
-      expect(STDOUT).to receive(:puts).with('ubuntu-1404-x86_64')
-      expect(STDOUT).to receive(:puts).with('ubuntu-1804-x86_64')
+      expect($stdout).to receive(:puts).with('redhat-5-x86_64')
+      expect($stdout).to receive(:puts).with('ubuntu-1404-x86_64')
+      expect($stdout).to receive(:puts).with('ubuntu-1804-x86_64')
       Rake::Task['litmus:metadata'].invoke
     end
   end
@@ -39,11 +39,11 @@ describe 'litmus rake tasks' do
       expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
       expect(File).to receive(:directory?).with(target_dir).and_return(true)
       expect_any_instance_of(Object).to receive(:build_modules_in_dir).with(target_dir).and_return([dummy_tar])
-      expect(STDOUT).to receive(:puts).with(start_with('Building all modules in'))
+      expect($stdout).to receive(:puts).with(start_with('Building all modules in'))
       expect_any_instance_of(Object).to receive(:upload_file).once.and_return([])
-      expect(STDOUT).to receive(:puts).with(start_with('Installing \'spec/data/doot.tar.gz\''))
+      expect($stdout).to receive(:puts).with(start_with('Installing \'spec/data/doot.tar.gz\''))
       expect_any_instance_of(Object).to receive(:run_command).twice.and_return([])
-      expect(STDOUT).to receive(:puts).with(start_with('Installed \'spec/data/doot.tar.gz\''))
+      expect($stdout).to receive(:puts).with(start_with('Installed \'spec/data/doot.tar.gz\''))
       Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end
@@ -68,7 +68,7 @@ describe 'litmus rake tasks' do
 
       allow(File).to receive(:directory?).with(any_args).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)
-      expect(STDOUT).to receive(:puts).with('localhost:2222, centos:7')
+      expect($stdout).to receive(:puts).with('localhost:2222, centos:7')
       Rake::Task['litmus:provision'].invoke('docker', 'centos:7')
     end
   end
