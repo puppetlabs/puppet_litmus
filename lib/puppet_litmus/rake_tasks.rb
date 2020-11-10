@@ -133,7 +133,8 @@ namespace :litmus do
           puts "ERROR:#{e}"
           retries += 1
           sleep 3
-          retry if retries <= 3
+          # TODO: revisit the number of retries when we have a clear understanding of the necessary time it takes to finish configurations
+          retry if retries <= 2000
           raise 'Failed to detect installed puppet version after 3 retries'
         end
 
