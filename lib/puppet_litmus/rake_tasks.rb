@@ -122,6 +122,21 @@ namespace :litmus do
         command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
         raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'"
       else
+        # validate successful install
+        retries = 0
+        begin
+          responses = run_command('puppet --version', targets, options: {}, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+          responses.each do |response|
+            raise "Error checking puppet version on #{response.to_json}" if response['status'] != 'success'
+          end
+        rescue StandardError => e
+          puts "ERROR:#{e}"
+          retries += 1
+          sleep 3
+          retry if retries <= 3
+          raise 'Failed to detect installed puppet version after 3 retries'
+        end
+
         # add puppet-agent feature to successful nodes
         inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
       end
