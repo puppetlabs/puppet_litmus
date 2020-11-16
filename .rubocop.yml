@@ -170,3 +170,8 @@ Style/HashTransformValues:
 RSpec/FactoryBot/CreateList:
   Description: "errors nastily on rubocop-rspec 1.42.0 and is not relevant to us anyways"
   Enabled: false
+
+RSpec/StubbedMock:
+  Enabled: false
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
