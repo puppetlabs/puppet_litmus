@@ -117,6 +117,14 @@ namespace :litmus do
     Rake::Task['spec_prep'].invoke
 
     results = install_agent(args[:collection], targets, inventory_hash)
+    # fix the path on ssh_nodes to verify the pupper version
+    configure_results = configure_path(inventory_hash)
+
+    configure_results.each do |result|
+      if result['status'] != 'success'
+      puts "Failed on #{result['target']}\n#{result}"
+      end
+    end
     results.each do |result|
       if result['status'] != 'success'
         command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
@@ -134,7 +142,7 @@ namespace :litmus do
           retries += 1
           sleep 3
           # TODO: revisit the number of retries when we have a clear understanding of the necessary time it takes to finish configurations
-          retry if retries <= 2000
+          retry if retries <= 1000
           raise 'Failed to detect installed puppet version after 3 retries'
         end
 
@@ -144,15 +152,6 @@ namespace :litmus do
     end
     # update the inventory with the puppet-agent feature set per node
     write_to_inventory_file(inventory_hash, 'inventory.yaml')
-
-    # fix the path on ssh_nodes
-    results = configure_path(inventory_hash)
-
-    results.each do |result|
-      if result['status'] != 'success'
-        puts "Failed on #{result['target']}\n#{result}"
-      end
-    end
   end
 
   # Add a given feature to a selection of nodes
