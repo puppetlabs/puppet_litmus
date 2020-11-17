@@ -389,9 +389,9 @@ namespace :litmus do
           # because we cannot modify variables inside of Parallel
           results.each do |result|
             if result.last.to_i.zero?
-              success_list.push(result.first.scan(%r{.*})[2])
+              success_list.push(result.first.scan(%r{.*})[3])
             else
-              failure_list.push(result.first.scan(%r{.*})[2])
+              failure_list.push(result.first.scan(%r{.*})[3])
             end
           end
           Thread.kill(progress)
