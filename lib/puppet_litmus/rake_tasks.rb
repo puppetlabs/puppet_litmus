@@ -123,6 +123,7 @@ namespace :litmus do
         raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'"
       else
         # validate successful install
+        puts "Successfull install result: #{result.inspect}"
         retries = 0
         begin
           responses = run_command('puppet --version', targets, options: {}, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
