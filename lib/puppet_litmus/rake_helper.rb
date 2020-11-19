@@ -208,11 +208,11 @@ module PuppetLitmus::RakeHelper
   def configure_path(inventory_hash)
     results = []
     # fix the path on ssh_nodes
-    unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' }.size.zero?
+    unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' && !group['targets'].empty? }.size.zero?
       results << run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
                              'ssh_nodes', config: nil, inventory: inventory_hash)
     end
-    unless inventory_hash['groups'].select { |group| group['name'] == 'winrm_nodes' }.size.zero?
+    unless inventory_hash['groups'].select { |group| group['name'] == 'winrm_nodes' && !group['targets'].empty? }.size.zero?
       results << run_command('[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Puppet Labs\Puppet\bin;C:\Program Files (x86)\Puppet Labs\Puppet\bin", "Machine")',
                              'winrm_nodes', config: nil, inventory: inventory_hash)
     end
