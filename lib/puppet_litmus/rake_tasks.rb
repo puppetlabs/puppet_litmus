@@ -135,9 +135,7 @@ namespace :litmus do
           # fix the path
           path_changes = configure_path(inventory_hash)
           path_changes.each do |change|
-            if change['status'] != 'success'
-              puts "Failed on #{change['target']}\n#{change}"
-            end
+            puts "Configuring puppet path result: #{change.inspect}"
           end
 
           retries += 1
