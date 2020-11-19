@@ -123,6 +123,7 @@ namespace :litmus do
         raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'"
       else
         # validate successful install
+        puts "Successfull install result: #{result.inspect}"
         retries = 0
         begin
           responses = run_command('puppet --version', targets, options: {}, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
@@ -131,11 +132,18 @@ namespace :litmus do
           end
         rescue StandardError => e
           puts "ERROR:#{e}"
+          # fix the path
+          path_changes = configure_path(inventory_hash)
+          path_changes.each do |change|
+            if change['status'] != 'success'
+              puts "Failed on #{change['target']}\n#{change}"
+            end
+          end
+
           retries += 1
           sleep 3
-          # TODO: revisit the number of retries when we have a clear understanding of the necessary time it takes to finish configurations
-          retry if retries <= 2000
-          raise 'Failed to detect installed puppet version after 3 retries'
+          retry if retries <= 300
+          raise 'Failed to detect installed puppet version after 5 minutes'
         end
 
         # add puppet-agent feature to successful nodes
@@ -144,15 +152,6 @@ namespace :litmus do
     end
     # update the inventory with the puppet-agent feature set per node
     write_to_inventory_file(inventory_hash, 'inventory.yaml')
-
-    # fix the path on ssh_nodes
-    results = configure_path(inventory_hash)
-
-    results.each do |result|
-      if result['status'] != 'success'
-        puts "Failed on #{result['target']}\n#{result}"
-      end
-    end
   end
 
   # Add a given feature to a selection of nodes
