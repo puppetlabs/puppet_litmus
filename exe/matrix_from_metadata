@@ -38,7 +38,7 @@ matrix = {
   collection: %w[
     puppet5
     puppet6
-    puppet7
+    puppet7-nightly
   ],
 }
 
