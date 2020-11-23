@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.19.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.19.0) (2020-11-23)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.4...v0.19.0)
+
+### Added
+
+- Calculate github actions job matrix from metadata.json; fix frozen-string modification in puppet\_output [\#327](https://github.com/puppetlabs/puppet_litmus/pull/327) ([DavidS](https://github.com/DavidS))
+- Add write\_file helper [\#324](https://github.com/puppetlabs/puppet_litmus/pull/324) ([RandomNoun7](https://github.com/RandomNoun7))
+- \(IAC-1094\) add option to filter testcase execution based on tags [\#320](https://github.com/puppetlabs/puppet_litmus/pull/320) ([sheenaajay](https://github.com/sheenaajay))
+- Allow acceptance tests to be run as sudo user [\#319](https://github.com/puppetlabs/puppet_litmus/pull/319) ([carabasdaniel](https://github.com/carabasdaniel))
+
+### Fixed
+
+- Show successful agent result when DEBUG env true [\#341](https://github.com/puppetlabs/puppet_litmus/pull/341) ([carabasdaniel](https://github.com/carabasdaniel))
+- Try to fix the path on puppet version failure [\#338](https://github.com/puppetlabs/puppet_litmus/pull/338) ([carabasdaniel](https://github.com/carabasdaniel))
+- \(GH-326\) - Return node name when testing is complete [\#336](https://github.com/puppetlabs/puppet_litmus/pull/336) ([pmcmaw](https://github.com/pmcmaw))
+- Use default windows-2016 server image [\#335](https://github.com/puppetlabs/puppet_litmus/pull/335) ([carabasdaniel](https://github.com/carabasdaniel))
+- Increase retry count after agent installation [\#334](https://github.com/puppetlabs/puppet_litmus/pull/334) ([carabasdaniel](https://github.com/carabasdaniel))
+- Add validation check after agent install [\#332](https://github.com/puppetlabs/puppet_litmus/pull/332) ([carabasdaniel](https://github.com/carabasdaniel))
+- simplify GCP images to use family names [\#330](https://github.com/puppetlabs/puppet_litmus/pull/330) ([DavidS](https://github.com/DavidS))
+- Add optional ignore\_dependencies parameter to install\_module function [\#318](https://github.com/puppetlabs/puppet_litmus/pull/318) ([alanfryer](https://github.com/alanfryer))
+
 ## [v0.18.4](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.4) (2020-07-01)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.18.3...v0.18.4)
@@ -304,6 +326,7 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(FM-8185\) Use spinner when provisioning  [\#130](https://github.com/puppetlabs/puppet_litmus/pull/130) ([florindragos](https://github.com/florindragos))
 - \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
+- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - Addition of pe\_install rake task [\#124](https://github.com/puppetlabs/puppet_litmus/pull/124) ([HelenCampbell](https://github.com/HelenCampbell))
 
 ### Fixed
@@ -337,7 +360,6 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - \(feat\) better error message for agent\_install [\#114](https://github.com/puppetlabs/puppet_litmus/pull/114) ([tphoney](https://github.com/tphoney))
 - \(MODULES-9170\) allow for the new docker provisioner [\#113](https://github.com/puppetlabs/puppet_litmus/pull/113) ([tphoney](https://github.com/tphoney))
 
