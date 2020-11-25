@@ -396,4 +396,30 @@ module PuppetLitmus::RakeHelper
 
     nil
   end
+
+  def start_spinner(message)
+    if (ENV['CI'] || '').downcase == 'true'
+      puts message
+      spinner = Thread.new do
+        # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
+        loop do
+          printf '.'
+          sleep(10)
+        end
+      end
+    else
+      require 'tty-spinner'
+      spinner = TTY::Spinner.new("[:spinner] #{message}")
+      spinner.auto_spin
+    end
+    spinner
+  end
+
+  def stop_spinner(spinner)
+    if (ENV['CI'] || '').downcase == 'true'
+      Thread.kill(spinner)
+    else
+      spinner.success
+    end
+  end
 end

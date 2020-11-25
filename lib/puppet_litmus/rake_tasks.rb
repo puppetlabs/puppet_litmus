@@ -36,24 +36,11 @@ namespace :litmus do
     results = []
     failed_image_message = ''
     provision_hash[args[:key]]['images'].each do |image|
-      if ENV['CI'] == 'true'
-        progress = Thread.new do
-          loop do
-            printf '.'
-            sleep(10)
-          end
-        end
-      else
-        require 'tty-spinner'
-        spinner = TTY::Spinner.new("Provisioning #{image} using #{provisioner} provisioner.[:spinner]")
-        spinner.auto_spin
-      end
-      result = provision(provisioner, image, inventory_vars)
-
-      if ENV['CI'] == 'true'
-        Thread.kill(progress)
-      else
-        spinner.success
+      begin
+        spinner = start_spinner("Provisioning #{image} using #{provisioner} provisioner.")
+        result = provision(provisioner, image, inventory_vars)
+      ensure
+        stop_spinner(spinner)
       end
 
       if result.first['status'] != 'success'
@@ -74,28 +61,19 @@ namespace :litmus do
   desc 'provision a test system using the given provisioner and platform name. See the puppetlabs-provision module tasks for more documentation'
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     Rake::Task['spec_prep'].invoke
-    if ENV['CI'] == 'true'
-      progress = Thread.new do
-        loop do
-          printf '.'
-          sleep(10)
-        end
+
+    begin
+      spinner = start_spinner("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.")
+
+      results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
+
+      if results.first['status'] != 'success'
+        raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
       end
-    else
-      require 'tty-spinner'
-      spinner = TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
-      spinner.auto_spin
-    end
-    results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
-    if results.first['status'] != 'success'
-      raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
+    ensure
+      stop_spinner(spinner)
     end
 
-    if ENV['CI'] == 'true'
-      Thread.kill(progress)
-    else
-      spinner.success
-    end
     puts "#{results.first['value']['node_name']}, #{args[:platform]}"
   end
 
