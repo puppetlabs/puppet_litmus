@@ -335,19 +335,25 @@ module PuppetLitmus::RakeHelper
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
       # if we're only checking connectivity for a single node
       if target_node_name
-        span.add_field('litmus.node_name', target_node_name)
+        puts "Checking connectivity for #{target_nodes.inspect}"
+        span.add_field('litmus.target_node_name', target_node_name)
         add_platform_field(inventory_hash, target_node_name)
       end
 
       include ::BoltSpec::Run
       target_nodes = find_targets(inventory_hash, target_node_name)
+      puts "Checking connectivity for #{target_nodes.inspect}"
+      span.add_field('litmus.target_nodes', target_nodes)
+
       results = run_command('cd .', target_nodes, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', results)
       failed = []
-      results.each do |result|
-        failed.push(result['target']) if result['status'] == 'failure'
+      results.reject { |r| r['status'] == 'success' }.each do |result|
+        puts "Failure connecting to #{result['target']}:\n#{result.inspect}"
+        failed.push(result['target'])
       end
-      span.add_field('litmus.connectivity_failed', failed)
+      span.add_field('litmus.connectivity_success', results.select { |r| r['status'] == 'success' })
+      span.add_field('litmus.connectivity_failure', results.reject { |r| r['status'] == 'success' })
       raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
 
       true
@@ -420,6 +426,26 @@ module PuppetLitmus::RakeHelper
       Thread.kill(spinner)
     else
       spinner.success
+    end
+  end
+
+  require 'retryable'
+
+  Retryable.configure do |config|
+    config.sleep = ->(n) { (1.5**n) + Random.rand(0.5) }
+    config.log_method = ->(retries, exception) do
+      Logger.new($stdout).debug("[Attempt ##{retries}] Retrying because [#{exception.class} - #{exception.message}]: #{exception.backtrace.first(5).join(' | ')}")
+    end
+  end
+
+  class LitmusTimeoutError < StandardError; end
+
+  def with_retries(options: { tries: Float::INFINITY }, max_wait_minutes: 5)
+    stop = Time.now + (max_wait_minutes * 60)
+    Retryable.retryable(options.merge(not: [LitmusTimeoutError])) do
+      raise LitmusTimeoutError if Time.now > stop
+
+      yield
     end
   end
 end

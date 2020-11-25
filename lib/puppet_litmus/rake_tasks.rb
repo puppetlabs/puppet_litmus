@@ -67,8 +67,24 @@ namespace :litmus do
 
       results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
 
-      if results.first['status'] != 'success'
+      unless results.first['status'] == 'success'
         raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
+      end
+
+      puts "Successfully provisioned #{args[:platform]} using #{args[:provisioner]}\n"
+
+      target_names = if results.first['value']['node']
+                       [results.first['value']['node']['uri']]
+                     else
+                       results.first['value']['target_names'] || [] # provision_service multi-node provisioning
+                     end
+      target_names.each do |target|
+        Honeycomb.start_span(name: 'litmus.provision.check_connectivity') do |span|
+          span.add_field('target_name', target)
+          with_retries do
+            check_connectivity?(inventory_hash_from_inventory_file, target)
+          end
+        end
       end
     ensure
       stop_spinner(spinner)
