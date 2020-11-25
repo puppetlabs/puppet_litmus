@@ -68,6 +68,9 @@ describe 'litmus rake tasks' do
 
       allow(File).to receive(:directory?).with(any_args).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)
+      expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return({})
+      allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(any_args).and_return(true)
+      expect($stdout).to receive(:puts).with("Successfully provisioned centos:7 using docker\n")
       expect($stdout).to receive(:puts).with('localhost:2222, centos:7')
       Rake::Task['litmus:provision'].invoke('docker', 'centos:7')
     end

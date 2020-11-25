@@ -36,24 +36,11 @@ namespace :litmus do
     results = []
     failed_image_message = ''
     provision_hash[args[:key]]['images'].each do |image|
-      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-        progress = Thread.new do
-          loop do
-            printf '.'
-            sleep(10)
-          end
-        end
-      else
-        require 'tty-spinner'
-        spinner = TTY::Spinner.new("Provisioning #{image} using #{provisioner} provisioner.[:spinner]")
-        spinner.auto_spin
-      end
-      result = provision(provisioner, image, inventory_vars)
-
-      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-        Thread.kill(progress)
-      else
-        spinner.success
+      begin
+        spinner = start_spinner("Provisioning #{image} using #{provisioner} provisioner.")
+        result = provision(provisioner, image, inventory_vars)
+      ensure
+        stop_spinner(spinner)
       end
 
       if result.first['status'] != 'success'
@@ -74,28 +61,35 @@ namespace :litmus do
   desc 'provision a test system using the given provisioner and platform name. See the puppetlabs-provision module tasks for more documentation'
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     Rake::Task['spec_prep'].invoke
-    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-      progress = Thread.new do
-        loop do
-          printf '.'
-          sleep(10)
+
+    begin
+      spinner = start_spinner("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.")
+
+      results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
+
+      unless results.first['status'] == 'success'
+        raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
+      end
+
+      puts "Successfully provisioned #{args[:platform]} using #{args[:provisioner]}\n"
+
+      target_names = if results.first['value']['node']
+                       [results.first['value']['node']['uri']]
+                     else
+                       results.first['value']['target_names'] || [] # provision_service multi-node provisioning
+                     end
+      target_names.each do |target|
+        Honeycomb.start_span(name: 'litmus.provision.check_connectivity') do |span|
+          span.add_field('target_name', target)
+          with_retries do
+            check_connectivity?(inventory_hash_from_inventory_file, target)
+          end
         end
       end
-    else
-      require 'tty-spinner'
-      spinner = TTY::Spinner.new("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.[:spinner]")
-      spinner.auto_spin
-    end
-    results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
-    if results.first['status'] != 'success'
-      raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
+    ensure
+      stop_spinner(spinner)
     end
 
-    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
-      Thread.kill(progress)
-    else
-      spinner.success
-    end
     puts "#{results.first['value']['node_name']}, #{args[:platform]}"
   end
 
@@ -362,7 +356,7 @@ namespace :litmus do
         success_list = []
         failure_list = []
         # Provision targets depending on what environment we're in
-        if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+        if ENV['CI'] == 'true'
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
           progress = Thread.new do

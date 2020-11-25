@@ -262,7 +262,12 @@ module PuppetLitmus::InventoryManipulation
   # @param inventory_hash [Hash] hash of the inventory.yaml file
   # @param node_name [String] node of nodes to limit the search for the node_name in
   def add_platform_field(inventory_hash, node_name)
-    facts = facts_from_node(inventory_hash, node_name)
+    facts = begin
+      facts_from_node(inventory_hash, node_name)
+    rescue StandardError => e
+      warn e
+      {}
+    end
     Honeycomb.current_span.add_field('litmus.platform', facts&.dig('platform'))
   end
 end
