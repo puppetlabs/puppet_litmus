@@ -192,7 +192,6 @@ module PuppetLitmus::RakeHelper
       params = if collection.nil?
                  {}
                else
-                 Honeycomb.current_span.add_field('litmus.collection', collection)
                  { 'collection' => collection }
                end
       raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" \
