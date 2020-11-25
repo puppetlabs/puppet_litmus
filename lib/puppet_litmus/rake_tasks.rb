@@ -36,7 +36,7 @@ namespace :litmus do
     results = []
     failed_image_message = ''
     provision_hash[args[:key]]['images'].each do |image|
-      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+      if ENV['CI'] == 'true'
         progress = Thread.new do
           loop do
             printf '.'
@@ -50,7 +50,7 @@ namespace :litmus do
       end
       result = provision(provisioner, image, inventory_vars)
 
-      if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+      if ENV['CI'] == 'true'
         Thread.kill(progress)
       else
         spinner.success
@@ -74,7 +74,7 @@ namespace :litmus do
   desc 'provision a test system using the given provisioner and platform name. See the puppetlabs-provision module tasks for more documentation'
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     Rake::Task['spec_prep'].invoke
-    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+    if ENV['CI'] == 'true'
       progress = Thread.new do
         loop do
           printf '.'
@@ -91,7 +91,7 @@ namespace :litmus do
       raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
     end
 
-    if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+    if ENV['CI'] == 'true'
       Thread.kill(progress)
     else
       spinner.success
@@ -362,7 +362,7 @@ namespace :litmus do
         success_list = []
         failure_list = []
         # Provision targets depending on what environment we're in
-        if (ENV['CI'] == 'true') || !ENV['DISTELLI_BUILDNUM'].nil?
+        if ENV['CI'] == 'true'
           # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
           puts "Running against #{targets.size} targets.\n"
           progress = Thread.new do
