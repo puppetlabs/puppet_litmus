@@ -128,8 +128,10 @@ namespace :litmus do
           puts "ERROR:#{e}"
           # fix the path
           path_changes = configure_path(inventory_hash)
-          path_changes.each do |change|
-            puts "Configuring puppet path result: #{change.inspect}"
+          if ENV['DEBUG'] == true
+            path_changes.each do |change|
+              puts "Configuring puppet path result: #{change.inspect}"
+            end
           end
 
           retries += 1
