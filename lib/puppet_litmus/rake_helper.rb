@@ -335,7 +335,6 @@ module PuppetLitmus::RakeHelper
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
       # if we're only checking connectivity for a single node
       if target_node_name
-        puts "Checking connectivity for #{target_nodes.inspect}"
         span.add_field('litmus.target_node_name', target_node_name)
         add_platform_field(inventory_hash, target_node_name)
       end
@@ -433,9 +432,9 @@ module PuppetLitmus::RakeHelper
 
   Retryable.configure do |config|
     config.sleep = ->(n) { (1.5**n) + Random.rand(0.5) }
-    config.log_method = ->(retries, exception) do
-      Logger.new($stdout).debug("[Attempt ##{retries}] Retrying because [#{exception.class} - #{exception.message}]: #{exception.backtrace.first(5).join(' | ')}")
-    end
+    # config.log_method = ->(retries, exception) do
+    #   Logger.new($stdout).debug("[Attempt ##{retries}] Retrying because [#{exception.class} - #{exception.message}]: #{exception.backtrace.first(5).join(' | ')}")
+    # end
   end
 
   class LitmusTimeoutError < StandardError; end
