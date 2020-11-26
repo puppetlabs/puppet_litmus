@@ -26,15 +26,15 @@ jobs:
     services: docker
     before_script:
     - |
-      set -x
+      set -ex
       git clone --depth 1 https://github.com/puppetlabs/puppetlabs-motd puppetlabs-motd
       cd puppetlabs-motd
       sed -i -e "s/gem .puppet_litmus./# &/" Gemfile
       echo "gem 'puppet_litmus', require: false, git: 'https://github.com/${TRAVIS_PULL_REQUEST_SLUG:-$TRAVIS_REPO_SLUG}', branch: '${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}'" >> Gemfile
 
-      echo travis_fold:start:motd-gemfile
+      echo travis\_fold:start:motd-gemfile
       cat Gemfile
-      echo travis_fold:end:motd-gemfile
+      echo travis\_fold:end:motd-gemfile
 
       # override travis' defaults
       unset BUNDLE_GEMFILE
