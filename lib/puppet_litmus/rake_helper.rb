@@ -109,12 +109,13 @@ module PuppetLitmus::RakeHelper
     end
   end
 
-  def provision(provisioner, platform, inventory_vars)
+  def provision(provisioner, platform, inventory_vars, append_cli = nil)
     include ::BoltSpec::Run
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
     params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
+    params['append_cli'] = append_cli unless append_cli.nil?
     params['vars'] = inventory_vars unless inventory_vars.nil?
 
     Honeycomb.add_field_to_trace('litmus.provisioner', provisioner)
