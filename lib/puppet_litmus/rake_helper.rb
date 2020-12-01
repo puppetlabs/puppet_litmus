@@ -134,8 +134,9 @@ module PuppetLitmus::RakeHelper
   end
 
   def provision_list(provision_hash, key)
+    require 'json'
     provisioner = provision_hash[key]['provisioner']
-    inventory_vars = provision_hash[key]['vars']
+    inventory_vars = provision_hash[key]['vars'].to_json unless provision_hash[key]['vars'].nil?
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[key]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
     results = []

@@ -24,13 +24,15 @@ namespace :litmus do
   task :provision_list, [:key] do |_task, args|
     raise 'Cannot find provision.yaml file' unless File.file?('./provision.yaml')
 
+    require 'json'
+
     provision_hash = YAML.load_file('./provision.yaml')
     raise "No key #{args[:key]} in ./provision.yaml, see https://puppetlabs.github.io/litmus/Litmus-core-commands.html#provisioning-via-yaml for examples" if provision_hash[args[:key]].nil?
 
     Rake::Task['spec_prep'].invoke
 
     provisioner = provision_hash[args[:key]]['provisioner']
-    inventory_vars = provision_hash[args[:key]]['vars']
+    inventory_vars = provision_hash[args[:key]]['vars'].to_json unless provision_hash[args[:key]]['vars'].nil?
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[args[:key]]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
     results = []

@@ -34,6 +34,16 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
   end
 
+  context 'with provision_list and vars' do
+    let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'], 'vars' => { 'foo' => 'bar' } } } }
+    let(:results) { [] }
+
+    it 'calls function' do
+      expect(self).to receive(:provision).with('docker', 'waffleimage/centos7', '{"foo":"bar"}').and_return(results)
+      provision_list(provision_hash, 'default')
+    end
+  end
+
   context 'with provision' do
     examples = [
       {
