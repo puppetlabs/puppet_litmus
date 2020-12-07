@@ -6,7 +6,6 @@
 require 'json'
 
 IMAGE_TABLE = {
-  'RedHat-6' => 'rhel-6',
   'RedHat-7' => 'rhel-7',
   'RedHat-8' => 'rhel-8',
   'SLES-12' => 'sles-12',
