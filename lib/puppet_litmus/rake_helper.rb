@@ -122,11 +122,16 @@ module PuppetLitmus::RakeHelper
     Honeycomb.start_span(name: 'litmus.provision') do |span|
       ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.platform', platform)
-      span.add_field('litmus.inventory', params['inventory'])
+
+      task_name = provisioner_task(provisioner)
+      span.add_field('litmus.task_name', task_name)
+      span.add_field('litmus.params', params)
       span.add_field('litmus.config', DEFAULT_CONFIG_DATA)
 
-      bolt_result = run_task(provisioner_task(provisioner), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      bolt_result = run_task(task_name, 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
+      span.add_field('litmus.result', bolt_result)
       span.add_field('litmus.node_name', bolt_result&.first&.dig('value', 'node_name'))
+
       raise_bolt_errors(bolt_result, "provisioning of #{platform} failed.")
 
       bolt_result
