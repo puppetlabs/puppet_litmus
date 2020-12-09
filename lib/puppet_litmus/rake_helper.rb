@@ -41,6 +41,13 @@ elsif ENV['GITHUB_ACTIONS'] == 'true'
   Honeycomb.add_field_to_trace('ci.sha', ENV['GITHUB_SHA'])
 end
 at_exit do
+  if $ERROR_INFO.is_a?(SystemExit)
+    process_span.add_field('process.exit_code', $ERROR_INFO.status)
+  elsif $ERROR_INFO
+    process_span.add_field('process.exit_code', $ERROR_INFO.class.name)
+  else
+    process_span.add_field('process.exit_code', 'unknown')
+  end
   process_span.send
 end
 
