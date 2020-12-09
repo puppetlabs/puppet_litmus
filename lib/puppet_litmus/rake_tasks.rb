@@ -375,7 +375,7 @@ namespace :litmus do
             at_exit { exit! }
 
             env = options[:env].nil? ? {} : options[:env]
-            env['HTTP_X_HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
+            env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
             stdout, stderr, status = Open3.capture3(env, test)
             ["\n================\n#{title}\n", stdout, stderr, status]
           end
@@ -393,7 +393,7 @@ namespace :litmus do
           spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
           payloads.each do |title, test, options|
             env = options[:env].nil? ? {} : options[:env]
-            env['HTTP_X_HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
+            env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
             spinners.register("[:spinner] #{title}") do |sp|
               stdout, stderr, status = Open3.capture3(env, test)
               if status.to_i.zero?
