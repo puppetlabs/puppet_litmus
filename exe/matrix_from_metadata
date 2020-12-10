@@ -33,13 +33,15 @@ DOCKER_PLATFORMS = [
   'Ubuntu-20.04',
 ].freeze
 
+COLLECTION_MAP = {
+  '5' => 'puppet5',
+  '6' => 'puppet6',
+  '7' => 'puppet7-nightly',
+}.freeze
+
 matrix = {
   platform: [],
-  collection: %w[
-    puppet5
-    puppet6
-    puppet7-nightly
-  ],
+  collection: [],
 }
 
 metadata = JSON.parse(File.read('metadata.json'))
@@ -56,6 +58,35 @@ metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do
     end
   end
 end
+
+# Set collections based on puppet version requirements
+if metadata.key?('requirements') && metadata['requirements'].length.positive?
+  metadata['requirements'].each do |req|
+    next unless req.key?('name') && req.key?('version_requirement') && req['name'] == 'puppet'
+
+    ver_regexp = %r{^([>=<]{1,2})\s+([\d.]+)\s+([>=<]{1,2})\s+([\d.]+)$}
+    match = ver_regexp.match(req['version_requirement'])
+    break if match.nil?
+
+    cmp_one, ver_one, cmp_two, ver_two = match.captures
+    COLLECTION_MAP.each do |key, val|
+      # Using eval should be safe here since only regex matches are being parsed
+      # rubocop:disable Security/Eval, Style/EvalWithLocation
+      if eval("#{key} #{cmp_one} #{ver_one[0]}") && eval("#{key} #{cmp_two} #{ver_two[0]}")
+        matrix[:collection] << val
+      end
+      # rubocop:enable Security/Eval, Style/EvalWithLocation
+    end
+  end
+end
+
+# Set to defaults (all collections) if no matches are found
+if matrix[:collection].empty?
+  COLLECTION_MAP.each { |_, val| matrix[:collection] << val }
+end
+
+# Just to make sure there aren't any duplicates
+matrix[:collection] = matrix[:collection].uniq
 
 puts "::set-output name=matrix::#{JSON.generate(matrix)}"
 
