@@ -9,7 +9,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Boolean] The result of the 2 apply manifests.
   def idempotent_apply(manifest)
     Honeycomb.start_span(name: 'litmus.idempotent_apply') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       manifest_file_location = create_manifest_file(manifest)
       apply_manifest(nil, expect_failures: false, manifest_file_location: manifest_file_location)
       apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
@@ -39,7 +39,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
     Honeycomb.start_span(name: 'litmus.apply_manifest') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.manifest', manifest)
       span.add_field('litmus.opts', opts)
 
@@ -117,7 +117,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest)
     Honeycomb.start_span(name: 'litmus.create_manifest_file') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.manifest', manifest)
 
       require 'tmpdir'
@@ -154,7 +154,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Bool] Success. The file was succesfully writtne on the target.
   def write_file(content, destination)
     Honeycomb.start_span(name: 'litmus.write_file') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.destination', destination)
 
       require 'tmpdir'
@@ -191,7 +191,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
     Honeycomb.start_span(name: 'litmus.run_shell') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.command_to_run', command_to_run)
       span.add_field('litmus.opts', opts)
 
@@ -228,7 +228,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the command.
   def bolt_upload_file(source, destination, opts = {}, options = {})
     Honeycomb.start_span(name: 'litmus.bolt_upload_file') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.source', source)
       span.add_field('litmus.destination', destination)
       span.add_field('litmus.opts', opts)
@@ -280,7 +280,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
   def run_bolt_task(task_name, params = {}, opts = {})
     Honeycomb.start_span(name: 'litmus.run_task') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.task_name', task_name)
       span.add_field('litmus.params', params)
       span.add_field('litmus.opts', opts)
@@ -348,7 +348,7 @@ module PuppetLitmus::PuppetHelpers
   # @return [Object] A result object from the script run.
   def bolt_run_script(script, opts = {}, arguments: [])
     Honeycomb.start_span(name: 'litmus.bolt_run_script') do |span|
-      ENV['HTTP_X_HONEYCOMB_TRACE'] = span.to_trace_header
+      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.script', script)
       span.add_field('litmus.opts', opts)
       span.add_field('litmus.arguments', arguments)
