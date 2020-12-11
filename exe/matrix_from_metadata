@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# this script creates a build matrix for github actions from the claimed supported platforms in metadata.json
+# this script creates a build matrix for github actions from the claimed supported platforms and puppet versions in metadata.json
 
 require 'json'
 
@@ -33,16 +33,21 @@ DOCKER_PLATFORMS = [
   'Ubuntu-20.04',
 ].freeze
 
+# This table uses the latest version in each collection for accurate
+# comparison when evaluating puppet requirements from the metadata
+COLLECTION_TABLE = {
+  '5.5.22' => 'puppet5',
+  '6.19.1' => 'puppet6',
+  '7.0.0' => 'puppet7-nightly',
+}.freeze
+
 matrix = {
   platform: [],
-  collection: %w[
-    puppet5
-    puppet6
-    puppet7-nightly
-  ],
+  collection: [],
 }
 
 metadata = JSON.parse(File.read('metadata.json'))
+# Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
   sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
@@ -56,6 +61,38 @@ metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do
     end
   end
 end
+
+# Set collections based on puppet version requirements
+if metadata.key?('requirements') && metadata['requirements'].length.positive?
+  metadata['requirements'].each do |req|
+    next unless req.key?('name') && req.key?('version_requirement') && req['name'] == 'puppet'
+
+    ver_regexp = %r{^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$}
+    match = ver_regexp.match(req['version_requirement'])
+    if match.nil?
+      puts "::warning::Didn't recognize version_requirement '#{req['version_requirement']}'"
+      break
+    end
+
+    cmp_one, ver_one, cmp_two, ver_two = match.captures
+    reqs = ["#{cmp_one} #{ver_one}", "#{cmp_two} #{ver_two}"]
+
+    COLLECTION_TABLE.each do |key, val|
+      if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
+        matrix[:collection] << val
+      end
+    end
+  end
+end
+
+# Set to defaults (all collections) if no matches are found
+if matrix[:collection].empty?
+  matrix[:collection] = COLLECTION_TABLE.values
+end
+
+# Just to make sure there aren't any duplicates
+matrix[:platform] = matrix[:platform].uniq.sort
+matrix[:collection] = matrix[:collection].uniq.sort
 
 puts "::set-output name=matrix::#{JSON.generate(matrix)}"
 
