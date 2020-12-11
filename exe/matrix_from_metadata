@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# this script creates a build matrix for github actions from the claimed supported platforms in metadata.json
+# this script creates a build matrix for github actions from the claimed supported platforms and puppet versions in metadata.json
 
 require 'json'
 
@@ -33,10 +33,12 @@ DOCKER_PLATFORMS = [
   'Ubuntu-20.04',
 ].freeze
 
-COLLECTION_MAP = {
-  '5' => 'puppet5',
-  '6' => 'puppet6',
-  '7' => 'puppet7-nightly',
+# This table uses the latest version in each collection for accurate
+# comparison when evaluating puppet requirements from the metadata
+COLLECTION_TABLE = {
+  '5.5.22' => 'puppet5',
+  '6.19.1' => 'puppet6',
+  '7.0.0' => 'puppet7-nightly',
 }.freeze
 
 matrix = {
@@ -45,6 +47,7 @@ matrix = {
 }
 
 metadata = JSON.parse(File.read('metadata.json'))
+# Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
   sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
@@ -64,29 +67,32 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
   metadata['requirements'].each do |req|
     next unless req.key?('name') && req.key?('version_requirement') && req['name'] == 'puppet'
 
-    ver_regexp = %r{^([>=<]{1,2})\s+([\d.]+)\s+([>=<]{1,2})\s+([\d.]+)$}
+    ver_regexp = %r{^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$}
     match = ver_regexp.match(req['version_requirement'])
-    break if match.nil?
+    if match.nil?
+      puts "::warning::Didn't recognize version_requirement '#{req['version_requirement']}'"
+      break
+    end
 
     cmp_one, ver_one, cmp_two, ver_two = match.captures
-    COLLECTION_MAP.each do |key, val|
-      # Using eval should be safe here since only regex matches are being parsed
-      # rubocop:disable Security/Eval, Style/EvalWithLocation
-      if eval("#{key} #{cmp_one} #{ver_one[0]}") && eval("#{key} #{cmp_two} #{ver_two[0]}")
+    reqs = ["#{cmp_one} #{ver_one}", "#{cmp_two} #{ver_two}"]
+
+    COLLECTION_TABLE.each do |key, val|
+      if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
         matrix[:collection] << val
       end
-      # rubocop:enable Security/Eval, Style/EvalWithLocation
     end
   end
 end
 
 # Set to defaults (all collections) if no matches are found
 if matrix[:collection].empty?
-  COLLECTION_MAP.each { |_, val| matrix[:collection] << val }
+  matrix[:collection] = COLLECTION_TABLE.values
 end
 
 # Just to make sure there aren't any duplicates
-matrix[:collection] = matrix[:collection].uniq
+matrix[:platform] = matrix[:platform].uniq.sort
+matrix[:collection] = matrix[:collection].uniq.sort
 
 puts "::set-output name=matrix::#{JSON.generate(matrix)}"
 
