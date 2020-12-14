@@ -58,14 +58,15 @@ namespace :litmus do
   #
   # @param :provisioner [String] provisioner to use in provisioning given platform.
   # @param :platform [String] OS platform for container or VM to use.
+  # @param :append_cli [String] string append to the docker command. Can be used for passing volumes or hosts names
   desc 'provision a test system using the given provisioner and platform name. See the puppetlabs-provision module tasks for more documentation'
-  task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
+  task :provision, [:provisioner, :platform, :inventory_vars, :append_cli] do |_task, args|
     Rake::Task['spec_prep'].invoke
 
     begin
       spinner = start_spinner("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.")
 
-      results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
+      results = provision(args[:provisioner], args[:platform], args[:inventory_vars], args[:append_cli])
 
       unless results.first['status'] == 'success'
         raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
