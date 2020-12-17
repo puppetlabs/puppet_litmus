@@ -77,6 +77,42 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
   end
 
+  context 'with bulk tear_down' do
+    let(:inventory_hash) do
+      { 'groups' =>
+        [{ 'name' => 'ssh_nodes', 'targets' =>
+          [
+            { 'uri' => 'one.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-1604-x86_64', 'job_id' => 'iac-task-pid-21648' } },
+            { 'uri' => 'two.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-1804-x86_64', 'job_id' => 'iac-task-pid-21648' } },
+            { 'uri' => 'three.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-2004-x86_64', 'job_id' => 'iac-task-pid-21648' } },
+            { 'uri' => 'four.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-2004-x86_64', 'job_id' => 'iac-task-pid-21649' } },
+          ] }] }
+    end
+    let(:targets) { ['one.host'] }
+    let(:params) { { 'action' => 'tear_down', 'node_name' => 'one.host', 'inventory' => Dir.pwd } }
+
+    it 'calls function' do
+      allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('provision::abs', 'localhost', params, config: described_class::DEFAULT_CONFIG_DATA, inventory: nil).and_return(
+        [{ 'target' => 'localhost',
+           'action' => 'task',
+           'object' => 'provision::abs',
+           'status' => 'success',
+           'value' =>
+           { 'status' => 'ok',
+             'removed' =>
+             ['one.host',
+              'two.host',
+              'three.host'] } }],
+      )
+      results = tear_down_nodes(targets, inventory_hash)
+      expect(results.keys).to eq(['one.host', 'two.host', 'three.host'])
+      results.each_value do |value|
+        expect(value[0]['value']).to eq({ 'status' => 'ok' })
+      end
+    end
+  end
+
   context 'with install_agent' do
     let(:inventory_hash) do
       { 'groups' =>
