@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'rspec'
-
 if ENV['COVERAGE'] == 'yes'
   require 'simplecov'
 
@@ -13,6 +11,7 @@ if ENV['COVERAGE'] == 'yes'
       SimpleCov::Formatter::HTMLFormatter,
     ]
   end
+
   SimpleCov.start do
     track_files 'lib/**/*.rb'
 
@@ -31,6 +30,8 @@ if ENV['COVERAGE'] == 'yes'
     end
   end
 end
+
+require 'rspec'
 
 # This is basically how `configure!` sets up RSpec in tests.
 require 'puppet_litmus'
