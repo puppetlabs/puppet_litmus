@@ -33,12 +33,11 @@ namespace :litmus do
     inventory_vars = provision_hash[args[:key]]['vars']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[args[:key]]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
-    results = []
     failed_image_message = ''
-    provision_hash[args[:key]]['images'].each do |image|
+    if provision_hash[args[:key]]['images'].instance_of?(Hash)
       begin
-        spinner = start_spinner("Provisioning #{image} using #{provisioner} provisioner.")
-        result = provision(provisioner, image, inventory_vars)
+        spinner = start_spinner("Provisioning multiple images using #{provisioner} provisioner.")
+        result = provision(provisioner, provision_hash[args[:key]]['images'], inventory_vars)
       ensure
         stop_spinner(spinner)
       end
@@ -46,9 +45,23 @@ namespace :litmus do
       if result.first['status'] != 'success'
         failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
       else
-        $stdout.puts "#{result.first['value']['node_name']}, #{image}"
+        $stdout.puts 'Success'
       end
-      results << result
+    else
+      provision_hash[args[:key]]['images'].each do |image|
+        begin
+          spinner = start_spinner("Provisioning #{image} using #{provisioner} provisioner.")
+          result = provision(provisioner, image, inventory_vars)
+        ensure
+          stop_spinner(spinner)
+        end
+
+        if result.first['status'] != 'success'
+          failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
+        else
+          $stdout.puts "#{result.first['value']['node_name']}, #{image}"
+        end
+      end
     end
 
     raise "Failed to provision with '#{provisioner}'\n #{failed_image_message}" unless failed_image_message.empty?

@@ -173,6 +173,18 @@ module PuppetLitmus::RakeHelper
         next if node_name == 'litmus_localhost'
 
         result = tear_down(node_name, inventory_hash)
+        # Some provisioners tear_down targets that were created as a batch job.
+        # These provisioners should return the list of additional targets
+        # removed so that we do not attempt to process them.
+        if result != [] && result[0]['value'].key?('removed')
+          removed_targets = result[0]['value']['removed']
+          result[0]['value'].delete('removed')
+          removed_targets.each do |removed_target|
+            targets.delete(removed_target)
+            results[removed_target] = result
+          end
+        end
+
         results[node_name] = result unless result == []
       end
       results
