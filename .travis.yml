@@ -10,6 +10,7 @@ before_install:
 - gem --version
 - bundle -v
 script:
+- env
 - 'bundle exec rake $CHECK'
 bundler_args: --without system_tests
 jobs:
