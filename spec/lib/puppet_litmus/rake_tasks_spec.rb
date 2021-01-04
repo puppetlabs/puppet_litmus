@@ -66,7 +66,9 @@ describe 'litmus rake tasks' do
                    'status' => 'success',
                    'value' => { 'status' => 'ok', 'node_name' => 'localhost:2222' } }]
 
-      allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:provision).with('docker', 'centos:7', nil).and_return(results)
+      allow(File).to receive(:directory?).with(any_args).and_return(true)
+      allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)
+      allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).with(any_args).and_return({})
       allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(any_args).and_return(true)
 
       expect($stdout).to receive(:puts).with('Provisioning centos:7 using docker provisioner.')
