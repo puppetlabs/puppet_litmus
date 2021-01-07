@@ -138,10 +138,10 @@ namespace :litmus do
             raise "Error checking puppet version on #{response.to_json}" if response['status'] != 'success'
           end
         rescue StandardError => e
-          puts "ERROR:#{e}"
+          puts "ERROR:#{e}" if ENV['DEBUG'] == 'true'
           # fix the path
           path_changes = configure_path(inventory_hash)
-          if ENV['DEBUG'] == true
+          if ENV['DEBUG'] == 'true'
             path_changes.each do |change|
               puts "Configuring puppet path result: #{change.inspect}"
             end
