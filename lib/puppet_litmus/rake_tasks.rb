@@ -125,38 +125,37 @@ namespace :litmus do
 
     results = install_agent(args[:collection], targets, inventory_hash)
     results.each do |result|
-      if result['status'] != 'success'
-        command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
-        raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'"
-      else
-        # validate successful install
-        puts "Successfull install result: #{result.inspect}" if ENV['DEBUG'] == true
-        retries = 0
-        begin
-          responses = run_command('puppet --version', targets, options: {}, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
-          responses.each do |response|
-            raise "Error checking puppet version on #{response.to_json}" if response['status'] != 'success'
-          end
-        rescue StandardError => e
-          puts "ERROR:#{e}" if ENV['DEBUG'] == 'true'
-          # fix the path
-          path_changes = configure_path(inventory_hash)
-          if ENV['DEBUG'] == 'true'
-            path_changes.each do |change|
-              puts "Configuring puppet path result: #{change.inspect}"
-            end
-          end
+      command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
+      raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'" if result['status'] != 'success'
 
-          retries += 1
-          sleep 3
-          retry if retries <= 300
-          raise 'Failed to detect installed puppet version after 5 minutes'
+      # validate successful install
+      puts "Successfull install result: #{result.inspect}" if ENV['DEBUG'] == 'true'
+      retries = 0
+      begin
+        responses = run_command('puppet --version', targets, options: {}, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+        responses.each do |response|
+          raise "Error checking puppet version on #{response.to_json}" if response['status'] != 'success'
+        end
+      rescue StandardError => e
+        puts "ERROR:#{e}" if ENV['DEBUG'] == 'true'
+        # fix the path
+        path_changes = configure_path(inventory_hash)
+        if ENV['DEBUG'] == 'true'
+          path_changes.each do |change|
+            puts "Configuring puppet path result: #{change.inspect}"
+          end
         end
 
-        # add puppet-agent feature to successful nodes
-        inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
+        retries += 1
+        sleep 3
+        retry if retries <= 300
+        raise 'Failed to detect installed puppet version after 5 minutes'
       end
+
+      # add puppet-agent feature to successful nodes
+      inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
     end
+
     # update the inventory with the puppet-agent feature set per node
     write_to_inventory_file(inventory_hash, 'inventory.yaml')
   end
