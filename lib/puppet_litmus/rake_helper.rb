@@ -380,6 +380,7 @@ module PuppetLitmus::RakeHelper
       span.add_field('litmus.connectivity_failure', results.reject { |r| r['status'] == 'success' })
       raise "Connectivity has failed on: #{failed}" unless failed.length.zero?
 
+      puts 'Connectivity check PASSED.'
       true
     end
   end
