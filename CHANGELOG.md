@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.20.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.20.0) (2021-01-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.20.0...v0.20.0)
+
+### Added
+
+- \(CISC-972\) allow parallel provisioning of systems [\#359](https://github.com/puppetlabs/puppet_litmus/pull/359) ([tphoney](https://github.com/tphoney))
+- Add dynamic agent collections to test matrix generation [\#357](https://github.com/puppetlabs/puppet_litmus/pull/357) ([DavidS](https://github.com/DavidS))
+- Update honeycomb trace ENV var to new name [\#355](https://github.com/puppetlabs/puppet_litmus/pull/355) ([DavidS](https://github.com/DavidS))
+
+### Fixed
+
+- \(IAC-1287\) Only log transient provisioning errors in debug mode [\#367](https://github.com/puppetlabs/puppet_litmus/pull/367) ([DavidS](https://github.com/DavidS))
+- Remove optional parameter append\_cli from provision api [\#362](https://github.com/puppetlabs/puppet_litmus/pull/362) ([hajee](https://github.com/hajee))
+- honeycomb: Improve capturing exitstatus in the process\_span [\#354](https://github.com/puppetlabs/puppet_litmus/pull/354) ([DavidS](https://github.com/DavidS))
+- Capture the full bolt results after provisioning [\#353](https://github.com/puppetlabs/puppet_litmus/pull/353) ([DavidS](https://github.com/DavidS))
+- Fix append\_cli parameters [\#344](https://github.com/puppetlabs/puppet_litmus/pull/344) ([hajee](https://github.com/hajee))
+
 ## [v0.20.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.20.0) (2020-11-26)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.19.0...v0.20.0)
@@ -357,14 +375,11 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - \(bugfix\) raise on task failure [\#120](https://github.com/puppetlabs/puppet_litmus/pull/120) ([tphoney](https://github.com/tphoney))
+- \(bugfix\) fix result object for bolt task [\#117](https://github.com/puppetlabs/puppet_litmus/pull/117) ([tphoney](https://github.com/tphoney))
 
 ## [0.3.1](https://github.com/puppetlabs/puppet_litmus/tree/0.3.1) (2019-05-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.0...0.3.1)
-
-### Fixed
-
-- \(bugfix\) fix result object for bolt task [\#117](https://github.com/puppetlabs/puppet_litmus/pull/117) ([tphoney](https://github.com/tphoney))
 
 ## [0.3.0](https://github.com/puppetlabs/puppet_litmus/tree/0.3.0) (2019-05-29)
 

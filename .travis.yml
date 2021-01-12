@@ -42,7 +42,7 @@ jobs:
       bundle config gemfile ./Gemfile
       bundle config path '../vendor/bundle'
       bundle config with development
-      bundle install --jobs 4 --retry 2
+      bundle install --jobs 4 --retry 2 --with system_tests
       bundle exec rake spec_prep
       bundle exec rake 'litmus:provision_list[default]'
       bundle exec rake 'litmus:install_agent'
