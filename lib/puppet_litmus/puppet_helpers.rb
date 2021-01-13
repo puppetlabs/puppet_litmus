@@ -30,7 +30,7 @@ module PuppetLitmus::PuppetHelpers
   #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.
   #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.
   #  :manifest_file_location [Path] The place on the target system.
-  #  :hiera_config [Path] The path to the hiera.yaml configuration on the runner.
+  #  :hiera_config [Path] The path to the hiera.yaml configuration on the target.
   #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
   #  :trace [Boolean] run puppet apply with the trace flag (defaults to `true`).
   #  :debug [Boolean] run puppet apply with the debug flag.
