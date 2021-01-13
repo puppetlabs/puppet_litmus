@@ -85,7 +85,18 @@ module PuppetLitmus::PuppetHelpers
 
       span.add_field('litmus.command_to_run', command_to_run)
       span.add_field('litmus.target_node_name', target_node_name)
-      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
+      # bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      script = Tempfile.open(['temp', '.ps1'])
+      if os[:family] == 'windows'
+        script.write("try { #{command_to_run}; exit $LASTEXITCODE } catch { write-error $_ ; exit 1 }")
+      else
+        script.write(command_to_run.to_s)
+      end
+      script.rewind
+      bolt_result = run_script(script.path, target_node_name, [], options: {}, config: nil, inventory: inventory_hash)
+      script.close
+      script.unlink
       span.add_field('litmus.bolt_result', bolt_result)
 
       result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
