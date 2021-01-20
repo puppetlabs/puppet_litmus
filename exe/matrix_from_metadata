@@ -37,7 +37,7 @@ DOCKER_PLATFORMS = [
 # comparison when evaluating puppet requirements from the metadata
 COLLECTION_TABLE = {
   '5.5.22' => 'puppet5',
-  '6.19.1' => 'puppet6',
+  '6.19.1' => 'puppet6-nightly',
   '7.0.0' => 'puppet7-nightly',
 }.freeze
 
