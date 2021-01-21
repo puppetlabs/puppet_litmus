@@ -17,10 +17,7 @@ module PuppetLitmus::InventoryManipulation
                           end
     raise "There is no inventory file at '#{inventory_full_path}'." unless File.exist?(inventory_full_path)
 
-    inventory_hash = YAML.load_file(inventory_full_path)
-    raise "Inventory file is incompatible (version 2 and up). Try the 'bolt project migrate' command." if inventory_hash['version'].nil? || (inventory_hash['version'] < 2)
-
-    inventory_hash
+    YAML.load_file(inventory_full_path)
   end
 
   # Provide a default hash for executing against localhost
@@ -28,7 +25,6 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] inventory.yaml hash containing only an entry for localhost
   def localhost_inventory_hash
     {
-      'version' => 2,
       'groups' => [
         {
           'name' => 'local',
