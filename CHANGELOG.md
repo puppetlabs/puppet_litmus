@@ -2,9 +2,19 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v0.20.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.20.0) (2021-01-11)
+## [v0.22.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.22.0) (2021-01-21)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.20.0...v0.20.0)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.21.0...v0.22.0)
+
+### Added
+
+- \(IAC1365\) Workaround bolt/windows/exitcode bug [\#371](https://github.com/puppetlabs/puppet_litmus/pull/371) ([david22swan](https://github.com/david22swan))
+### Fixed
+
+- Use puppet 6 nightlies and increase timeout limit [\#373](https://github.com/puppetlabs/puppet_litmus/pull/373) ([carabasdaniel](https://github.com/carabasdaniel))
+## [v0.21.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.21.0) (2021-01-11)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.20.0...v0.21.0)
 
 ### Added
 
