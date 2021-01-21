@@ -83,11 +83,19 @@ module PuppetLitmus::PuppetHelpers
       command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
       command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
 
+      command_to_run = "try { #{command_to_run}; exit $LASTEXITCODE } catch { write-error $_ ; exit 1 }" if os[:family] == 'windows'
+
       span.add_field('litmus.command_to_run', command_to_run)
       span.add_field('litmus.target_node_name', target_node_name)
-      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      span.add_field('litmus.bolt_result', bolt_result)
+      # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
+      # bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+      bolt_result = Tempfile.open(['temp', '.ps1']) do |script|
+        script.write(command_to_run)
+        script.close
+        run_script(script.path, target_node_name, [], options: {}, config: nil, inventory: inventory_hash)
+      end
 
+      span.add_field('litmus.bolt_result', bolt_result)
       result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
                               stdout: bolt_result.first['value']['stdout'],
                               stderr: bolt_result.first['value']['stderr'])
