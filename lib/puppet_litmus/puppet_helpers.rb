@@ -90,7 +90,12 @@ module PuppetLitmus::PuppetHelpers
       # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
       # bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       bolt_result = Tempfile.open(['temp', '.ps1']) do |script|
-        script.write(command_to_run)
+        # IAC-1406 - Workaround for issue with run_script on docker_exp #1406
+        if facts_from_node(inventory_hash, target_node_name)['provisioner'] == 'docker_exp'
+          script.write("#!/bin/sh\nPATH=$PATH:/opt/puppetlabs/bin #{command_to_run}")
+        else
+          script.write(command_to_run)
+        end
         script.close
         run_script(script.path, target_node_name, [], options: {}, config: nil, inventory: inventory_hash)
       end
