@@ -2,17 +2,32 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.23.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.23.0) (2021-02-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.22.0...v0.23.0)
+
+### Added
+
+- Remove rhel6 from all tests [\#352](https://github.com/puppetlabs/puppet_litmus/pull/352) ([DavidS](https://github.com/DavidS))
+
+### Fixed
+
+- Isolate puppet\_helpers workaround for windows os family [\#379](https://github.com/puppetlabs/puppet_litmus/pull/379) ([carabasdaniel](https://github.com/carabasdaniel))
+- Remove deprecated version from bolt inventory [\#376](https://github.com/puppetlabs/puppet_litmus/pull/376) ([nmaludy](https://github.com/nmaludy))
+
 ## [v0.22.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.22.0) (2021-01-21)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.21.0...v0.22.0)
 
 ### Added
 
-- \(IAC1365\) Workaround bolt/windows/exitcode bug [\#371](https://github.com/puppetlabs/puppet_litmus/pull/371) ([david22swan](https://github.com/david22swan))
+- Use puppet 6 nightlies and increase timeout limit [\#373](https://github.com/puppetlabs/puppet_litmus/pull/373) ([carabasdaniel](https://github.com/carabasdaniel))
+
 ### Fixed
 
-- Use puppet 6 nightlies and increase timeout limit [\#373](https://github.com/puppetlabs/puppet_litmus/pull/373) ([carabasdaniel](https://github.com/carabasdaniel))
-## [v0.21.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.21.0) (2021-01-11)
+- \(IAC-1365\) - Workaround bolt/windows/exitcode bug [\#371](https://github.com/puppetlabs/puppet_litmus/pull/371) ([david22swan](https://github.com/david22swan))
+
+## [v0.21.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.21.0) (2021-01-12)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.20.0...v0.21.0)
 
@@ -385,11 +400,14 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - \(bugfix\) raise on task failure [\#120](https://github.com/puppetlabs/puppet_litmus/pull/120) ([tphoney](https://github.com/tphoney))
-- \(bugfix\) fix result object for bolt task [\#117](https://github.com/puppetlabs/puppet_litmus/pull/117) ([tphoney](https://github.com/tphoney))
 
 ## [0.3.1](https://github.com/puppetlabs/puppet_litmus/tree/0.3.1) (2019-05-29)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.0...0.3.1)
+
+### Fixed
+
+- \(bugfix\) fix result object for bolt task [\#117](https://github.com/puppetlabs/puppet_litmus/pull/117) ([tphoney](https://github.com/tphoney))
 
 ## [0.3.0](https://github.com/puppetlabs/puppet_litmus/tree/0.3.0) (2019-05-29)
 
