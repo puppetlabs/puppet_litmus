@@ -11,7 +11,7 @@ module PuppetLitmus::PuppetHelpers
     Honeycomb.start_span(name: 'litmus.idempotent_apply') do |span|
       ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       manifest_file_location = create_manifest_file(manifest)
-      apply_manifest(nil, expect_failures: false, manifest_file_location: manifest_file_location)
+      apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
       apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
     end
   end
