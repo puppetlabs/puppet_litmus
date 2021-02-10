@@ -11,7 +11,7 @@ module PuppetLitmus::InventoryManipulation
   def inventory_hash_from_inventory_file(inventory_full_path = nil)
     require 'yaml'
     inventory_full_path = if inventory_full_path.nil?
-                            'inventory.yaml'
+                            "#{Dir.pwd}/spec/fixtures/litmus_inventory.yaml"
                           else
                             inventory_full_path
                           end
