@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.24.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.24.0) (2021-02-15)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.23.1...v0.24.0)
+
+### Changed
+
+- Remove puppet5 from matrix\_from\_metadata script and update puppet6 and puppet7 versions [\#386](https://github.com/puppetlabs/puppet_litmus/pull/386) ([carabasdaniel](https://github.com/carabasdaniel))
+
 ## [v0.23.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.23.1) (2021-02-08)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.23.0...v0.23.1)
@@ -307,10 +315,6 @@ All notable changes to this project will be documented in this file. The format 
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.1...0.8.2)
 
-### Fixed
-
-- Pin bolt version, latest version breaks docker\_exp [\#169](https://github.com/puppetlabs/puppet_litmus/pull/169) ([florindragos](https://github.com/florindragos))
-
 ## [0.8.1](https://github.com/puppetlabs/puppet_litmus/tree/0.8.1) (2019-08-19)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.0...0.8.1)
@@ -328,6 +332,10 @@ All notable changes to this project will be documented in this file. The format 
 - \(feat\) Add option to run acceptance in serial [\#164](https://github.com/puppetlabs/puppet_litmus/pull/164) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(feat\) Enable manipulating inventory features by node [\#163](https://github.com/puppetlabs/puppet_litmus/pull/163) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(feat\) Add support to show apply\_manifest output for debugging [\#159](https://github.com/puppetlabs/puppet_litmus/pull/159) ([hajee](https://github.com/hajee))
+
+### Fixed
+
+- Pin bolt version, latest version breaks docker\_exp [\#169](https://github.com/puppetlabs/puppet_litmus/pull/169) ([florindragos](https://github.com/florindragos))
 
 ## [0.7.3](https://github.com/puppetlabs/puppet_litmus/tree/0.7.3) (2019-07-09)
 
@@ -350,10 +358,6 @@ All notable changes to this project will be documented in this file. The format 
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.7.0...0.7.1)
 
-### Added
-
-- FM-8286 run\_bolt\_task returns bolt result object [\#146](https://github.com/puppetlabs/puppet_litmus/pull/146) ([sheenaajay](https://github.com/sheenaajay))
-
 ### Fixed
 
 - \(bugfix\) fix multiple update to inventoryfile [\#152](https://github.com/puppetlabs/puppet_litmus/pull/152) ([sheenaajay](https://github.com/sheenaajay))
@@ -366,6 +370,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
+- FM-8286 run\_bolt\_task returns bolt result object [\#146](https://github.com/puppetlabs/puppet_litmus/pull/146) ([sheenaajay](https://github.com/sheenaajay))
 - \(FM-8284\) Add bolt\_run\_script command [\#145](https://github.com/puppetlabs/puppet_litmus/pull/145) ([eimlav](https://github.com/eimlav))
 
 ## [0.6.0](https://github.com/puppetlabs/puppet_litmus/tree/0.6.0) (2019-06-24)
@@ -377,7 +382,6 @@ All notable changes to this project will be documented in this file. The format 
 - FM-8269 add or remove features in inventory file [\#138](https://github.com/puppetlabs/puppet_litmus/pull/138) ([sheenaajay](https://github.com/sheenaajay))
 - \(FM-8178\) Make params passable using provision.yaml [\#137](https://github.com/puppetlabs/puppet_litmus/pull/137) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(FM-8268\) adding file/directory upload method [\#136](https://github.com/puppetlabs/puppet_litmus/pull/136) ([tphoney](https://github.com/tphoney))
-- \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
 
 ### Fixed
 
@@ -392,6 +396,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Added
 
 - \(FM-8185\) Use spinner when provisioning  [\#130](https://github.com/puppetlabs/puppet_litmus/pull/130) ([florindragos](https://github.com/florindragos))
+- \(feat\) add provision\_and\_install task [\#128](https://github.com/puppetlabs/puppet_litmus/pull/128) ([tphoney](https://github.com/tphoney))
 - \(FM-7963\) Add yardoc comments to inventory\_manipulation and rake\_task… [\#127](https://github.com/puppetlabs/puppet_litmus/pull/127) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 - Addition of pe\_install rake task [\#124](https://github.com/puppetlabs/puppet_litmus/pull/124) ([HelenCampbell](https://github.com/HelenCampbell))
 
