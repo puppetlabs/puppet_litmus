@@ -35,8 +35,8 @@ DOCKER_PLATFORMS = [
 # This table uses the latest version in each collection for accurate
 # comparison when evaluating puppet requirements from the metadata
 COLLECTION_TABLE = {
-  '6.19.1' => 'puppet6-nightly',
-  '7.0.0' => 'puppet7-nightly',
+  '6.21.0' => 'puppet6-nightly',
+  '7.4.0' => 'puppet7-nightly',
 }.freeze
 
 matrix = {
