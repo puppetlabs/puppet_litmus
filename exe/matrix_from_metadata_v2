@@ -53,13 +53,13 @@ metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do
     if IMAGE_TABLE.key? image_key
       matrix[:platforms] << {
         label: image_key,
-        provider: 'provision_service',
+        provider: 'provision::provision_service',
         image: IMAGE_TABLE[image_key],
       }
     elsif DOCKER_PLATFORMS.key? image_key
       matrix[:platforms] << {
         label: image_key,
-        provider: 'docker',
+        provider: 'provision::docker',
         image: DOCKER_PLATFORMS[image_key],
       }
     else
