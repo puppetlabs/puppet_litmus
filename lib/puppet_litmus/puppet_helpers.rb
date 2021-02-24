@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # helper functions for running puppet commands. They execute a target system specified by ENV['TARGET_HOST']
-# heavily uses functions from here https://github.com/puppetlabs/bolt/blob/master/developer-docs/bolt_spec-run.md
+# heavily uses functions from here https://github.com/puppetlabs/bolt/blob/main/developer-docs/bolt_spec-run.md
 module PuppetLitmus::PuppetHelpers
   # Applies a manifest twice. First checking for errors. Secondly to make sure no changes occur.
   #
