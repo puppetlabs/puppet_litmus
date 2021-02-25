@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.25.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.25.0) (2021-02-25)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.24.0...v0.25.0)
+
+### Added
+
+- Add docker images to matrix from metadata v2 [\#385](https://github.com/puppetlabs/puppet_litmus/pull/385) ([carabasdaniel](https://github.com/carabasdaniel))
+
 ## [v0.24.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.24.0) (2021-02-15)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.23.1...v0.24.0)
