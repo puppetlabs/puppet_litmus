@@ -16,7 +16,7 @@ describe 'litmus rake tasks' do
                    'operatingsystem_support' =>
   [{ 'operatingsystem' => 'RedHat', 'operatingsystemrelease' => ['5'] },
    { 'operatingsystem' => 'Ubuntu', 'operatingsystemrelease' => ['14.04', '18.04'] }],
-                   'template-ref' => 'heads/master-0-g7827fc2' }
+                   'template-ref' => 'heads/main-0-g7827fc2' }
       expect(File).to receive(:read).with(any_args).once
       expect(JSON).to receive(:parse).with(any_args).and_return(metadata)
       expect($stdout).to receive(:puts).with('redhat-5-x86_64')
