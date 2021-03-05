@@ -34,14 +34,24 @@ DOCKER_PLATFORMS = {
 
 # This table uses the latest version in each collection for accurate
 # comparison when evaluating puppet requirements from the metadata
-COLLECTION_TABLE = {
-  '6.24.0' => 'puppet6-nightly',
-  '7.4.0' => 'puppet7-nightly',
-}.freeze
+COLLECTION_TABLE = [
+  {
+    puppet_maj_version: 6,
+    ruby_version: 2.5,
+  },
+  {
+    puppet_maj_version: 7,
+    ruby_version: 2.7,
+  },
+].freeze
 
 matrix = {
   platforms: [],
   collection: [],
+}
+
+spec_matrix = {
+  include: [],
 }
 
 metadata = JSON.parse(File.read('metadata.json'))
@@ -83,17 +93,20 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
     cmp_one, ver_one, cmp_two, ver_two = match.captures
     reqs = ["#{cmp_one} #{ver_one}", "#{cmp_two} #{ver_two}"]
 
-    COLLECTION_TABLE.each do |key, val|
-      if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
-        matrix[:collection] << val
-      end
+    COLLECTION_TABLE.each do |collection|
+      # Test against the "largest" puppet version in a collection, e.g. `7.9999` to allow puppet requirements with a non-zero lower bound on minor/patch versions.
+      # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
+      next unless Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new("#{collection[:puppet_maj_version]}.9999"))
+
+      matrix[:collection] << "puppet#{collection[:puppet_maj_version]}-nightly"
+      spec_matrix[:include] << { puppet_version: "~> #{collection[:puppet_maj_version]}.0", ruby_version: collection[:ruby_version] }
     end
   end
 end
 
 # Set to defaults (all collections) if no matches are found
 if matrix[:collection].empty?
-  matrix[:collection] = COLLECTION_TABLE.values
+  matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" }
 end
 
 # Just to make sure there aren't any duplicates
@@ -101,5 +114,11 @@ matrix[:platforms] = matrix[:platforms].uniq.sort { |a, b| a[:label] <=> b[:labe
 matrix[:collection] = matrix[:collection].uniq.sort
 
 puts "::set-output name=matrix::#{JSON.generate(matrix)}"
+puts "::set-output name=spec_matrix::#{JSON.generate(spec_matrix)}"
 
-puts "Created matrix with #{matrix[:platforms].length * matrix[:collection].length} cells."
+acceptance_test_cell_count = matrix[:platforms].length * matrix[:collection].length
+spec_test_cell_count = spec_matrix[:include].length
+
+puts "Created matrix with #{acceptance_test_cell_count + spec_test_cell_count} cells:"
+puts "  - Acceptance Test Cells: #{acceptance_test_cell_count}"
+puts "  - Spec Test Cells: #{spec_test_cell_count}"
