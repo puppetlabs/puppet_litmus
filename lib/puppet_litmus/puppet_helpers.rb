@@ -85,7 +85,8 @@ module PuppetLitmus::PuppetHelpers
 
       span.add_field('litmus.target_node_name', target_node_name)
 
-      if os[:family] == 'windows'
+      facter_os_family = run_shell('facter os.family').stdout.delete("\n").downcase
+      if facter_os_family == 'windows'
         # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
         command_to_run = "try { #{command_to_run}; exit $LASTEXITCODE } catch { write-error $_ ; exit 1 }"
         span.add_field('litmus.command_to_run', command_to_run)
