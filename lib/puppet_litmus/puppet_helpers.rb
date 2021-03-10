@@ -75,7 +75,13 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
 
-      command_to_run = "#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
+      # Forcibly set the locale of the command
+      locale = if os[:family] != 'windows'
+                 'LC_ALL=en_US.UTF-8 '
+               else
+                 ''
+               end
+      command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
       command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
       command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
       command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
