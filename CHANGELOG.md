@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.26.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.25.1) (2021-03-10)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.25.1...v0.25.1)
+
+### Added
+
+- \(IAC-1307\) Generate spec test matrix [\#395](https://github.com/puppetlabs/puppet_litmus/pull/395) ([sanfrancrisko](https://github.com/sanfrancrisko))
+
+### Fixed
+
+- \(IAC-1420\) Enforce UTF-8 when running puppet on the test target [\#397](https://github.com/puppetlabs/puppet_litmus/pull/397) ([david22swan](https://github.com/david22swan))
+
 ## [v0.25.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.25.1) (2021-02-26)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.25.0...v0.25.1)
@@ -331,6 +343,10 @@ All notable changes to this project will be documented in this file. The format 
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.1...0.8.2)
 
+### Fixed
+
+- Pin bolt version, latest version breaks docker\_exp [\#169](https://github.com/puppetlabs/puppet_litmus/pull/169) ([florindragos](https://github.com/florindragos))
+
 ## [0.8.1](https://github.com/puppetlabs/puppet_litmus/tree/0.8.1) (2019-08-19)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.8.0...0.8.1)
@@ -348,10 +364,6 @@ All notable changes to this project will be documented in this file. The format 
 - \(feat\) Add option to run acceptance in serial [\#164](https://github.com/puppetlabs/puppet_litmus/pull/164) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(feat\) Enable manipulating inventory features by node [\#163](https://github.com/puppetlabs/puppet_litmus/pull/163) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - \(feat\) Add support to show apply\_manifest output for debugging [\#159](https://github.com/puppetlabs/puppet_litmus/pull/159) ([hajee](https://github.com/hajee))
-
-### Fixed
-
-- Pin bolt version, latest version breaks docker\_exp [\#169](https://github.com/puppetlabs/puppet_litmus/pull/169) ([florindragos](https://github.com/florindragos))
 
 ## [0.7.3](https://github.com/puppetlabs/puppet_litmus/tree/0.7.3) (2019-07-09)
 
