@@ -22,6 +22,8 @@ Litmus also facilitates parallel test runs and running tests in isolation. Each 
 
 Install Litmus as a gem by running ```gem install puppet_litmus```.
 
+* Note if you choose to override the `litmus_inventory.yaml` location, please ensure that the directory strutcture you define exists.
+
 ## Documentation
 
 For documentation, see our [Litmus Docs Site](https://puppetlabs.github.io/litmus/).
