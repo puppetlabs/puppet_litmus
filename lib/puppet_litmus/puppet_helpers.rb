@@ -69,8 +69,8 @@ module PuppetLitmus::PuppetHelpers
       end
 
       manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
-      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      inventory_hash = File.exist?('/spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in /spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
@@ -213,8 +213,8 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.opts', opts)
 
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      inventory_hash = File.exist?('/spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in /spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
@@ -252,8 +252,8 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.options', options)
 
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      inventory_hash = File.exist?('/spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in /spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
@@ -306,12 +306,12 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
                          inventory_hash_from_inventory_file(opts[:inventory_file])
-                       elsif File.exist?('inventory.yaml')
-                         inventory_hash_from_inventory_file('inventory.yaml')
+                       elsif File.exist?('/spec/fixtures/litmus_inventory.yaml')
+                         inventory_hash_from_inventory_file('/spec/fixtures/litmus_inventory.yaml')
                        else
                          localhost_inventory_hash
                        end
-      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      raise "Target '#{target_node_name}' not found in /spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
@@ -371,8 +371,8 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.arguments', arguments)
 
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
-      inventory_hash = File.exist?('inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      inventory_hash = File.exist?('/spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+      raise "Target '#{target_node_name}' not found in /spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
       span.add_field('litmus.node_name', target_node_name)
       add_platform_field(inventory_hash, target_node_name)
