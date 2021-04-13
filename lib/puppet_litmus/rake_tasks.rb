@@ -125,7 +125,7 @@ namespace :litmus do
 
     results = install_agent(args[:collection], targets, inventory_hash)
     results.each do |result|
-      command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
+      command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile spec/fixtures/litmus_inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
       raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'" if result['status'] != 'success'
 
       # validate successful install
@@ -157,7 +157,7 @@ namespace :litmus do
     end
 
     # update the inventory with the puppet-agent feature set per node
-    write_to_inventory_file(inventory_hash, 'inventory.yaml')
+    write_to_inventory_file(inventory_hash, 'spec/fixtures/litmus_inventory.yaml')
   end
 
   # Add a given feature to a selection of nodes
@@ -182,7 +182,7 @@ namespace :litmus do
       inventory_hash = add_feature_to_node(inventory_hash, args[:added_feature], target)
     end
 
-    write_to_inventory_file(inventory_hash, 'inventory.yaml')
+    write_to_inventory_file(inventory_hash, 'spec/fixtures/litmus_inventory.yaml')
 
     puts 'Feature added'
   end
@@ -336,7 +336,7 @@ namespace :litmus do
 
   namespace :acceptance do
     require 'rspec/core/rake_task'
-    if File.file?('inventory.yaml')
+    if File.file?('spec/fixtures/litmus_inventory.yaml')
       inventory_hash = inventory_hash_from_inventory_file
       targets = find_targets(inventory_hash, nil)
 
