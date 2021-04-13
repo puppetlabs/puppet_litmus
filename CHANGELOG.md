@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.26.3](https://github.com/puppetlabs/puppet_litmus/tree/v0.26.3) (2021-04-13)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.26.2...v0.26.3)
+
+### Fixed
+
+- \(bug\) update the default inventory.yaml file location in rake\_tasks [\#405](https://github.com/puppetlabs/puppet_litmus/pull/405) ([sheenaajay](https://github.com/sheenaajay))
+
 ## [v0.26.2](https://github.com/puppetlabs/puppet_litmus/tree/v0.26.2) (2021-04-12)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.26.1...v0.26.2)
