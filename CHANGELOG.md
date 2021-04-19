@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.27.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.27.0) (2021-04-19)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.26.3...v0.27.0)
+
+### Added
+
+- \(maint\) Update bolt requirement to include 3.x [\#407](https://github.com/puppetlabs/puppet_litmus/pull/407) ([beechtom](https://github.com/beechtom))
+
 ## [v0.26.3](https://github.com/puppetlabs/puppet_litmus/tree/v0.26.3) (2021-04-13)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.26.2...v0.26.3)
