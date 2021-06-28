@@ -14,7 +14,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
     it 'calls all functions' do
       expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
-      expect(self).to receive(:apply_manifest).with(nil, expect_failures: false, manifest_file_location: '/bla.pp')
+      expect(self).to receive(:apply_manifest).with(nil, catch_failures: true, manifest_file_location: '/bla.pp')
       expect(self).to receive(:apply_manifest).with(nil, catch_changes: true, manifest_file_location: '/bla.pp')
       idempotent_apply(manifest)
     end
@@ -24,10 +24,15 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when specifying a hiera config' do
       let(:manifest) { "include '::doot'" }
       let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
+      let :os do
+        {
+          family: 'redhat',
+        }
+      end
+      let(:command) { "LC_ALL=en_US.UTF-8  puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
 
       it 'passes the --hiera_config flag if the :hiera_config opt is specified' do
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(self).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -38,10 +43,15 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when using detailed-exitcodes' do
       let(:manifest) { "include '::doot'" }
       let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
-      let(:command) { " puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
+      let(:command) { "LC_ALL=en_US.UTF-8  puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
+      let :os do
+        {
+          family: 'redhat',
+        }
+      end
 
       it 'uses detailed-exitcodes with expect_failures' do
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(self).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -49,7 +59,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       end
 
       it 'uses detailed-exitcodes with catch_failures' do
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(self).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -57,7 +67,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       end
 
       it 'uses detailed-exitcodes with expect_changes' do
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(self).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -65,7 +75,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       end
 
       it 'uses detailed-exitcodes with catch_changes' do
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
         expect(self).to receive(:run_command).with(command, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -90,7 +100,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when running against localhost and no inventory.yaml file' do
       it 'does run_shell against localhost without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_command).with(command_to_run, 'litmus_localhost', config: nil, inventory: localhost_inventory_hash).and_return(result)
         expect { run_shell(command_to_run) }.not_to raise_error
@@ -100,7 +110,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when running against remote host' do
       it 'does run_shell against remote host without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_command).with(command_to_run, 'some.host', config: nil, inventory: inventory_hash).and_return(result)
@@ -125,7 +135,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when upload returns success' do
       it 'does upload_file against remote host without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_success)
@@ -134,7 +144,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
       it 'does upload_file against localhost without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).not_to receive(:inventory_hash_from_inventory_file)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:upload_file).with(local, remote, 'litmus_localhost', options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result_success)
@@ -145,7 +155,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when upload returns failure' do
       it 'does upload_file gives runtime error for failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
@@ -154,7 +164,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
       it 'returns the exit code and error message when expecting failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
@@ -176,7 +186,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when running against localhost and no inventory.yaml file' do
       it 'does bolt_run_script against localhost without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).not_to receive(:inventory_hash_from_inventory_file)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_script).with(script, 'litmus_localhost', [], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -187,7 +197,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when running against remote host' do
       it 'does bolt_run_script against remote host without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_script).with(script, 'some.host', [], options: {}, config: nil, inventory: inventory_hash).and_return(result)
@@ -198,7 +208,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when running with arguments' do
       it 'does bolt_run_script with arguments without error' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'localhost'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(false)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(false)
         expect(self).not_to receive(:inventory_hash_from_inventory_file)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_script).with(script, 'litmus_localhost', ['doot'], options: {}, config: nil, inventory: localhost_inventory_hash).and_return(result)
@@ -225,7 +235,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when bolt returns success' do
       it 'does bolt_task_run gives no runtime error for success' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
@@ -243,7 +253,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
       it 'returns stdout for unstructured-data tasks' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_unstructured_task_success)
@@ -253,7 +263,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
       it 'returns structured output for structured-data tasks' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_structured_task_success)
@@ -267,7 +277,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     context 'when bolt returns failure' do
       it 'does bolt_task_run gives runtime error for failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
@@ -276,7 +286,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
 
       it 'returns the exit code and error message when expecting failure' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
-        expect(File).to receive(:exist?).with('inventory.yaml').and_return(true)
+        expect(File).to receive(:exist?).with('spec/fixtures/litmus_inventory.yaml').and_return(true)
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)

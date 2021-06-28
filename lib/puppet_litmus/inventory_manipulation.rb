@@ -6,8 +6,8 @@ module PuppetLitmus; end # rubocop:disable Style/Documentation
 module PuppetLitmus::InventoryManipulation
   # Creates an inventory hash from the inventory.yaml.
   #
-  # @param inventory_full_path [String] path to the inventory.yaml file
-  # @return [Hash] hash of the inventory.yaml file.
+  # @param inventory_full_path [String] path to the litmus_inventory.yaml file
+  # @return [Hash] hash of the litmus_inventory.yaml file.
   def inventory_hash_from_inventory_file(inventory_full_path = nil)
     require 'yaml'
     inventory_full_path = if inventory_full_path.nil?
