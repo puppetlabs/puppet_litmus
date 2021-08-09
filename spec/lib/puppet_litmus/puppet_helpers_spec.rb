@@ -18,6 +18,13 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       expect(self).to receive(:apply_manifest).with(nil, catch_changes: true, manifest_file_location: '/bla.pp')
       idempotent_apply(manifest)
     end
+
+    it 'passes options to apply_manifest' do
+      expect(self).to receive(:create_manifest_file).with(manifest).and_return('/bla.pp')
+      expect(self).to receive(:apply_manifest).with(nil, catch_failures: true, manifest_file_location: '/bla.pp', option: 'value')
+      expect(self).to receive(:apply_manifest).with(nil, catch_changes: true, manifest_file_location: '/bla.pp', option: 'value')
+      idempotent_apply(manifest, option: 'value')
+    end
   end
 
   describe '.apply_manifest' do
