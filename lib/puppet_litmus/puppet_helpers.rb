@@ -6,13 +6,24 @@ module PuppetLitmus::PuppetHelpers
   # Applies a manifest twice. First checking for errors. Secondly to make sure no changes occur.
   #
   # @param manifest [String] puppet manifest code to be applied.
+  # @param opts [Hash] Alters the behaviour of the command. Valid options are:
+  #  :catch_changes [Boolean] (false) We're after idempotency so allow exit code 0 only.
+  #  :expect_changes [Boolean] (false) We're after changes specifically so allow exit code 2 only.
+  #  :catch_failures [Boolean] (false) We're after only complete success so allow exit codes 0 and 2 only.
+  #  :expect_failures [Boolean] (false) We're after failures specifically so allow exit codes 1, 4, and 6 only.
+  #  :manifest_file_location [Path] The place on the target system.
+  #  :hiera_config [Path] The path to the hiera.yaml configuration on the target.
+  #  :prefix_command [String] prefixes the puppet apply command; eg "export LANGUAGE='ja'".
+  #  :trace [Boolean] run puppet apply with the trace flag (defaults to `true`).
+  #  :debug [Boolean] run puppet apply with the debug flag.
+  #  :noop [Boolean] run puppet apply with the noop flag.
   # @return [Boolean] The result of the 2 apply manifests.
-  def idempotent_apply(manifest)
+  def idempotent_apply(manifest, opts = {})
     Honeycomb.start_span(name: 'litmus.idempotent_apply') do |span|
       ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       manifest_file_location = create_manifest_file(manifest)
-      apply_manifest(nil, catch_failures: true, manifest_file_location: manifest_file_location)
-      apply_manifest(nil, catch_changes: true, manifest_file_location: manifest_file_location)
+      apply_manifest(nil, **opts, catch_failures: true, manifest_file_location: manifest_file_location)
+      apply_manifest(nil, **opts, catch_changes: true, manifest_file_location: manifest_file_location)
     end
   end
 
