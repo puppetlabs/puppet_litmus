@@ -1,0 +1,41 @@
+groups:
+  - name: ssh_nodes
+    groups:
+      - name: webservers
+        targets:
+          - 192.168.100.179
+          - 192.168.100.180
+          - 192.168.100.181
+      - name: memcached
+        targets:
+          - 192.168.101.50
+          - 192.168.101.60
+        config:
+          ssh:
+            user: root
+    config:
+      transport: ssh
+      ssh:
+        user: centos
+        private-key: ~/.ssh/id_rsa
+        host-key-check: false
+  - name: win_nodes
+    groups:
+      - name: domaincontrollers
+        targets:
+          - 192.168.110.10
+          - 192.168.110.20
+      - name: testservers
+        targets:
+          - 172.16.219.20
+          - 172.16.219.30
+        config:
+          winrm:
+            realm: MYDOMAIN
+            ssl: false
+    config:
+      transport: winrm
+      winrm:
+        user: DOMAIN\opsaccount
+        password: S3cretP@ssword
+        ssl: true

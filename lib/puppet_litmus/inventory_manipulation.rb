@@ -53,6 +53,85 @@ module PuppetLitmus::InventoryManipulation
     end
   end
 
+  # Recursively find and iterate over the groups in an inventory. If no block is passed
+  # to the function then only the name of the group is returned. If a block is passed
+  # then the block is executed against each group and the value of the block is returned.
+  #
+  # @param inventory_hash [Hash] Inventory hash from inventory.yaml
+  # @param block [Block] Block to execute against each node
+  def groups_in_inventory(inventory_hash, &block)
+    inventory_hash['groups'].flat_map do |group|
+      output_collector = []
+      output_collector << if block_given?
+                            yield group
+                          else
+                            group['name'].downcase
+                          end
+      output_collector << groups_in_inventory({ 'groups' => group['groups'] }, &block) if group.key? 'groups'
+      output_collector.flatten.compact
+    end
+  end
+
+  # Iterate over all targets in an inventory. If no block is given to the function
+  # it will return the name of every target in the inventory. If a block is passed
+  # it will execute the block on each target and return the value of the block.
+  #
+  # @param inventory_hash [Hash] Inventory hash from inventory.yaml
+  # @param block [Block] Block to execute against each node
+  def targets_in_inventory(inventory_hash)
+    groups_in_inventory(inventory_hash) do |group|
+      if group.key? 'targets'
+        group['targets'].map do |target|
+          if block_given?
+            (yield target)
+          else
+            target['uri'].downcase
+          end
+        end
+      end
+    end
+  end
+
+  # Find all targets in an inventory that have a role. The roles for a target are
+  # specified in the vars hash for a target. This function is tolerant to the roles
+  # hash being called either 'role' or 'roles' and it is tolerant to the roles being
+  # either a single key value or an array of roles.
+  #
+  # @param role [String] The name of a role to search for
+  # @param inventory [Hash] Inventory hash from inventory.yaml
+  def nodes_with_role(role, inventory)
+    output_collector = []
+    targets_in_inventory(inventory) do |target|
+      vars = target['vars']
+      roles = [(vars['role'] || vars['roles'])].flatten
+      roles = roles.map { |r| r.downcase }
+      output_collector << target['uri'] if roles.include? role.downcase
+    end
+    output_collector unless output_collector.empty?
+  end
+
+  # Searches through the inventory hash to either validate that a group being targeted exists,
+  # validate that a specific target being targeted exists, or resolves role names to a
+  # list of nodes to target. Targets and roles can be specified as strings or as symbols, and
+  # the functions are tolerant to incorrect capitalization.
+  #
+  # @param target [String] || [Array[String]] A list of targets
+  # @param inventory [Hash] inventory hash from inventory.yaml
+  def search_for_target(target, inventory)
+    result_collector = []
+    groups = groups_in_inventory(inventory)
+    Array(target).map do |name|
+      result_collector << name if groups.include? name.to_s.downcase
+      result_collector << name if targets_in_inventory(inventory).include? name.to_s.downcase
+      result_collector << nodes_with_role(name.to_s, inventory)
+    end
+
+    result_collector = result_collector.flatten.compact
+    raise 'targets not found in inventory' if result_collector.empty?
+
+    result_collector
+  end
+
   # Determines if a node_name exists in a group in the inventory_hash.
   #
   # @param inventory_hash [Hash] hash of the inventory.yaml file
@@ -86,14 +165,13 @@ module PuppetLitmus::InventoryManipulation
   # @param node_name [String] node to locate in the group
   # @return [Hash] config for node of name node_name
   def config_from_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['targets'].each do |node|
-        if node['uri'] == node_name
-          return node['config']
-        end
-      end
+    config = targets_in_inventory(inventory_hash) do |target|
+      next unless target['uri'].downcase == node_name.downcase
+
+      return target['config'] unless target['config'].nil?
     end
-    raise "No config was found for #{node_name}"
+
+    config.empty? ? nil : config[0]
   end
 
   # Finds a facts hash in the inventory hash by searching for a node name.
@@ -102,14 +180,13 @@ module PuppetLitmus::InventoryManipulation
   # @param node_name [String] node to locate in the group
   # @return [Hash] facts for node of name node_name
   def facts_from_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['targets'].each do |node|
-        if node['uri'] == node_name
-          return node['facts']
-        end
-      end
+    facts = targets_in_inventory(inventory_hash) do |target|
+      next unless target['uri'].downcase == node_name.downcase
+
+      target['facts'] unless target['facts'].nil?
     end
-    raise "No facts were found for #{node_name}"
+
+    facts.empty? ? nil : facts[0]
   end
 
   # Finds a var hash in the inventory hash by searching for a node name.
@@ -118,14 +195,12 @@ module PuppetLitmus::InventoryManipulation
   # @param node_name [String] node to locate in the group
   # @return [Hash] vars for node of name node_name
   def vars_from_node(inventory_hash, node_name)
-    inventory_hash['groups'].each do |group|
-      group['targets'].each do |node|
-        if node['uri'] == node_name
-          return node['vars']
-        end
-      end
+    vars = targets_in_inventory(inventory_hash) do |target|
+      next unless target['uri'].downcase == node_name.downcase
+
+      target['vars'] unless target['vars'].nil?
     end
-    {}
+    vars.empty? ? {} : vars[0]
   end
 
   # Adds a node to a group specified, if group_name exists in inventory hash.
@@ -265,5 +340,28 @@ module PuppetLitmus::InventoryManipulation
       {}
     end
     Honeycomb.current_span.add_field('litmus.platform', facts&.dig('platform'))
+  end
+
+  # Add platform custom information field to the current span for each node being targeted.
+  # If more than one node is being targeted, each node will be given a separate custom field.
+  #
+  # @param span [Honeycomb::Span] The current span
+  # @param target_node_names [Array[String]] Nodes being targeted
+  # @param inventory_hash [Hash] Hash of the inventory.yaml file
+  def add_node_fields_to_span(span, target_node_names, inventory_hash)
+    node_counter = 1
+    Array(target_node_names).each do |target_name|
+      name_field     = 'litmus.node_name'
+      platform_field = 'litmus.platform'
+
+      name_field = "#{name_field}_#{node_counter}"
+      platform_field = "#{platform_field}_#{node_counter}"
+      span.add_field(name_field, target_name)
+      if target_in_inventory?(inventory_hash, target_name)
+        facts = facts_from_node(inventory_hash, target_name)
+        span.add_field(platform_field, facts&.dig('platform')) unless facts.nil?
+      end
+      node_counter += 1
+    end
   end
 end
