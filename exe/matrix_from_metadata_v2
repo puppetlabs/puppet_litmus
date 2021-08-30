@@ -55,26 +55,45 @@ spec_matrix = {
   include: [],
 }
 
-metadata = JSON.parse(File.read('metadata.json'))
+if ARGV.include?('--exclude-platforms')
+  exclude_platforms_occurencies = ARGV.select { |arg| arg == '--exclude-platforms' }.length
+  raise '--exclude-platforms argument should be present just one time in the command' unless exclude_platforms_occurencies <= 1
+
+  exclude_platforms_list = ARGV[ARGV.find_index('--exclude-platforms') + 1]
+  raise 'you need to provide a list of platforms in JSON format' if exclude_platforms_list.nil?
+
+  begin
+    exclude_list = JSON.parse(exclude_platforms_list).map { |platform| platform.downcase }
+  rescue JSON::ParserError
+    raise 'the exclude platforms list must be in JSON format'
+  end
+else
+  exclude_list = []
+end
+
+metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
+metadata = JSON.parse(File.read(metadata_path))
 # Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
   sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
     image_key = "#{os}-#{ver}"
-    if IMAGE_TABLE.key? image_key
+
+    if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
       matrix[:platforms] << {
         label: image_key,
         provider: 'provision::provision_service',
         image: IMAGE_TABLE[image_key],
       }
-    elsif DOCKER_PLATFORMS.key? image_key
+    elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
       matrix[:platforms] << {
         label: image_key,
         provider: 'provision::docker',
         image: DOCKER_PLATFORMS[image_key],
       }
     else
-      puts "::warning::Cannot find image for #{image_key}"
+      puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
+      puts "::warning::Cannot find image for #{image_key}" unless exclude_list.include?(image_key.downcase)
     end
   end
 end
