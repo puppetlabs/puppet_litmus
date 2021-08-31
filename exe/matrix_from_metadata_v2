@@ -65,7 +65,7 @@ if ARGV.include?('--exclude-platforms')
   begin
     exclude_list = JSON.parse(exclude_platforms_list).map { |platform| platform.downcase }
   rescue JSON::ParserError
-    raise 'the exclude platforms list must be in JSON format'
+    raise 'the exclude platforms list must valid JSON'
   end
 else
   exclude_list = []
