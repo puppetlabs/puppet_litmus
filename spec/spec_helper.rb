@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'rspec'
+require 'open3'
+require 'ostruct'
 
 if ENV['COVERAGE'] == 'yes'
   require 'simplecov'
@@ -30,6 +32,17 @@ if ENV['COVERAGE'] == 'yes'
       system("git check-ignore --quiet #{f.filename}")
     end
   end
+end
+
+def run_matrix_from_metadata_v2(options = {})
+  command = 'bundle exec ./exe/matrix_from_metadata_v2'
+  command += " --exclude-platforms '#{options['--exclude-platforms']}'" unless options['--exclude-platforms'].nil?
+  result = Open3.capture3({ 'TEST_MATRIX_FROM_METADATA' => 'spec/exe/fake_metadata.json' }, command)
+  OpenStruct.new(
+    stdout: result[0],
+    stderr: result[1],
+    status_code: result[2],
+  )
 end
 
 # This is basically how `configure!` sets up RSpec in tests.
