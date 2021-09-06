@@ -2,13 +2,25 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v0.28.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.27.0) (2021-07-29)
+## [v0.29.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.29.0) (2021-09-06)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.27.0...v0.27.0)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.28.0...v0.29.0)
 
 ### Added
 
-- \(IAC-1710\) - Add Debian 11 Bullseye to `matrix\_from\_metadata\_v2` [\#423](https://github.com/puppetlabs/puppet_litmus/pull/423) ([david22swan](https://github.com/david22swan))
+- \[IAC-1738\] - allow matrix\_from\_metadata\_v2 to exclude platforms from GA matrix [\#426](https://github.com/puppetlabs/puppet_litmus/pull/426) ([adrianiurca](https://github.com/adrianiurca))
+
+### Fixed
+
+- Added options to idempotent\_apply [\#425](https://github.com/puppetlabs/puppet_litmus/pull/425) ([ZloeSabo](https://github.com/ZloeSabo))
+
+## [v0.28.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.28.0) (2021-07-29)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.27.0...v0.28.0)
+
+### Added
+
+- \(IAC-1710\) - Add Debian 11 Bullseye to `matrix_from_metadata_v2` [\#423](https://github.com/puppetlabs/puppet_litmus/pull/423) ([david22swan](https://github.com/david22swan))
 
 ### Fixed
 
@@ -208,7 +220,7 @@ All notable changes to this project will be documented in this file. The format 
 ### Fixed
 
 - fix linking honeycomb spans across processes; avoid double send on forks [\#282](https://github.com/puppetlabs/puppet_litmus/pull/282) ([DavidS](https://github.com/DavidS))
-- Fixes `undefined method facts\_from\_node` error from 0.18.0 [\#281](https://github.com/puppetlabs/puppet_litmus/pull/281) ([DavidS](https://github.com/DavidS))
+- Fixes `undefined method facts_from_node` error from 0.18.0 [\#281](https://github.com/puppetlabs/puppet_litmus/pull/281) ([DavidS](https://github.com/DavidS))
 
 ## [v0.18.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.18.0) (2020-03-31)
 
@@ -225,7 +237,7 @@ All notable changes to this project will be documented in this file. The format 
 - \(DOCS\) README edit pass [\#278](https://github.com/puppetlabs/puppet_litmus/pull/278) ([clairecadman](https://github.com/clairecadman))
 - \(IAC-187\) force installing modules [\#275](https://github.com/puppetlabs/puppet_litmus/pull/275) ([DavidS](https://github.com/DavidS))
 - Add `--trace` by default to all `puppet apply` commands [\#274](https://github.com/puppetlabs/puppet_litmus/pull/274) ([DavidS](https://github.com/DavidS))
-- Fix missing require in `litmus:tear\_down` [\#273](https://github.com/puppetlabs/puppet_litmus/pull/273) ([DavidS](https://github.com/DavidS))
+- Fix missing require in `litmus:tear_down` [\#273](https://github.com/puppetlabs/puppet_litmus/pull/273) ([DavidS](https://github.com/DavidS))
 - \(IAC-658\) suppress libhoney warning [\#272](https://github.com/puppetlabs/puppet_litmus/pull/272) ([DavidS](https://github.com/DavidS))
 - \(IAC-660\) make the platform fact optional [\#271](https://github.com/puppetlabs/puppet_litmus/pull/271) ([DavidS](https://github.com/DavidS))
 - Improve rake task install\_module and install\_modules\_from\_directory [\#247](https://github.com/puppetlabs/puppet_litmus/pull/247) ([findmyname666](https://github.com/findmyname666))
@@ -521,6 +533,7 @@ All notable changes to this project will be documented in this file. The format 
 - \(FM-8073\) Support blocks in apply\_manifest [\#108](https://github.com/puppetlabs/puppet_litmus/pull/108) ([tphoney](https://github.com/tphoney))
 - \(FM-7978\) use a spinner for parallel acceptance [\#101](https://github.com/puppetlabs/puppet_litmus/pull/101) ([tphoney](https://github.com/tphoney))
 - \(FM-7963\) Yard doc for serverspec [\#99](https://github.com/puppetlabs/puppet_litmus/pull/99) ([tphoney](https://github.com/tphoney))
+- \(FM-7718\) Support vagrant provisioning [\#92](https://github.com/puppetlabs/puppet_litmus/pull/92) ([florindragos](https://github.com/florindragos))
 
 ### Fixed
 
@@ -546,7 +559,6 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- \(FM-7718\) Support vagrant provisioning [\#92](https://github.com/puppetlabs/puppet_litmus/pull/92) ([florindragos](https://github.com/florindragos))
 - \(FM-7891\) separate serverspec helpers and add unit [\#90](https://github.com/puppetlabs/puppet_litmus/pull/90) ([tphoney](https://github.com/tphoney))
 - \(feat\) changelog-generator working with litmus [\#87](https://github.com/puppetlabs/puppet_litmus/pull/87) ([tphoney](https://github.com/tphoney))
 - \(feat\) set pdk and bolt in gemspec [\#84](https://github.com/puppetlabs/puppet_litmus/pull/84) ([tphoney](https://github.com/tphoney))
