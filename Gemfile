@@ -14,7 +14,7 @@ group :test do
 end
 
 group :development do
-  gem 'github_changelog_generator'
+  gem 'github_changelog_generator', require: false, git: 'https://github.com/puppetlabs/github-changelog-generator.git', ref: 'main'
   gem 'honeycomb-beeline'
   gem 'pry'
   gem 'yard'
