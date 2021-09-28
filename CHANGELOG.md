@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.30.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.29.0) (2021-09-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.29.0...v0.29.0)
+
+### Added
+
+- \(IAC-1751/IAC-1752\) Add support for Rocky and AlmaLinux 8 to `extract_matrix_from_metadate_v2` [\#431](https://github.com/puppetlabs/puppet_litmus/pull/431) ([david22swan](https://github.com/david22swan))
+
+### Fixed
+
+- \(IAC-1751\) Fix for Rocky 8 [\#432](https://github.com/puppetlabs/puppet_litmus/pull/432) ([david22swan](https://github.com/david22swan))
+
 ## [v0.29.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.29.0) (2021-09-06)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.28.0...v0.29.0)
