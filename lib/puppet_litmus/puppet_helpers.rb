@@ -81,10 +81,15 @@ module PuppetLitmus::PuppetHelpers
 
       manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      span.add_field('litmus.node_name', target_node_name)
-      add_platform_field(inventory_hash, target_node_name)
+      target_option = opts['targets'] || opts[:targets]
+      if target_option.nil?
+        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      else
+        target_node_name = search_for_target(target_option, inventory_hash)
+      end
+
+      add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       # Forcibly set the locale of the command
       locale = if os[:family] != 'windows'
@@ -143,7 +148,7 @@ module PuppetLitmus::PuppetHelpers
   #
   # @param manifest [String] puppet manifest code.
   # @return [String] The path to the location of the manifest.
-  def create_manifest_file(manifest)
+  def create_manifest_file(manifest, opts = {})
     Honeycomb.start_span(name: 'litmus.create_manifest_file') do |span|
       ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.manifest', manifest)
@@ -160,8 +165,9 @@ module PuppetLitmus::PuppetHelpers
       else
         # transfer to TARGET_HOST
         inventory_hash = inventory_hash_from_inventory_file
-        span.add_field('litmus.node_name', target_node_name)
-        add_platform_field(inventory_hash, target_node_name)
+        target_option = opts['targets'] || opts[:targets]
+        target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
+        add_node_fields_to_span(span, target_node_name, inventory_hash)
 
         manifest_file_location = File.basename(manifest_file)
         bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
@@ -180,13 +186,16 @@ module PuppetLitmus::PuppetHelpers
   # @param content [String] String data to write to the file.
   # @param destination [String] The path on the target node to write the file.
   # @return [Bool] Success. The file was succesfully writtne on the target.
-  def write_file(content, destination)
+  def write_file(content, destination, opts = {})
     Honeycomb.start_span(name: 'litmus.write_file') do |span|
       ENV['HONEYCOMB_TRACE'] = span.to_trace_header
       span.add_field('litmus.destination', destination)
 
       require 'tmpdir'
+      inventory_hash = inventory_hash_from_inventory_file
       target_node_name = ENV['TARGET_HOST']
+      target_option = opts['targets'] || opts[:targets]
+      target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
 
       Tempfile.create('litmus') do |tmp_file|
         tmp_file.write(content)
@@ -197,9 +206,7 @@ module PuppetLitmus::PuppetHelpers
           FileUtils.cp(tmp_file.path, destination)
         else
           # transfer to TARGET_HOST
-          inventory_hash = inventory_hash_from_inventory_file
-          span.add_field('litmus.node_name', target_node_name)
-          add_platform_field(inventory_hash, target_node_name)
+          add_node_fields_to_span(span, target_node_name, inventory_hash)
 
           bolt_result = upload_file(tmp_file.path, destination, target_node_name, options: {}, config: nil, inventory: inventory_hash)
           span.add_field('litmus.bolt_result.file_upload', bolt_result)
@@ -223,12 +230,17 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.command_to_run', command_to_run)
       span.add_field('litmus.opts', opts)
 
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      span.add_field('litmus.node_name', target_node_name)
-      add_platform_field(inventory_hash, target_node_name)
+      target_option = opts['targets'] || opts[:targets]
+      if target_option.nil?
+        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      else
+        target_node_name = search_for_target(target_option, inventory_hash)
+      end
+
+      add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -262,12 +274,16 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.opts', opts)
       span.add_field('litmus.options', options)
 
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      target_option = opts['targets'] || opts[:targets]
+      if target_option.nil?
+        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      else
+        target_node_name = search_for_target(target_option, inventory_hash)
+      end
 
-      span.add_field('litmus.node_name', target_node_name)
-      add_platform_field(inventory_hash, target_node_name)
+      add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
@@ -322,10 +338,15 @@ module PuppetLitmus::PuppetHelpers
                        else
                          localhost_inventory_hash
                        end
-      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
 
-      span.add_field('litmus.node_name', target_node_name)
-      add_platform_field(inventory_hash, target_node_name)
+      target_option = opts['targets'] || opts[:targets]
+      if target_option.nil?
+        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      else
+        target_node_name = search_for_target(target_option, inventory_hash)
+      end
+
+      add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
       result_obj = {
@@ -383,10 +404,14 @@ module PuppetLitmus::PuppetHelpers
 
       target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      target_option = opts['targets'] || opts[:targets]
+      if target_option.nil?
+        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+      else
+        target_node_name = search_for_target(target_option, inventory_hash)
+      end
 
-      span.add_field('litmus.node_name', target_node_name)
-      add_platform_field(inventory_hash, target_node_name)
+      add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 

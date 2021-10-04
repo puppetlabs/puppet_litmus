@@ -1,96 +1,12 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'support/inventory'
 
 RSpec.describe PuppetLitmus::InventoryManipulation do
+  let(:inventory_full_path) { 'spec/data/inventory.yaml' }
+
   context 'with config_from_node' do
-    let(:no_config_hash) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:no_docker_hash) do
-      { 'groups' =>
-        [{ 'name' => 'ssh_nodes', 'targets' => [] },
-         { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:config_hash) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-        'vars' => { 'role' => 'agent' } }] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:inventory_full_path) { 'spec/data/inventory.yaml' }
-
-    let(:no_feature_hash) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:feature_hash_group) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }],
-     'features' => ['puppet-agent'] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:empty_feature_hash_group) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }],
-     'features' => [] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:feature_hash_node) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-        'features' => ['puppet-agent'] }] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:empty_feature_hash_node) do
-      { 'groups' =>
-  [{ 'name' => 'ssh_nodes',
-     'targets' =>
-     [{ 'uri' => 'test.delivery.puppetlabs.net',
-        'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-        'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-        'features' => [] }] },
-   { 'name' => 'winrm_nodes', 'targets' => [] }] }
-    end
-
-    let(:foo_node) do
-      { 'uri' => 'foo',
-        'facts' => { 'provisioner' => 'bar', 'platform' => 'ubuntu' } }
-    end
-
     it 'no matching node, raises' do
       expect { config_from_node(config_hash, 'not.here') }.to raise_error('No config was found for not.here')
     end
@@ -157,6 +73,72 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     it 'group exists in inventory, and returns hash with node added' do
       expect(add_node_to_group(no_docker_hash, foo_node, 'ssh_nodes')).to eq('groups' =>
         [{ 'name' => 'ssh_nodes', 'targets' => [foo_node] }, { 'name' => 'winrm_nodes', 'targets' => [] }])
+    end
+  end
+
+  context 'with target searching' do
+    it 'gets correct groups names from an inventory' do
+      expect(groups_in_inventory(complex_inventory)).to eql(%w[ssh_nodes frontend winrm_nodes])
+    end
+
+    it 'applies a code block to groups' do
+      counts = groups_in_inventory(complex_inventory) do |group|
+        if group.key? 'targets'
+          group['targets'].count
+        end
+      end
+      expect(counts.sum).to be 4
+    end
+
+    it 'gets names of targets' do
+      target_list = ['test.delivery.puppetlabs.net', 'test2.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net', 'test4.delivery.puppetlabs.net']
+      expect(targets_in_inventory(complex_inventory)).to eql target_list
+    end
+
+    it 'applies a code block to targets' do
+      target_list = targets_in_inventory(complex_inventory) do |target|
+        next unless target['config']['transport'] == 'winrm'
+
+        target['uri']
+      end
+
+      expect(target_list).to eql ['test4.delivery.puppetlabs.net']
+    end
+
+    it 'returns agent nodes' do
+      node_list = nodes_with_role('agent', complex_inventory)
+      expected_node_list = ['test.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net', 'test4.delivery.puppetlabs.net']
+      expect(node_list).to eql expected_node_list
+    end
+
+    it 'returns agent nodes with different capitolization' do
+      node_list = nodes_with_role('Agent', complex_inventory)
+      expected_node_list = ['test.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net', 'test4.delivery.puppetlabs.net']
+      expect(node_list).to eql expected_node_list
+    end
+
+    it 'searches for a group' do
+      expect(search_for_target('winrm_nodes', complex_inventory)).to eql ['winrm_nodes']
+    end
+
+    it 'seaches for an array of groups' do
+      expect(search_for_target(%w[winrm_nodes ssh_nodes], complex_inventory)).to eql %w[winrm_nodes ssh_nodes]
+    end
+
+    it 'searches for a specific target' do
+      expect(search_for_target('test.delivery.puppetlabs.net', complex_inventory)).to eql ['test.delivery.puppetlabs.net']
+    end
+
+    it 'searches for an array of roles' do
+      expect(search_for_target(%w[iis nginx], complex_inventory)).to eql ['test4.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net']
+    end
+
+    it 'searches for roles as symbols' do
+      expect(search_for_target([:iis, :nginx], complex_inventory)).to eql ['test4.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net']
+    end
+
+    it 'raises an error if target not found' do
+      expect { search_for_target(:blah, complex_inventory) }.to raise_error 'targets not found in inventory'
     end
   end
 end
