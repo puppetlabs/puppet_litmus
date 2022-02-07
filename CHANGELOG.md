@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.31.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.30.0) (2022-02-07)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.30.0...v0.31.0)
+
+### Added
+
+- \(FM-8922\) Add Support for Windows 2022 [\#435](https://github.com/puppetlabs/puppet_litmus/pull/435) ([david22swan](https://github.com/david22swan))
+
 ## [v0.30.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.29.0) (2021-09-28)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.29.0...v0.29.0)
