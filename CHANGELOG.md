@@ -2,9 +2,17 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v0.32.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.31.1) (2022-02-28)
+## [v0.33.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.33.0) (2022-03-30)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.30.0...v0.31.0)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.32.0...v0.33.0)
+
+### Added
+
+- \(GH-cat-11\) Add Ubuntu 22.04 to matrix_from_metadata_v2 [\#444](https://github.com/puppetlabs/puppet_litmus/pull/444) ([david22swan](https://github.com/david22swan))
+
+## [v0.32.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.32.0) (2022-02-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.31.1...v0.32.0)
 
 ### Added
 
