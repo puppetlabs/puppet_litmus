@@ -34,6 +34,7 @@ DOCKER_PLATFORMS = {
   'Ubuntu-16.04' => 'litmusimage/ubuntu:16.04',
   'Ubuntu-18.04' => 'litmusimage/ubuntu:18.04',
   'Ubuntu-20.04' => 'litmusimage/ubuntu:20.04',
+  'Ubuntu-22.04' => 'litmusimage/ubuntu:22.04',
 }.freeze
 
 # This table uses the latest version in each collection for accurate
