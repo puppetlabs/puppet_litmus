@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.33.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.33.1) (2022-04-01)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.33.0...v0.33.1)
+
+### Fixed
+
+- \(GH-cat-8\) Move CentOS 8 support to CentOS Stream 8 [\#446](https://github.com/puppetlabs/puppet_litmus/pull/446) ([david22swan](https://github.com/david22swan))
+
 ## [v0.33.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.33.0) (2022-03-30)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.32.0...v0.33.0)
