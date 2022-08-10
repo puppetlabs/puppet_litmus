@@ -2,13 +2,21 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.34.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.1) (2022-08-10)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.0...v0.34.1)
+
+### Fixed
+
+- Update bolt version requirement [\#456](https://github.com/puppetlabs/puppet_litmus/pull/456) ([chelnak](https://github.com/chelnak))
+
 ## [v0.34.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.0) (2022-05-31)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.33.0...v0.34.0)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.33.2...v0.34.0)
 
 ### Added
 
-- \(GH-cat-11\) Add RedHat 9 to `matrix_from_metadata_v2` [\#454](https://github.com/puppetlabs/puppet_litmus/pull/454) ([david22swan](https://github.com/david22swan))
+- \(GH-cat-12\) Add RedHat 9 to `extract_matrix_from_metadata_v2` [\#454](https://github.com/puppetlabs/puppet_litmus/pull/454) ([david22swan](https://github.com/david22swan))
 
 ## [v0.33.2](https://github.com/puppetlabs/puppet_litmus/tree/v0.33.2) (2022-04-04)
 
@@ -32,7 +40,7 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- \(GH-cat-11\) Add Ubuntu 22.04 to matrix_from_metadata_v2 [\#444](https://github.com/puppetlabs/puppet_litmus/pull/444) ([david22swan](https://github.com/david22swan))
+- \(GH-cat-11\) Add Ubuntu 22.04 to matrix\_from\_metadata\_v2 [\#444](https://github.com/puppetlabs/puppet_litmus/pull/444) ([david22swan](https://github.com/david22swan))
 
 ## [v0.32.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.32.0) (2022-02-28)
 
@@ -40,9 +48,9 @@ All notable changes to this project will be documented in this file. The format 
 
 ### Added
 
-- \(FM-8922\) Re-enable Support for Windows 2022 [\#439](https://github.com/puppetlabs/puppet_litmus/pull/439) ([david22swan](https://github.com/david22swan))
+- \(FM-8922\) Re-enable support for Windows 2022 [\#439](https://github.com/puppetlabs/puppet_litmus/pull/439) ([david22swan](https://github.com/david22swan))
 
-## [v0.31.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.31.0) (2022-02-07)
+## [v0.31.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.31.1) (2022-02-07)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.31.0...v0.31.1)
 
@@ -50,7 +58,7 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(FM-8922\) Disable Support for Windows 2022 [\#437](https://github.com/puppetlabs/puppet_litmus/pull/437) ([david22swan](https://github.com/david22swan))
 
-## [v0.31.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.30.0) (2022-02-07)
+## [v0.31.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.31.0) (2022-02-07)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.30.0...v0.31.0)
 
@@ -58,9 +66,13 @@ All notable changes to this project will be documented in this file. The format 
 
 - \(FM-8922\) Add Support for Windows 2022 [\#435](https://github.com/puppetlabs/puppet_litmus/pull/435) ([david22swan](https://github.com/david22swan))
 
-## [v0.30.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.29.0) (2021-09-28)
+### Fixed
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.29.0...v0.29.0)
+- Allow Litmus Functions to accept a target [\#427](https://github.com/puppetlabs/puppet_litmus/pull/427) ([RandomNoun7](https://github.com/RandomNoun7))
+
+## [v0.30.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.30.0) (2021-09-28)
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.29.0...v0.30.0)
 
 ### Added
 
