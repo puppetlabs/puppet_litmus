@@ -48,7 +48,7 @@ In order to use this new functionality just simply run:
 
 ## Documentation
 
-For documentation, see our [Litmus Docs Site](https://puppetlabs.github.io/litmus/).
+For documentation, see our [Litmus Docs Site](https://puppetlabs.github.io/content-and-tooling-team/docs/litmus/).
 
 ## Other Resources
 
