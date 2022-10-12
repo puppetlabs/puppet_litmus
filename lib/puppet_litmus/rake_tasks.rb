@@ -336,103 +336,108 @@ namespace :litmus do
 
   namespace :acceptance do
     require 'rspec/core/rake_task'
-    if File.file?('spec/fixtures/litmus_inventory.yaml')
+
+    # Run acceptance tests against all machines in the inventory file in parallel.
+    desc 'Run tests in parallel against all machines in the inventory file'
+    task :parallel, [:tag] do |_task, args|
+      args.with_defaults(tag: nil)
+
       inventory_hash = inventory_hash_from_inventory_file
       targets = find_targets(inventory_hash, nil)
 
-      # Run acceptance tests against all machines in the inventory file in parallel.
-      desc 'Run tests in parallel against all machines in the inventory file'
-      task :parallel, [:tag] do |_task, args|
-        args.with_defaults(tag: nil)
-        if targets.empty?
-          puts 'No targets found'
-          exit 0
-        end
-        tag_value = if args[:tag].nil?
-                      nil
-                    else
-                      "--tag #{args[:tag]}"
-                    end
-        payloads = []
-        # Generate list of targets to provision
-        targets.each do |target|
-          test = "bundle exec rspec ./spec/acceptance #{tag_value} --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter"
-          title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
-          options = {
-            env: {
-              'TARGET_HOST' => target,
-            },
-          }
-          payloads << [title, test, options]
-        end
-
-        results = []
-        success_list = []
-        failure_list = []
-        # Provision targets depending on what environment we're in
-        if ENV['CI'] == 'true'
-          # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
-          puts "Running against #{targets.size} targets.\n"
-          progress = Thread.new do
-            loop do
-              printf '.'
-              sleep(10)
-            end
-          end
-
-          require 'parallel'
-          results = Parallel.map(payloads) do |title, test, options|
-            # avoid sending the parent process' main span in the sub-processes
-            # https://www.ruby-forum.com/t/at-exit-inherited-across-fork/122473/2
-            at_exit { exit! }
-
-            env = options[:env].nil? ? {} : options[:env]
-            env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
-            stdout, stderr, status = Open3.capture3(env, test)
-            ["\n================\n#{title}\n", stdout, stderr, status]
-          end
-          # because we cannot modify variables inside of Parallel
-          results.each do |result|
-            if result.last.to_i.zero?
-              success_list.push(result.first.scan(%r{.*})[3])
-            else
-              failure_list.push(result.first.scan(%r{.*})[3])
-            end
-          end
-          Thread.kill(progress)
-        else
-          require 'tty-spinner'
-          spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
-          payloads.each do |title, test, options|
-            env = options[:env].nil? ? {} : options[:env]
-            env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
-            spinners.register("[:spinner] #{title}") do |sp|
-              stdout, stderr, status = Open3.capture3(env, test)
-              if status.to_i.zero?
-                sp.success
-                success_list.push(title)
-              else
-                sp.error
-                failure_list.push(title)
-              end
-              results.push(["================\n#{title}\n", stdout, stderr, status])
-            end
-          end
-          spinners.auto_spin
-          spinners.success
-        end
-
-        # output test results
-        results.each do |result|
-          puts result
-        end
-
-        # output test summary
-        puts "Successful on #{success_list.size} nodes: #{success_list}" if success_list.any?
-        puts "Failed on #{failure_list.size} nodes: #{failure_list}" if failure_list.any?
-        Rake::Task['litmus:check_connectivity'].invoke
-        exit 1 if failure_list.any?
+      if targets.empty?
+        puts 'No targets found'
+        exit 0
       end
+      tag_value = if args[:tag].nil?
+                    nil
+                  else
+                    "--tag #{args[:tag]}"
+                  end
+      payloads = []
+      # Generate list of targets to provision
+      targets.each do |target|
+        test = "bundle exec rspec ./spec/acceptance #{tag_value} --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter"
+        title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
+        options = {
+          env: {
+            'TARGET_HOST' => target,
+          },
+        }
+        payloads << [title, test, options]
+      end
+
+      results = []
+      success_list = []
+      failure_list = []
+      # Provision targets depending on what environment we're in
+      if ENV['CI'] == 'true'
+        # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
+        puts "Running against #{targets.size} targets.\n"
+        progress = Thread.new do
+          loop do
+            printf '.'
+            sleep(10)
+          end
+        end
+
+        require 'parallel'
+        results = Parallel.map(payloads) do |title, test, options|
+          # avoid sending the parent process' main span in the sub-processes
+          # https://www.ruby-forum.com/t/at-exit-inherited-across-fork/122473/2
+          at_exit { exit! }
+
+          env = options[:env].nil? ? {} : options[:env]
+          env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
+          stdout, stderr, status = Open3.capture3(env, test)
+          ["\n================\n#{title}\n", stdout, stderr, status]
+        end
+        # because we cannot modify variables inside of Parallel
+        results.each do |result|
+          if result.last.to_i.zero?
+            success_list.push(result.first.scan(%r{.*})[3])
+          else
+            failure_list.push(result.first.scan(%r{.*})[3])
+          end
+        end
+        Thread.kill(progress)
+      else
+        require 'tty-spinner'
+        spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
+        payloads.each do |title, test, options|
+          env = options[:env].nil? ? {} : options[:env]
+          env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
+          spinners.register("[:spinner] #{title}") do |sp|
+            stdout, stderr, status = Open3.capture3(env, test)
+            if status.to_i.zero?
+              sp.success
+              success_list.push(title)
+            else
+              sp.error
+              failure_list.push(title)
+            end
+            results.push(["================\n#{title}\n", stdout, stderr, status])
+          end
+        end
+        spinners.auto_spin
+        spinners.success
+      end
+
+      # output test results
+      results.each do |result|
+        puts result
+      end
+
+      # output test summary
+      puts "Successful on #{success_list.size} nodes: #{success_list}" if success_list.any?
+      puts "Failed on #{failure_list.size} nodes: #{failure_list}" if failure_list.any?
+      Rake::Task['litmus:check_connectivity'].invoke
+      exit 1 if failure_list.any?
+    end
+
+    if File.file?('spec/fixtures/litmus_inventory.yaml')
+      inventory_hash = inventory_hash_from_inventory_file
+      targets = find_targets(inventory_hash, nil)
 
       targets.each do |target|
         desc "Run serverspec against #{target}"
