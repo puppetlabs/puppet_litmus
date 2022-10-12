@@ -2,9 +2,9 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v0.34.2](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.2) (2022-10-12)
+## [v0.34.3](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.3) (2022-10-12)
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.1...v0.34.2)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.1...v0.34.3)
 
 ### Fixed
 
