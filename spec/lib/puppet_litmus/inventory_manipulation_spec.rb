@@ -7,8 +7,8 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
   let(:inventory_full_path) { 'spec/data/inventory.yaml' }
 
   context 'with config_from_node' do
-    it 'no matching node, raises' do
-      expect { config_from_node(config_hash, 'not.here') }.to raise_error('No config was found for not.here')
+    it 'no matching node, returns nil' do
+      expect(config_from_node(config_hash, 'not.here')).to eq(nil)
     end
 
     it 'no config section, returns nil' do
@@ -16,8 +16,7 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'config exists, and returns' do
-      expect(config_from_node(config_hash, 'test.delivery.puppetlabs.net')).to eq('transport' => 'ssh', 'ssh' =>
-{ 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false })
+      expect(config_from_node(config_hash, 'test.delivery.puppetlabs.net')).to eq('transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false })
     end
 
     it 'facts exists, and returns' do
