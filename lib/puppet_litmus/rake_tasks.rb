@@ -328,7 +328,7 @@ namespace :litmus do
     end
     puts ''
     # output the things that went wrong, after the successes
-    puts 'something went wrong:' unless bad_results.size.zero?
+    puts 'something went wrong:' unless bad_results.empty??
     bad_results.each do |result|
       puts result
     end
