@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.34.5](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.5) - 2023-02-27
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.34.4...v0.34.5)
+
+### Fixed
+
+- (maint) - Update windows 2019 image [#468](https://github.com/puppetlabs/puppet_litmus/pull/468) ([jordanbreen28](https://github.com/jordanbreen28))
+
 ## [v0.34.4](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.4) (2022-10-12)
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.3...v0.34.4)
