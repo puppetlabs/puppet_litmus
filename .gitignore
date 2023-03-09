@@ -5,6 +5,6 @@
 /Gemfile.lock
 /coverage
 /doc/
-/vendor/gems/
+/vendor/
 /Gemfile.local
 /.idea/
