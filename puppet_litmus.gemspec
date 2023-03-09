@@ -36,5 +36,5 @@ Gem::Specification.new do |spec|
 
   # Set a hard dependency on r10k 3.15.1 to avoid a dependency issues with gettext-setup
   # and earlier versions of puppet
-  spec.add_runtime_dependency 'r10k', '= 3.15.1'
+  spec.add_runtime_dependency 'r10k', '= 3.15.4'
 end
