@@ -14,7 +14,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(result.stdout).to include('::warning::Cannot find image for Ubuntu-14.04')
       expect(result.stdout).to include(
         [
-          '::set-output name=matrix::{',
+          'matrix={',
           '"platforms":[',
           '{"label":"CentOS-6","provider":"provision::docker","image":"litmusimage/centos:6"},',
           '{"label":"RedHat-8","provider":"provision::provision_service","image":"rhel-8"},',
@@ -27,7 +27,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
         ].join,
       )
       expect(result.stdout).to include(
-        '::set-output name=spec_matrix::{"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}',
+        'spec_matrix={"include":[{"puppet_version":"~> 6.0","ruby_version":2.5},{"puppet_version":"~> 7.0","ruby_version":2.7}]}',
       )
       expect(result.stdout).to include("Created matrix with 8 cells:\n  - Acceptance Test Cells: 6\n  - Spec Test Cells: 2")
     end

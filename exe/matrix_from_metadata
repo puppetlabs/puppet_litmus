@@ -92,6 +92,6 @@ end
 matrix[:platform] = matrix[:platform].uniq.sort
 matrix[:collection] = matrix[:collection].uniq.sort
 
-puts "::set-output name=matrix::#{JSON.generate(matrix)}"
+puts "matrix=#{JSON.generate(matrix)} >> $GITHUB_OUTPUT"
 
 puts "Created matrix with #{matrix[:platform].length * matrix[:collection].length} cells."

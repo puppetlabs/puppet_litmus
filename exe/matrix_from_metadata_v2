@@ -137,8 +137,8 @@ end
 matrix[:platforms] = matrix[:platforms].uniq.sort { |a, b| a[:label] <=> b[:label] }
 matrix[:collection] = matrix[:collection].uniq.sort
 
-puts "::set-output name=matrix::#{JSON.generate(matrix)}"
-puts "::set-output name=spec_matrix::#{JSON.generate(spec_matrix)}"
+puts "matrix=#{JSON.generate(matrix)} >> $GITHUB_OUTPUT"
+puts "spec_matrix=#{JSON.generate(spec_matrix)} >> $GITHUB_OUTPUT"
 
 acceptance_test_cell_count = matrix[:platforms].length * matrix[:collection].length
 spec_test_cell_count = spec_matrix[:include].length
