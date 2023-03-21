@@ -12,18 +12,16 @@ require 'json'
 # @param value [String] The value of the output variable
 
 def set_output(name, value)
-  begin
-    # Get the output path
-    output = ENV.fetch('GITHUB_OUTPUT')
+  # Get the output path
+  output = ENV.fetch('GITHUB_OUTPUT')
 
-    # Write the output variable to GITHUB_OUTPUT
-    File.open(output, 'a') do |f|
-      f.puts "#{name}=#{value}"
-    end
-  rescue KeyError
-    puts '::error::GITHUB_OUTPUT environment variable not set.'
-    exit 1
+  # Write the output variable to GITHUB_OUTPUT
+  File.open(output, 'a') do |f|
+    f.puts "#{name}=#{value}"
   end
+rescue KeyError
+  puts '::error::GITHUB_OUTPUT environment variable not set.'
+  exit 1
 end
 
 IMAGE_TABLE = {
