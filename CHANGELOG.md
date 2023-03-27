@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.36.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.36.0) - 2023-03-27
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.6...v0.36.0)
+
+### Added
+
+- (CONT-764) Update matrix_from_metadata_v2 [#478](https://github.com/puppetlabs/puppet_litmus/pull/478) ([chelnak](https://github.com/chelnak))
+
+### Fixed
+
+- (maint) Return Puppet 6 to matrix_from_metadata_v2 [#479](https://github.com/puppetlabs/puppet_litmus/pull/479) ([david22swan](https://github.com/david22swan))
+- (CONT-404) Address deprecation warnings [#477](https://github.com/puppetlabs/puppet_litmus/pull/477) ([LukasAud](https://github.com/LukasAud))
+
 ## [v0.34.6](https://github.com/puppetlabs/puppet_litmus/tree/v0.34.6) - 2023-03-09
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.5...v0.34.6)
@@ -338,7 +351,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
-- Allow users to install modules from a private forge repository [#260](https://github.com/puppetlabs/puppet_litmus/pull/260) ([](https://github.com/))
 - move to using bolt v2 [#254](https://github.com/puppetlabs/puppet_litmus/pull/254) ([tphoney](https://github.com/tphoney))
 
 ### Fixed
@@ -367,7 +379,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Added
 
-- Open Litmus to use custom provisioners [#262](https://github.com/puppetlabs/puppet_litmus/pull/262) ([](https://github.com/))
 - (MAINT) Add interpolate_powershell helper method [#244](https://github.com/puppetlabs/puppet_litmus/pull/244) ([michaeltlombardi](https://github.com/michaeltlombardi))
 - (IAC-536) Unify honeycomb field names; fallback for branch builds [#243](https://github.com/puppetlabs/puppet_litmus/pull/243) ([DavidS](https://github.com/DavidS))
 - (IAC-490) Add CI checks and metadata information of github action [#241](https://github.com/puppetlabs/puppet_litmus/pull/241) ([sheenaajay](https://github.com/sheenaajay))
