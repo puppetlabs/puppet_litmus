@@ -60,6 +60,10 @@ DOCKER_PLATFORMS = {
 # comparison when evaluating puppet requirements from the metadata
 COLLECTION_TABLE = [
   {
+    puppet_maj_version: 6,
+    ruby_version: 2.5,
+  },
+  {
     puppet_maj_version: 7,
     ruby_version: 2.7,
   },
