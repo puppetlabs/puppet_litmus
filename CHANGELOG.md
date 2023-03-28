@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v0.36.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.36.1) - 2023-03-28
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.0...v0.36.1)
+
+### Fixed
+
+- (CONT-828) Unpin r10k [#482](https://github.com/puppetlabs/puppet_litmus/pull/482) ([david22swan](https://github.com/david22swan))
+- (CONT-827) Patch Puppet 8 to take from Github [#481](https://github.com/puppetlabs/puppet_litmus/pull/481) ([david22swan](https://github.com/david22swan))
+
 ## [v0.36.0](https://github.com/puppetlabs/puppet_litmus/tree/v0.36.0) - 2023-03-27
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.34.6...v0.36.0)
