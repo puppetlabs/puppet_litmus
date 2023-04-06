@@ -8,11 +8,11 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
 
   context 'with config_from_node' do
     it 'no matching node, returns nil' do
-      expect(config_from_node(config_hash, 'not.here')).to eq(nil)
+      expect(config_from_node(config_hash, 'not.here')).to be_nil
     end
 
     it 'no config section, returns nil' do
-      expect(config_from_node(no_config_hash, 'test.delivery.puppetlabs.net')).to eq(nil)
+      expect(config_from_node(no_config_hash, 'test.delivery.puppetlabs.net')).to be_nil
     end
 
     it 'config exists, and returns' do
