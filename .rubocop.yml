@@ -2,7 +2,10 @@
 require: rubocop-rspec
 inherit_from: .rubocop_todo.yml
 AllCops:
-  TargetRubyVersion: '2.5'
+  TargetRubyVersion: '2.7'
+  NewCops: enable
+  ExtraDetails: true
+  DisplayStyleGuide: true
   Include:
   - "**/*.rb"
   Exclude:
@@ -65,47 +68,6 @@ Style/TrailingCommaInArguments:
 Style/SymbolArray:
   Description: Using percent style obscures symbolic intent of array's contents.
   EnforcedStyle: brackets
-Layout/EndOfLine:
-  Enabled: false
-Style/CollectionMethods:
-  Enabled: true
-Style/MethodCalledOnDoEndBlock:
-  Enabled: true
-Style/StringMethods:
-  Enabled: true
-Metrics/AbcSize:
-  Enabled: false
-Metrics/BlockLength:
-  Enabled: false
-Metrics/ClassLength:
-  Enabled: false
-Metrics/CyclomaticComplexity:
-  Enabled: false
-Metrics/MethodLength:
-  Enabled: false
-Metrics/ModuleLength:
-  Enabled: false
-Metrics/ParameterLists:
-  Enabled: false
-Metrics/PerceivedComplexity:
-  Enabled: false
-RSpec/DescribeClass:
-  Enabled: false
-RSpec/ExampleLength:
-  Enabled: false
-RSpec/MessageExpectation:
-  Enabled: false
-RSpec/MultipleExpectations:
-  Enabled: false
-RSpec/NestedGroups:
-  Enabled: false
-Style/AsciiComments:
-  Enabled: false
-Style/IfUnlessModifier:
-  Enabled: false
-Style/SymbolProc:
-  Enabled: false
-
 # local overrides
 
 # overridden for local conventions
@@ -117,15 +79,6 @@ Naming/FileName:
 Lint/NestedMethodDefinition:
   Exclude:
     - 'lib/puppet/resource_api.rb'
-
-# Interacting with external API makes message spies pretty useless
-RSpec/MessageSpies:
-  Enabled: false
-
-# requires 2.3's squiggly HEREDOC support, which we can't use, yet
-# see http://www.virtuouscode.com/2016/01/06/about-the-ruby-squiggly-heredoc-syntax/
-Layout/HeredocIndentation:
-  Enabled: false
 
 # Updated in 0.53 (or thereabouts)
 Style/TrailingCommaInArrayLiteral:
@@ -149,29 +102,3 @@ Naming/MethodParameterName:
   - id
   - is
   ForbiddenNames: []
-
-# This cop breaks syntax highlighting in VSCode
-Layout/ClosingHeredocIndentation:
-  Enabled: false
-
-# This cop breaks code coverage :(
-RSpec/AnyInstance:
-  Enabled: false
-
-Style/HashEachMethods:
-  Enabled: true
-
-Style/HashTransformKeys:
-  Enabled: true
-
-Style/HashTransformValues:
-  Enabled: true
-
-RSpec/FactoryBot/CreateList:
-  Description: "errors nastily on rubocop-rspec 1.42.0 and is not relevant to us anyways"
-  Enabled: false
-
-RSpec/StubbedMock:
-  Enabled: false
-RSpec/MultipleMemoizedHelpers:
-  Enabled: false
