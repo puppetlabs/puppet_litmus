@@ -82,9 +82,7 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
 
     it 'applies a code block to groups' do
       counts = groups_in_inventory(complex_inventory) do |group|
-        if group.key? 'targets'
-          group['targets'].count
-        end
+        group['targets'].count if group.key? 'targets'
       end
       expect(counts.sum).to be 4
     end

@@ -95,17 +95,13 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
     reqs = ["#{cmp_one} #{ver_one}", "#{cmp_two} #{ver_two}"]
 
     COLLECTION_TABLE.each do |key, val|
-      if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
-        matrix[:collection] << val
-      end
+      matrix[:collection] << val if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
     end
   end
 end
 
 # Set to defaults (all collections) if no matches are found
-if matrix[:collection].empty?
-  matrix[:collection] = COLLECTION_TABLE.values
-end
+matrix[:collection] = COLLECTION_TABLE.values if matrix[:collection].empty?
 
 # Just to make sure there aren't any duplicates
 matrix[:platform] = matrix[:platform].uniq.sort

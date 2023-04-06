@@ -80,9 +80,7 @@ namespace :litmus do
 
       results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
 
-      unless results.first['status'] == 'success'
-        raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
-      end
+      raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}" unless results.first['status'] == 'success'
 
       puts "Successfully provisioned #{args[:platform]} using #{args[:provisioner]}\n"
 

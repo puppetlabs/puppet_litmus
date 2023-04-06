@@ -5,9 +5,7 @@ require 'honeycomb-beeline'
 require 'puppet_litmus/version'
 Honeycomb.configure do |config|
   # override client if no configuration is provided, so that the pesky libhoney warning about lack of configuration is not shown
-  unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
-    config.client = Libhoney::NullClient.new
-  end
+  config.client = Libhoney::NullClient.new unless ENV['HONEYCOMB_WRITEKEY'] && ENV['HONEYCOMB_DATASET']
 end
 process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV.fetch('HONEYCOMB_TRACE', nil))
 ENV['HONEYCOMB_TRACE'] = process_span.to_trace_header

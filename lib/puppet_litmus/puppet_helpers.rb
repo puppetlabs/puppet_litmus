@@ -245,9 +245,7 @@ module PuppetLitmus::PuppetHelpers
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
 
-      if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
-        raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}"
-      end
+      raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
 
       result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
                               exit_status: bolt_result.first['value']['exit_code'],

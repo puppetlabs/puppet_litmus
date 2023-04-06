@@ -152,9 +152,7 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
 end
 
 # Set to defaults (all collections) if no matches are found
-if matrix[:collection].empty?
-  matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" }
-end
+matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
 
 # Just to make sure there aren't any duplicates
 matrix[:platforms] = matrix[:platforms].uniq.sort { |a, b| a[:label] <=> b[:label] }
