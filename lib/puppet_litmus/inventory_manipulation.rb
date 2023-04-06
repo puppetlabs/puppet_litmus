@@ -104,7 +104,7 @@ module PuppetLitmus::InventoryManipulation
     targets_in_inventory(inventory) do |target|
       vars = target['vars']
       roles = [(vars['role'] || vars['roles'])].flatten
-      roles = roles.map { |r| r.downcase }
+      roles = roles.map(&:downcase)
       output_collector << target['uri'] if roles.include? role.downcase
     end
     output_collector unless output_collector.empty?
@@ -213,9 +213,7 @@ module PuppetLitmus::InventoryManipulation
     # check if group exists
     if inventory_hash['groups'].any? { |g| g['name'] == group_name }
       inventory_hash['groups'].each do |group|
-        if group['name'] == group_name
-          group['targets'].push node
-        end
+        group['targets'].push node if group['name'] == group_name
       end
     else
       # add new group
@@ -248,9 +246,7 @@ module PuppetLitmus::InventoryManipulation
     i = 0
     inventory_hash['groups'].each do |group|
       if group['name'] == group_name
-        if group['features'].nil? == true
-          group = group.merge('features' => [])
-        end
+        group = group.merge('features' => []) if group['features'].nil? == true
         group['features'].push feature_name unless group['features'].include?(feature_name)
         inventory_hash['groups'][i] = group
       end
@@ -268,9 +264,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] inventory_hash with feature added to group if group_name exists in inventory hash.
   def remove_feature_from_group(inventory_hash, feature_name, group_name)
     inventory_hash['groups'].each do |group|
-      if group['name'] == group_name && group['features'].nil? != true
-        group['features'].delete(feature_name)
-      end
+      group['features'].delete(feature_name) if group['name'] == group_name && group['features'].nil? != true
     end
     inventory_hash
   end
@@ -288,9 +282,7 @@ module PuppetLitmus::InventoryManipulation
       node_index = 0
       group['targets'].each do |node|
         if node['uri'] == node_name
-          if node['features'].nil? == true
-            node = node.merge('features' => [])
-          end
+          node = node.merge('features' => []) if node['features'].nil? == true
           node['features'].push feature_name unless node['features'].include?(feature_name)
           inventory_hash['groups'][group_index]['targets'][node_index] = node
         end
@@ -311,9 +303,7 @@ module PuppetLitmus::InventoryManipulation
   def remove_feature_from_node(inventory_hash, feature_name, node_name)
     inventory_hash['groups'].each do |group|
       group['targets'].each do |node|
-        if node['uri'] == node_name && node['features'].nil? != true
-          node['features'].delete(feature_name)
-        end
+        node['features'].delete(feature_name) if node['uri'] == node_name && node['features'].nil? != true
       end
     end
     inventory_hash

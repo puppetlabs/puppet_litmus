@@ -54,7 +54,7 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.manifest', manifest)
       span.add_field('litmus.opts', opts)
 
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
       raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
       raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
       raise 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`' if
@@ -92,10 +92,10 @@ module PuppetLitmus::PuppetHelpers
       add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       # Forcibly set the locale of the command
-      locale = if os[:family] != 'windows'
-                 'LC_ALL=en_US.UTF-8 '
-               else
+      locale = if os[:family] == 'windows'
                  ''
+               else
+                 'LC_ALL=en_US.UTF-8 '
                end
       command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
       command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
@@ -154,7 +154,7 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.manifest', manifest)
 
       require 'tmpdir'
-      target_node_name = ENV['TARGET_HOST']
+      target_node_name = ENV.fetch('TARGET_HOST', nil)
       tmp_filename = File.join(Dir.tmpdir, "manifest_#{Time.now.strftime('%Y%m%d')}_#{Process.pid}_#{rand(0x100000000).to_s(36)}.pp")
       manifest_file = File.open(tmp_filename, 'w')
       manifest_file.write(manifest)
@@ -193,7 +193,7 @@ module PuppetLitmus::PuppetHelpers
 
       require 'tmpdir'
       inventory_hash = inventory_hash_from_inventory_file
-      target_node_name = ENV['TARGET_HOST']
+      target_node_name = ENV.fetch('TARGET_HOST', nil)
       target_option = opts['targets'] || opts[:targets]
       target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
 
@@ -234,7 +234,7 @@ module PuppetLitmus::PuppetHelpers
 
       target_option = opts['targets'] || opts[:targets]
       if target_option.nil?
-        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
         raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
       else
         target_node_name = search_for_target(target_option, inventory_hash)
@@ -245,9 +245,7 @@ module PuppetLitmus::PuppetHelpers
       bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
       span.add_field('litmus.bolt_result', bolt_result)
 
-      if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
-        raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}"
-      end
+      raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
 
       result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
                               exit_status: bolt_result.first['value']['exit_code'],
@@ -277,7 +275,7 @@ module PuppetLitmus::PuppetHelpers
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       target_option = opts['targets'] || opts[:targets]
       if target_option.nil?
-        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
         raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
       else
         target_node_name = search_for_target(target_option, inventory_hash)
@@ -330,7 +328,7 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.opts', opts)
 
       config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
       inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
                          inventory_hash_from_inventory_file(opts[:inventory_file])
                        elsif File.exist?('spec/fixtures/litmus_inventory.yaml')
@@ -402,7 +400,7 @@ module PuppetLitmus::PuppetHelpers
       span.add_field('litmus.opts', opts)
       span.add_field('litmus.arguments', arguments)
 
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV['TARGET_HOST']
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
       inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
       target_option = opts['targets'] || opts[:targets]
       if target_option.nil?

@@ -60,10 +60,6 @@ DOCKER_PLATFORMS = {
 # comparison when evaluating puppet requirements from the metadata
 COLLECTION_TABLE = [
   {
-    puppet_maj_version: 6,
-    ruby_version: 2.5,
-  },
-  {
     puppet_maj_version: 7,
     ruby_version: 2.7,
   },
@@ -90,7 +86,7 @@ if ARGV.include?('--exclude-platforms')
   raise 'you need to provide a list of platforms in JSON format' if exclude_platforms_list.nil?
 
   begin
-    exclude_list = JSON.parse(exclude_platforms_list).map { |platform| platform.downcase }
+    exclude_list = JSON.parse(exclude_platforms_list).map(&:downcase)
   rescue JSON::ParserError
     raise 'the exclude platforms list must valid JSON'
   end
@@ -103,7 +99,7 @@ metadata = JSON.parse(File.read(metadata_path))
 # Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
-  sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
+  sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
     image_key = "#{os}-#{ver}"
 
     if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
@@ -156,9 +152,7 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
 end
 
 # Set to defaults (all collections) if no matches are found
-if matrix[:collection].empty?
-  matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" }
-end
+matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
 
 # Just to make sure there aren't any duplicates
 matrix[:platforms] = matrix[:platforms].uniq.sort { |a, b| a[:label] <=> b[:label] }

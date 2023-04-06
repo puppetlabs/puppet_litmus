@@ -67,7 +67,7 @@ metadata = JSON.parse(File.read('metadata.json'))
 # Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
-  sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
+  sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
     image_key = "#{os}-#{ver}"
     if IMAGE_TABLE.key? image_key
       matrix[:platform] << IMAGE_TABLE[image_key]
@@ -95,17 +95,13 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
     reqs = ["#{cmp_one} #{ver_one}", "#{cmp_two} #{ver_two}"]
 
     COLLECTION_TABLE.each do |key, val|
-      if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
-        matrix[:collection] << val
-      end
+      matrix[:collection] << val if Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new(key))
     end
   end
 end
 
 # Set to defaults (all collections) if no matches are found
-if matrix[:collection].empty?
-  matrix[:collection] = COLLECTION_TABLE.values
-end
+matrix[:collection] = COLLECTION_TABLE.values if matrix[:collection].empty?
 
 # Just to make sure there aren't any duplicates
 matrix[:platform] = matrix[:platform].uniq.sort

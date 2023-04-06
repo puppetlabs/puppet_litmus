@@ -42,10 +42,10 @@ namespace :litmus do
         stop_spinner(spinner)
       end
 
-      if result.first['status'] != 'success'
-        failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
-      else
+      if result.first['status'] == 'success'
         $stdout.puts 'Success'
+      else
+        failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
       end
     else
       provision_hash[args[:key]]['images'].each do |image|
@@ -56,10 +56,10 @@ namespace :litmus do
           stop_spinner(spinner)
         end
 
-        if result.first['status'] != 'success'
-          failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
-        else
+        if result.first['status'] == 'success'
           $stdout.puts "#{result.first['value']['node_name']}, #{image}"
+        else
+          failed_image_message += "=====\n#{result.first['target']}\n#{result.first['value']['_output']}\n#{result.inspect}"
         end
       end
     end
@@ -80,9 +80,7 @@ namespace :litmus do
 
       results = provision(args[:provisioner], args[:platform], args[:inventory_vars])
 
-      unless results.first['status'] == 'success'
-        raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}"
-      end
+      raise "Failed provisioning #{args[:platform]} using #{args[:provisioner]}\n#{results.first}" unless results.first['status'] == 'success'
 
       puts "Successfully provisioned #{args[:platform]} using #{args[:provisioner]}\n"
 
@@ -320,10 +318,10 @@ namespace :litmus do
     bad_results = []
     results = tear_down_nodes(targets, inventory_hash)
     results.each do |node, result|
-      if result.first['status'] != 'success'
-        bad_results << "#{node}, #{result.first['value']['_error']['msg']}"
-      else
+      if result.first['status'] == 'success'
         puts "#{node}: #{result.first['status']}"
+      else
+        bad_results << "#{node}, #{result.first['value']['_error']['msg']}"
       end
     end
     puts ''
