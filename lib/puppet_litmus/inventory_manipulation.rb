@@ -104,7 +104,7 @@ module PuppetLitmus::InventoryManipulation
     targets_in_inventory(inventory) do |target|
       vars = target['vars']
       roles = [(vars['role'] || vars['roles'])].flatten
-      roles = roles.map { |r| r.downcase }
+      roles = roles.map(&:downcase)
       output_collector << target['uri'] if roles.include? role.downcase
     end
     output_collector unless output_collector.empty?

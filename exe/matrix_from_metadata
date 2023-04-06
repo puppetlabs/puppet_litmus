@@ -67,7 +67,7 @@ metadata = JSON.parse(File.read('metadata.json'))
 # Set platforms based on declared operating system support
 metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
   os = sup['operatingsystem']
-  sup['operatingsystemrelease'].sort_by { |a| a.to_i }.each do |ver|
+  sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
     image_key = "#{os}-#{ver}"
     if IMAGE_TABLE.key? image_key
       matrix[:platform] << IMAGE_TABLE[image_key]
