@@ -92,10 +92,10 @@ module PuppetLitmus::PuppetHelpers
       add_node_fields_to_span(span, target_node_name, inventory_hash)
 
       # Forcibly set the locale of the command
-      locale = if os[:family] != 'windows'
-                 'LC_ALL=en_US.UTF-8 '
-               else
+      locale = if os[:family] == 'windows'
                  ''
+               else
+                 'LC_ALL=en_US.UTF-8 '
                end
       command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
       command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
