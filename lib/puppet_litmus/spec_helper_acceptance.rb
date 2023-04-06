@@ -22,13 +22,13 @@ module PuppetLitmus
     else
       # load inventory
       inventory_hash = inventory_hash_from_inventory_file
-      node_config = config_from_node(inventory_hash, ENV['TARGET_HOST'])
+      node_config = config_from_node(inventory_hash, ENV.fetch('TARGET_HOST', nil))
 
-      if target_in_group(inventory_hash, ENV['TARGET_HOST'], 'docker_nodes')
-        host = ENV['TARGET_HOST']
+      if target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'docker_nodes')
+        host = ENV.fetch('TARGET_HOST', nil)
         set :backend, :docker
         set :docker_container, host
-      elsif target_in_group(inventory_hash, ENV['TARGET_HOST'], 'ssh_nodes')
+      elsif target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'ssh_nodes')
         set :backend, :ssh
         options = Net::SSH::Config.for(host)
         options[:user] = node_config.dig('ssh', 'user') unless node_config.dig('ssh', 'user').nil?
@@ -70,14 +70,14 @@ module PuppetLitmus
         set :request_pty, false
         set :sudo_password, options[:password] if run_as
         puts "Running tests as #{run_as}" if run_as
-      elsif target_in_group(inventory_hash, ENV['TARGET_HOST'], 'winrm_nodes')
+      elsif target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'winrm_nodes')
         require 'winrm'
 
         set :backend, :winrm
         set :os, family: 'windows'
         user = node_config.dig('winrm', 'user') unless node_config.dig('winrm', 'user').nil?
         pass = node_config.dig('winrm', 'password') unless node_config.dig('winrm', 'password').nil?
-        endpoint = URI("http://#{ENV['TARGET_HOST']}")
+        endpoint = URI("http://#{ENV.fetch('TARGET_HOST', nil)}")
         endpoint.port = 5985 if endpoint.port == 80
         endpoint.path = '/wsman'
 

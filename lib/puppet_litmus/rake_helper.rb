@@ -9,7 +9,7 @@ Honeycomb.configure do |config|
     config.client = Libhoney::NullClient.new
   end
 end
-process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV['HONEYCOMB_TRACE'])
+process_span = Honeycomb.start_span(name: "litmus: #{([$PROGRAM_NAME] + ($ARGV || [])).join(' ')}", serialized_trace: ENV.fetch('HONEYCOMB_TRACE', nil))
 ENV['HONEYCOMB_TRACE'] = process_span.to_trace_header
 Honeycomb.add_field_to_trace('litmus.pid', Process.pid)
 if defined? PuppetLitmus::VERSION
@@ -18,27 +18,27 @@ else
   Honeycomb.add_field_to_trace('litmus.version', 'undefined')
 end
 if ENV['CI'] == 'true' && ENV['TRAVIS'] == 'true'
-  Honeycomb.add_field_to_trace('module_name', ENV['TRAVIS_REPO_SLUG'])
+  Honeycomb.add_field_to_trace('module_name', ENV.fetch('TRAVIS_REPO_SLUG', nil))
   Honeycomb.add_field_to_trace('ci.provider', 'travis')
-  Honeycomb.add_field_to_trace('ci.build_id', ENV['TRAVIS_BUILD_ID'])
-  Honeycomb.add_field_to_trace('ci.build_url', ENV['TRAVIS_BUILD_WEB_URL'])
-  Honeycomb.add_field_to_trace('ci.job_url', ENV['TRAVIS_JOB_WEB_URL'])
-  Honeycomb.add_field_to_trace('ci.commit_message', ENV['TRAVIS_COMMIT_MESSAGE'])
-  Honeycomb.add_field_to_trace('ci.sha', ENV['TRAVIS_PULL_REQUEST_SHA'] || ENV['TRAVIS_COMMIT'])
+  Honeycomb.add_field_to_trace('ci.build_id', ENV.fetch('TRAVIS_BUILD_ID', nil))
+  Honeycomb.add_field_to_trace('ci.build_url', ENV.fetch('TRAVIS_BUILD_WEB_URL', nil))
+  Honeycomb.add_field_to_trace('ci.job_url', ENV.fetch('TRAVIS_JOB_WEB_URL', nil))
+  Honeycomb.add_field_to_trace('ci.commit_message', ENV.fetch('TRAVIS_COMMIT_MESSAGE', nil))
+  Honeycomb.add_field_to_trace('ci.sha', ENV['TRAVIS_PULL_REQUEST_SHA'] || ENV.fetch('TRAVIS_COMMIT', nil))
 elsif ENV['CI'] == 'True' && ENV['APPVEYOR'] == 'True'
-  Honeycomb.add_field_to_trace('module_name', ENV['APPVEYOR_PROJECT_SLUG'])
+  Honeycomb.add_field_to_trace('module_name', ENV.fetch('APPVEYOR_PROJECT_SLUG', nil))
   Honeycomb.add_field_to_trace('ci.provider', 'appveyor')
-  Honeycomb.add_field_to_trace('ci.build_id', ENV['APPVEYOR_BUILD_ID'])
-  Honeycomb.add_field_to_trace('ci.build_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/builds/#{ENV['APPVEYOR_BUILD_ID']}")
-  Honeycomb.add_field_to_trace('ci.job_url', "https://ci.appveyor.com/project/#{ENV['APPVEYOR_REPO_NAME']}/build/job/#{ENV['APPVEYOR_JOB_ID']}")
-  Honeycomb.add_field_to_trace('ci.commit_message', ENV['APPVEYOR_REPO_COMMIT_MESSAGE'])
-  Honeycomb.add_field_to_trace('ci.sha', ENV['APPVEYOR_PULL_REQUEST_HEAD_COMMIT'] || ENV['APPVEYOR_REPO_COMMIT'])
+  Honeycomb.add_field_to_trace('ci.build_id', ENV.fetch('APPVEYOR_BUILD_ID', nil))
+  Honeycomb.add_field_to_trace('ci.build_url', "https://ci.appveyor.com/project/#{ENV.fetch('APPVEYOR_REPO_NAME', nil)}/builds/#{ENV.fetch('APPVEYOR_BUILD_ID', nil)}")
+  Honeycomb.add_field_to_trace('ci.job_url', "https://ci.appveyor.com/project/#{ENV.fetch('APPVEYOR_REPO_NAME', nil)}/build/job/#{ENV.fetch('APPVEYOR_JOB_ID', nil)}")
+  Honeycomb.add_field_to_trace('ci.commit_message', ENV.fetch('APPVEYOR_REPO_COMMIT_MESSAGE', nil))
+  Honeycomb.add_field_to_trace('ci.sha', ENV['APPVEYOR_PULL_REQUEST_HEAD_COMMIT'] || ENV.fetch('APPVEYOR_REPO_COMMIT', nil))
 elsif ENV['GITHUB_ACTIONS'] == 'true'
-  Honeycomb.add_field_to_trace('module_name', ENV['GITHUB_REPOSITORY'])
+  Honeycomb.add_field_to_trace('module_name', ENV.fetch('GITHUB_REPOSITORY', nil))
   Honeycomb.add_field_to_trace('ci.provider', 'github')
-  Honeycomb.add_field_to_trace('ci.build_id', ENV['GITHUB_RUN_ID'])
-  Honeycomb.add_field_to_trace('ci.build_url', "https://github.com/#{ENV['GITHUB_REPOSITORY']}/actions/runs/#{ENV['GITHUB_RUN_ID']}")
-  Honeycomb.add_field_to_trace('ci.sha', ENV['GITHUB_SHA'])
+  Honeycomb.add_field_to_trace('ci.build_id', ENV.fetch('GITHUB_RUN_ID', nil))
+  Honeycomb.add_field_to_trace('ci.build_url', "https://github.com/#{ENV.fetch('GITHUB_REPOSITORY', nil)}/actions/runs/#{ENV.fetch('GITHUB_RUN_ID', nil)}")
+  Honeycomb.add_field_to_trace('ci.sha', ENV.fetch('GITHUB_SHA', nil))
 end
 at_exit do
   if $ERROR_INFO.is_a?(SystemExit)
