@@ -32,11 +32,11 @@ module PuppetLitmus::InventoryManipulation
             {
               'uri' => 'litmus_localhost',
               'config' => { 'transport' => 'local' },
-              'feature' => 'puppet-agent',
-            },
-          ],
-        },
-      ],
+              'feature' => 'puppet-agent'
+            }
+          ]
+        }
+      ]
     }
   end
 
@@ -47,7 +47,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
     if targets.nil?
-      inventory_hash.to_s.scan(%r{uri"=>"(\S*)"}).flatten
+      inventory_hash.to_s.scan(/uri"=>"(\S*)"/).flatten
     else
       [targets]
     end
@@ -62,7 +62,7 @@ module PuppetLitmus::InventoryManipulation
   def groups_in_inventory(inventory_hash, &block)
     inventory_hash['groups'].flat_map do |group|
       output_collector = []
-      output_collector << if block_given?
+      output_collector << if block
                             yield group
                           else
                             group['name'].downcase
@@ -166,7 +166,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] config for node of name node_name
   def config_from_node(inventory_hash, node_name)
     config = targets_in_inventory(inventory_hash) do |target|
-      next unless target['uri'].downcase == node_name.downcase
+      next unless target['uri'].casecmp(node_name).zero?
 
       return target['config'] unless target['config'].nil?
     end
@@ -181,7 +181,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] facts for node of name node_name
   def facts_from_node(inventory_hash, node_name)
     facts = targets_in_inventory(inventory_hash) do |target|
-      next unless target['uri'].downcase == node_name.downcase
+      next unless target['uri'].casecmp(node_name).zero?
 
       target['facts'] unless target['facts'].nil?
     end
@@ -196,7 +196,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] vars for node of name node_name
   def vars_from_node(inventory_hash, node_name)
     vars = targets_in_inventory(inventory_hash) do |target|
-      next unless target['uri'].downcase == node_name.downcase
+      next unless target['uri'].casecmp(node_name).zero?
 
       target['vars'] unless target['vars'].nil?
     end

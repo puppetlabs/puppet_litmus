@@ -290,7 +290,7 @@ module PuppetLitmus::PuppetHelpers
         exit_code: 0,
         stdout: bolt_result.first['value']['_output'],
         stderr: nil,
-        result: bolt_result.first['value'],
+        result: bolt_result.first['value']
       }
 
       if bolt_result.first['status'] != 'success'
@@ -351,7 +351,7 @@ module PuppetLitmus::PuppetHelpers
         exit_code: 0,
         stdout: nil,
         stderr: nil,
-        result: bolt_result.first['value'],
+        result: bolt_result.first['value']
       }
 
       if bolt_result.first['status'] == 'success'

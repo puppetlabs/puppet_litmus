@@ -8,7 +8,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
     let(:github_output_content) { github_output.read }
     let(:result) { run_matrix_from_metadata_v2 }
 
-    before(:each) do
+    before do
       ENV['GITHUB_OUTPUT'] = github_output.path
     end
 
@@ -29,11 +29,11 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
           ']',
-          '}',
-        ].join,
+          '}'
+        ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}',
+        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 8 cells:\n  - Acceptance Test Cells: 6\n  - Spec Test Cells: 2")
     end
@@ -44,7 +44,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
     let(:github_output_content) { github_output.read }
     let(:result) { run_matrix_from_metadata_v2({ '--exclude-platforms' => ['ubuntu-18.04'] }) }
 
-    before(:each) do
+    before do
       ENV['GITHUB_OUTPUT'] = github_output.path
     end
 
@@ -65,11 +65,11 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
           ']',
-          '}',
-        ].join,
+          '}'
+        ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}',
+        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 2")
     end
@@ -80,7 +80,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
     let(:github_output_content) { github_output.read }
     let(:result) { run_matrix_from_metadata_v2({ '--exclude-platforms' => ['ubuntu-18.04', 'redhat-8'] }) }
 
-    before(:each) do
+    before do
       ENV['GITHUB_OUTPUT'] = github_output.path
     end
 
@@ -101,11 +101,11 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
           ']',
-          '}',
-        ].join,
+          '}'
+        ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}',
+        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 4 cells:\n  - Acceptance Test Cells: 2\n  - Spec Test Cells: 2")
     end

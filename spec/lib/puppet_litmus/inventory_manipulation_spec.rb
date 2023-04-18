@@ -131,7 +131,7 @@ RSpec.describe PuppetLitmus::InventoryManipulation do
     end
 
     it 'searches for roles as symbols' do
-      expect(search_for_target([:iis, :nginx], complex_inventory)).to eql ['test4.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net']
+      expect(search_for_target(%i[iis nginx], complex_inventory)).to eql ['test4.delivery.puppetlabs.net', 'test3.delivery.puppetlabs.net']
     end
 
     it 'raises an error if target not found' do

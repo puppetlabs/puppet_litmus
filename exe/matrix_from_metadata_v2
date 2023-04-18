@@ -32,7 +32,7 @@ IMAGE_TABLE = {
   'SLES-15' => 'sles-15',
   'Windows-2016' => 'windows-2016',
   'Windows-2019' => 'windows-2019',
-  'Windows-2022' => 'windows-2022',
+  'Windows-2022' => 'windows-2022'
 }.freeze
 
 DOCKER_PLATFORMS = {
@@ -53,7 +53,7 @@ DOCKER_PLATFORMS = {
   # 'Ubuntu-16.04' => 'litmusimage/ubuntu:16.04', Support Dropped
   'Ubuntu-18.04' => 'litmusimage/ubuntu:18.04',
   'Ubuntu-20.04' => 'litmusimage/ubuntu:20.04',
-  'Ubuntu-22.04' => 'litmusimage/ubuntu:22.04',
+  'Ubuntu-22.04' => 'litmusimage/ubuntu:22.04'
 }.freeze
 
 # This table uses the latest version in each collection for accurate
@@ -61,25 +61,25 @@ DOCKER_PLATFORMS = {
 COLLECTION_TABLE = [
   {
     puppet_maj_version: 7,
-    ruby_version: 2.7,
+    ruby_version: 2.7
   },
   {
     puppet_maj_version: 8,
-    ruby_version: 3.2,
-  },
+    ruby_version: 3.2
+  }
 ].freeze
 
 matrix = {
   platforms: [],
-  collection: [],
+  collection: []
 }
 
 spec_matrix = {
-  include: [],
+  include: []
 }
 
 if ARGV.include?('--exclude-platforms')
-  exclude_platforms_occurencies = ARGV.select { |arg| arg == '--exclude-platforms' }.length
+  exclude_platforms_occurencies = ARGV.count { |arg| arg == '--exclude-platforms' }
   raise '--exclude-platforms argument should be present just one time in the command' unless exclude_platforms_occurencies <= 1
 
   exclude_platforms_list = ARGV[ARGV.find_index('--exclude-platforms') + 1]
@@ -106,13 +106,13 @@ metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do
       matrix[:platforms] << {
         label: image_key,
         provider: 'provision::provision_service',
-        image: IMAGE_TABLE[image_key],
+        image: IMAGE_TABLE[image_key]
       }
     elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
       matrix[:platforms] << {
         label: image_key,
         provider: 'provision::docker',
-        image: DOCKER_PLATFORMS[image_key],
+        image: DOCKER_PLATFORMS[image_key]
       }
     else
       puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
@@ -126,7 +126,7 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
   metadata['requirements'].each do |req|
     next unless req.key?('name') && req.key?('version_requirement') && req['name'] == 'puppet'
 
-    ver_regexp = %r{^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$}
+    ver_regexp = /^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$/
     match = ver_regexp.match(req['version_requirement'])
     if match.nil?
       puts "::warning::Didn't recognize version_requirement '#{req['version_requirement']}'"
@@ -155,7 +155,7 @@ end
 matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
 
 # Just to make sure there aren't any duplicates
-matrix[:platforms] = matrix[:platforms].uniq.sort { |a, b| a[:label] <=> b[:label] }
+matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] }
 matrix[:collection] = matrix[:collection].uniq.sort
 
 set_output('matrix', JSON.generate(matrix))

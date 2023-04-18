@@ -86,7 +86,7 @@ describe 'litmus rake tasks' do
     it 'no key in provision file' do
       allow(File).to receive(:file?).with(any_args).and_return(true)
       expect(YAML).to receive(:load_file).with(provision_file).and_return(provision_hash)
-      expect { Rake::Task['litmus:provision_list'].invoke('deet') }.to raise_error(%r{deet})
+      expect { Rake::Task['litmus:provision_list'].invoke('deet') }.to raise_error(/deet/)
     end
   end
 

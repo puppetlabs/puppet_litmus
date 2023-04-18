@@ -359,8 +359,8 @@ namespace :litmus do
         title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
         options = {
           env: {
-            'TARGET_HOST' => target,
-          },
+            'TARGET_HOST' => target
+          }
         }
         payloads << [title, test, options]
       end
@@ -393,9 +393,9 @@ namespace :litmus do
         # because we cannot modify variables inside of Parallel
         results.each do |result|
           if result.last.to_i.zero?
-            success_list.push(result.first.scan(%r{.*})[3])
+            success_list.push(result.first.scan(/.*/)[3])
           else
-            failure_list.push(result.first.scan(%r{.*})[3])
+            failure_list.push(result.first.scan(/.*/)[3])
           end
         end
         Thread.kill(progress)

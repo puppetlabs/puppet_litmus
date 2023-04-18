@@ -85,7 +85,7 @@ module PuppetLitmus
           user: user,
           password: pass,
           endpoint: endpoint,
-          operation_timeout: 300,
+          operation_timeout: 300
         }
 
         winrm = WinRM::Connection.new opts

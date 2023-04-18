@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'puppet_litmus/version'
@@ -16,21 +18,20 @@ Gem::Specification.new do |spec|
     'lib/**/*',
     'spec/**/*',
   ]
-  spec.bindir        = "exe"
+  spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.test_files  = Dir['spec/**/*']
   spec.description = <<-EOF
     Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.
   EOF
   spec.summary = 'Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.'
   spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
   spec.add_runtime_dependency 'bolt', '~> 3.0'
-  spec.add_runtime_dependency 'puppet-modulebuilder', ['>= 0.2.1', '>= 1.0.0.rc']
-  spec.add_runtime_dependency 'tty-spinner', ['>= 0.5.0', '< 1.0.0']
   spec.add_runtime_dependency 'docker-api',  '>= 1.34', '< 3.0.0'
-  spec.add_runtime_dependency 'retryable', '~> 3.0'
-  spec.add_runtime_dependency 'parallel'
-  spec.add_runtime_dependency 'rspec'
   spec.add_runtime_dependency 'honeycomb-beeline'
+  spec.add_runtime_dependency 'parallel'
+  spec.add_runtime_dependency 'puppet-modulebuilder', ['>= 0.2.1', '>= 1.0.0.rc']
+  spec.add_runtime_dependency 'retryable', '~> 3.0'
+  spec.add_runtime_dependency 'rspec'
   spec.add_runtime_dependency 'rspec_honeycomb_formatter'
+  spec.add_runtime_dependency 'tty-spinner', ['>= 0.5.0', '< 1.0.0']
 end
