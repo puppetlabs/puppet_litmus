@@ -59,6 +59,13 @@ describe 'litmus rake tasks' do
   end
 
   context 'with litmus:provision task' do
+    let(:expected_output) do
+      <<~OUTPUT
+        Successfully provisioned centos:7 using docker
+        localhost:2222, centos:7
+      OUTPUT
+    end
+
     it 'happy path' do
       results = [{ 'target' => 'localhost',
                    'action' => 'task',
@@ -71,11 +78,7 @@ describe 'litmus rake tasks' do
       allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).with(any_args).and_return({})
       allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(any_args).and_return(true)
 
-      expect($stdout).to receive(:puts).with('Provisioning centos:7 using docker provisioner.')
-      expect($stdout).to receive(:puts).with("Successfully provisioned centos:7 using docker\n")
-      expect($stdout).to receive(:puts).with('localhost:2222, centos:7')
-
-      Rake::Task['litmus:provision'].invoke('docker', 'centos:7')
+      expect { Rake::Task['litmus:provision'].invoke('docker', 'centos:7') }.to output(expected_output).to_stdout
     end
   end
 

@@ -342,9 +342,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       it 'call upload file with the correct params' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
-        result = instance_double(result)
-        allow(result).to receive(:first).and_return({ 'status' => 'success' })
-        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+
+        expected_result = [{ 'status' => 'success' }]
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(expected_result)
+
         result = write_file(content, destination)
         expect(result).to be true
       end
@@ -354,9 +355,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       it 'call upload file with the correct params' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
-        result = instance_double(result)
-        allow(result).to receive(:first).and_return({ 'status' => 'failure', 'value' => 'foo error' })
-        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+
+        expected_result = [{ 'status' => 'failure', 'value' => 'foo error' }]
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(expected_result)
+
         expect { write_file(content, destination) }.to raise_error 'foo error'
       end
     end
