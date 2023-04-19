@@ -12,7 +12,7 @@ if ENV['COVERAGE'] == 'yes'
     SimpleCov.formatter = SimpleCov::Formatter::Codecov
   else
     SimpleCov.formatters = [
-      SimpleCov::Formatter::HTMLFormatter,
+      SimpleCov::Formatter::HTMLFormatter
     ]
   end
   SimpleCov.start do
@@ -41,7 +41,7 @@ def run_matrix_from_metadata_v2(options = {})
   OpenStruct.new(
     stdout: result[0],
     stderr: result[1],
-    status_code: result[2],
+    status_code: result[2]
   )
 end
 

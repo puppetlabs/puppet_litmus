@@ -31,7 +31,7 @@ IMAGE_TABLE = {
   'SLES-15' => 'sles-15',
   'Windows-2012 R2' => 'windows-2012-r2-core',
   'Windows-2016' => 'windows-2016',
-  'Windows-2019' => 'windows-2019-core',
+  'Windows-2019' => 'windows-2019-core'
 }.freeze
 
 DOCKER_PLATFORMS = [
@@ -48,19 +48,19 @@ DOCKER_PLATFORMS = [
   'Ubuntu-14.04',
   'Ubuntu-16.04',
   'Ubuntu-18.04',
-  'Ubuntu-20.04',
+  'Ubuntu-20.04'
 ].freeze
 
 # This table uses the latest version in each collection for accurate
 # comparison when evaluating puppet requirements from the metadata
 COLLECTION_TABLE = {
   '6.21.0' => 'puppet6-nightly',
-  '7.4.0' => 'puppet7-nightly',
+  '7.4.0' => 'puppet7-nightly'
 }.freeze
 
 matrix = {
   platform: [],
-  collection: [],
+  collection: []
 }
 
 metadata = JSON.parse(File.read('metadata.json'))
@@ -84,7 +84,7 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
   metadata['requirements'].each do |req|
     next unless req.key?('name') && req.key?('version_requirement') && req['name'] == 'puppet'
 
-    ver_regexp = %r{^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$}
+    ver_regexp = /^([>=<]{1,2})\s*([\d.]+)\s+([>=<]{1,2})\s*([\d.]+)$/
     match = ver_regexp.match(req['version_requirement'])
     if match.nil?
       puts "::warning::Didn't recognize version_requirement '#{req['version_requirement']}'"

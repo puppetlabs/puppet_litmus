@@ -42,7 +42,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
         inventory_vars: nil,
         provision_hash: { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } },
         results: [],
-        params: { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => Dir.pwd },
+        params: { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => Dir.pwd }
       },
       {
         provisioner: 'vagrant',
@@ -50,8 +50,8 @@ RSpec.describe PuppetLitmus::RakeHelper do
         inventory_vars: nil,
         provision_hash: { 'default' => { 'provisioner' => 'vagrant', 'images' => ['centos7'] } },
         results: [],
-        params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => Dir.pwd },
-      },
+        params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => Dir.pwd }
+      }
     ].freeze
 
     examples.each do |e|
@@ -85,7 +85,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
             { 'uri' => 'one.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-1604-x86_64', 'job_id' => 'iac-task-pid-21648' } },
             { 'uri' => 'two.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-1804-x86_64', 'job_id' => 'iac-task-pid-21648' } },
             { 'uri' => 'three.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-2004-x86_64', 'job_id' => 'iac-task-pid-21648' } },
-            { 'uri' => 'four.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-2004-x86_64', 'job_id' => 'iac-task-pid-21649' } },
+            { 'uri' => 'four.host', 'facts' => { 'provisioner' => 'abs', 'platform' => 'ubuntu-2004-x86_64', 'job_id' => 'iac-task-pid-21649' } }
           ] }] }
     end
     let(:targets) { ['one.host'] }
@@ -103,7 +103,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
              'removed' =>
              ['one.host',
               'two.host',
-              'three.host'] } }],
+              'three.host'] } }]
       )
       results = tear_down_nodes(targets, inventory_hash)
       expect(results.keys).to eq(['one.host', 'two.host', 'three.host'])
@@ -170,7 +170,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
 
     it 'node unavailable' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_command).with(command, targets, config: nil, inventory: inventory_hash).and_return([{ 'target' => 'some.host', 'status' => 'failure' }])
-      expect { check_connectivity?(inventory_hash, 'some.host') }.to raise_error(RuntimeError, %r{Connectivity has failed on:})
+      expect { check_connectivity?(inventory_hash, 'some.host') }.to raise_error(RuntimeError, /Connectivity has failed on:/)
     end
   end
 

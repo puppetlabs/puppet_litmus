@@ -7,7 +7,7 @@ def no_config_hash
         'targets' =>
       [{ 'uri' => 'test.delivery.puppetlabs.net',
          'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' } }] },
-      { 'name' => 'winrm_nodes', 'targets' => [] },
+      { 'name' => 'winrm_nodes', 'targets' => [] }
     ] }
 end
 
@@ -99,21 +99,21 @@ def complex_inventory
                 'uri' => 'test.delivery.puppetlabs.net',
                 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
                 'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-                'vars' => { 'role' => 'agent' },
+                'vars' => { 'role' => 'agent' }
               },
               {
                 'uri' => 'test2.delivery.puppetlabs.net',
                 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
                 'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-                'vars' => { 'role' => 'server' },
+                'vars' => { 'role' => 'server' }
               },
               {
                 'uri' => 'test3.delivery.puppetlabs.net',
                 'config' => { 'transport' => 'ssh', 'ssh' => { 'user' => 'root', 'password' => 'Qu@lity!', 'host-key-check' => false } },
-                'vars' => { 'roles' => %w[agent nginx webserver] },
-              },
-            ] },
-        ],
+                'vars' => { 'roles' => %w[agent nginx webserver] }
+              }
+            ] }
+        ]
       },
       {
         'name' => 'winrm_nodes',
@@ -122,9 +122,9 @@ def complex_inventory
             'uri' => 'test4.delivery.puppetlabs.net',
             'config' => { 'transport' => 'winrm', 'winrm' => { 'user' => 'admin', 'password' => 'Qu@lity!' } },
             'facts' => { 'provisioner' => 'vmpooler', 'platform' => 'centos-5-x86_64' },
-            'vars' => { 'roles' => %w[agent iis webserver] },
-          },
-        ],
-      },
+            'vars' => { 'roles' => %w[agent iis webserver] }
+          }
+        ]
+      }
     ] }
 end

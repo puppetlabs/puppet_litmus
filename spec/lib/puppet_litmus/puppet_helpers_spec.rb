@@ -33,7 +33,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       let(:result) { ['value' => { 'exit_code' => 0, 'stdout' => nil, 'stderr' => nil }] }
       let :os do
         {
-          family: 'redhat',
+          family: 'redhat'
         }
       end
       let(:command) { "LC_ALL=en_US.UTF-8  puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --hiera_config='/hiera.yaml'" }
@@ -54,7 +54,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       let(:command) { "LC_ALL=en_US.UTF-8  puppet apply /bla.pp --trace --modulepath #{Dir.pwd}/spec/fixtures/modules --detailed-exitcodes" }
       let :os do
         {
-          family: 'redhat',
+          family: 'redhat'
         }
       end
 
@@ -176,7 +176,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:upload_file).with(local, remote, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result_failure)
-        expect { bolt_upload_file(local, remote) }.to raise_error(RuntimeError, %r{upload file failed})
+        expect { bolt_upload_file(local, remote) }.to raise_error(RuntimeError, /upload file failed/)
       end
 
       it 'returns the exit code and error message when expecting failure' do
@@ -307,7 +307,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_failure)
-        expect { run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, %r{task failed})
+        expect { run_bolt_task(task_name, params, opts: {}) }.to raise_error(RuntimeError, /task failed/)
       end
 
       it 'returns the exit code and error message when expecting failure' do
@@ -330,7 +330,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
     let(:owner) { 'foo:foo' }
     let(:local_path) { '/tmp/local_foo' }
 
-    before(:each) do
+    before do
       allow_any_instance_of(File).to receive(:path).and_return(local_path)
     end
 
@@ -342,9 +342,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       it 'call upload file with the correct params' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
-        result = instance_double('result')
-        allow(result).to receive(:first).and_return({ 'status' => 'success' })
-        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+
+        expected_result = [{ 'status' => 'success' }]
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(expected_result)
+
         result = write_file(content, destination)
         expect(result).to be true
       end
@@ -354,9 +355,10 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
       it 'call upload file with the correct params' do
         stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
         expect(self).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
-        result = instance_double('result')
-        allow(result).to receive(:first).and_return({ 'status' => 'failure', 'value' => 'foo error' })
-        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(result)
+
+        expected_result = [{ 'status' => 'failure', 'value' => 'foo error' }]
+        expect(self).to receive(:upload_file).with(local_path, destination, 'some.host', options: {}, config: nil, inventory: inventory_hash).and_return(expected_result)
+
         expect { write_file(content, destination) }.to raise_error 'foo error'
       end
     end
