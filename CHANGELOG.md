@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.0.0-rc.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.0-rc.1) - 2023-04-19
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.1...v1.0.0-rc.1)
+
+### Added
+
+- (CONT-806) Ruby 3 / Puppet 8 additions [#491](https://github.com/puppetlabs/puppet_litmus/pull/491) ([chelnak](https://github.com/chelnak))
+
+### Changed
+- (CONT-806) Add Ruby 3.2 support [#485](https://github.com/puppetlabs/puppet_litmus/pull/485) ([GSPatton](https://github.com/GSPatton))
+
 ## [v0.36.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.36.1) - 2023-03-28
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.0...v0.36.1)
