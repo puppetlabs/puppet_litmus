@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.0.2](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.2) - 2023-04-25
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.1...v1.0.2)
+
+### Fixed
+
+- (MAINT) Force newer Puppet 7 Gem [#496](https://github.com/puppetlabs/puppet_litmus/pull/496) ([chelnak](https://github.com/chelnak))
+
 ## [v1.0.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.1) - 2023-04-25
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.0...v1.0.1)
