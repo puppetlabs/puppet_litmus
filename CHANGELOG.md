@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v1.0.0-rc.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.0-rc.1) - 2023-04-19
+## [v1.0.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.0) - 2023-04-25
 
-[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.1...v1.0.0-rc.1)
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.0.rc.1...v1.0.0)
+
+## [v1.0.0.rc.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.0.rc.1) - 2023-04-19
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.1...v1.0.0.rc.1)
 
 ### Added
 
