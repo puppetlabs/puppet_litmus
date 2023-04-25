@@ -33,7 +33,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"https://github.com/puppetlabs/puppet","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 8 cells:\n  - Acceptance Test Cells: 6\n  - Spec Test Cells: 2")
     end
@@ -69,7 +69,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"https://github.com/puppetlabs/puppet","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 2")
     end
@@ -105,7 +105,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.0","ruby_version":2.7},{"puppet_version":"https://github.com/puppetlabs/puppet","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
       expect(result.stdout).to include("Created matrix with 4 cells:\n  - Acceptance Test Cells: 2\n  - Spec Test Cells: 2")
     end
