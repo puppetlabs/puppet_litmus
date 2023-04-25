@@ -142,11 +142,13 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
       next unless Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new("#{collection[:puppet_maj_version]}.9999"))
 
       matrix[:collection] << "puppet#{collection[:puppet_maj_version]}-nightly"
-      spec_matrix[:include] << if collection[:puppet_maj_version] == 8
-                                 { puppet_version: 'https://github.com/puppetlabs/puppet', ruby_version: collection[:ruby_version] }
-                               else
-                                 { puppet_version: "~> #{collection[:puppet_maj_version]}.0", ruby_version: collection[:ruby_version] }
-                               end
+
+      include_version = {
+        8 => "~> #{collection[:puppet_maj_version]}.0",
+        7 => "~> #{collection[:puppet_maj_version]}.24",
+        6 => "~> #{collection[:puppet_maj_version]}.0"
+      }
+      spec_matrix[:include] << { puppet_version: include_version[collection[:puppet_maj_version]], ruby_version: collection[:ruby_version] }
     end
   end
 end
