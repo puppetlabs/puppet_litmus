@@ -329,29 +329,5 @@ module PuppetLitmus::InventoryManipulation
       warn e
       {}
     end
-    Honeycomb.current_span.add_field('litmus.platform', facts&.dig('platform'))
-  end
-
-  # Add platform custom information field to the current span for each node being targeted.
-  # If more than one node is being targeted, each node will be given a separate custom field.
-  #
-  # @param span [Honeycomb::Span] The current span
-  # @param target_node_names [Array[String]] Nodes being targeted
-  # @param inventory_hash [Hash] Hash of the inventory.yaml file
-  def add_node_fields_to_span(span, target_node_names, inventory_hash)
-    node_counter = 1
-    Array(target_node_names).each do |target_name|
-      name_field     = 'litmus.node_name'
-      platform_field = 'litmus.platform'
-
-      name_field = "#{name_field}_#{node_counter}"
-      platform_field = "#{platform_field}_#{node_counter}"
-      span.add_field(name_field, target_name)
-      if target_in_inventory?(inventory_hash, target_name)
-        facts = facts_from_node(inventory_hash, target_name)
-        span.add_field(platform_field, facts&.dig('platform')) unless facts.nil?
-      end
-      node_counter += 1
-    end
   end
 end
