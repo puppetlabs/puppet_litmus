@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.0.3](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.3) - 2023-05-04
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.2...v1.0.3)
+
+### Fixed
+
+- (CONT-933) Remove Honeycomb [#498](https://github.com/puppetlabs/puppet_litmus/pull/498) ([david22swan](https://github.com/david22swan))
+
 ## [v1.0.2](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.2) - 2023-04-25
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.1...v1.0.2)
