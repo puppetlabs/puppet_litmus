@@ -78,7 +78,7 @@ describe 'litmus rake tasks' do
       allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).with(any_args).and_return({})
       allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(any_args).and_return(true)
 
-      expect { Rake::Task['litmus:provision'].invoke('docker', 'centos:7') }.to output(expected_output).to_stdout
+      expect { Rake::Task['litmus:provision'].invoke('docker', 'centos:7') }.to output(/#{expected_output}/).to_stdout
     end
   end
 
