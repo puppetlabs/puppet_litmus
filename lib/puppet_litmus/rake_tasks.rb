@@ -90,11 +90,8 @@ namespace :litmus do
                        results.first['value']['target_names'] || [] # provision_service multi-node provisioning
                      end
       target_names.each do |target|
-        Honeycomb.start_span(name: 'litmus.provision.check_connectivity') do |span|
-          span.add_field('target_name', target)
-          with_retries do
-            check_connectivity?(inventory_hash_from_inventory_file, target)
-          end
+        with_retries do
+          check_connectivity?(inventory_hash_from_inventory_file, target)
         end
       end
     ensure
@@ -355,7 +352,7 @@ namespace :litmus do
       payloads = []
       # Generate list of targets to provision
       targets.each do |target|
-        test = "bundle exec rspec ./spec/acceptance #{tag_value} --format progress --require rspec_honeycomb_formatter --format RSpecHoneycombFormatter"
+        test = "bundle exec rspec ./spec/acceptance #{tag_value} --format progress"
         title = "#{target}, #{facts_from_node(inventory_hash, target)['platform']}"
         options = {
           env: {
@@ -386,7 +383,6 @@ namespace :litmus do
           at_exit { exit! }
 
           env = options[:env].nil? ? {} : options[:env]
-          env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
           stdout, stderr, status = Open3.capture3(env, test)
           ["\n================\n#{title}\n", stdout, stderr, status]
         end
@@ -404,7 +400,6 @@ namespace :litmus do
         spinners = TTY::Spinner::Multi.new("[:spinner] Running against #{targets.size} targets.")
         payloads.each do |title, test, options|
           env = options[:env].nil? ? {} : options[:env]
-          env['HONEYCOMB_TRACE'] = Honeycomb.current_span.to_trace_header
           spinners.register("[:spinner] #{title}") do |sp|
             stdout, stderr, status = Open3.capture3(env, test)
             if status.to_i.zero?

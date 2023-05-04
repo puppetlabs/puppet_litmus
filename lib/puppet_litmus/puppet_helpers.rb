@@ -19,12 +19,9 @@ module PuppetLitmus::PuppetHelpers
   #  :noop [Boolean] run puppet apply with the noop flag.
   # @return [Boolean] The result of the 2 apply manifests.
   def idempotent_apply(manifest, opts = {})
-    Honeycomb.start_span(name: 'litmus.idempotent_apply') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      manifest_file_location = create_manifest_file(manifest)
-      apply_manifest(nil, **opts, catch_failures: true, manifest_file_location: manifest_file_location)
-      apply_manifest(nil, **opts, catch_changes: true, manifest_file_location: manifest_file_location)
-    end
+    manifest_file_location = create_manifest_file(manifest)
+    apply_manifest(nil, **opts, catch_failures: true, manifest_file_location: manifest_file_location)
+    apply_manifest(nil, **opts, catch_changes: true, manifest_file_location: manifest_file_location)
   end
 
   # Applies a manifest. returning the result of that apply. Mimics the apply_manifest from beaker
@@ -49,99 +46,85 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the apply.
   def apply_manifest(manifest, opts = {})
-    Honeycomb.start_span(name: 'litmus.apply_manifest') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.manifest', manifest)
-      span.add_field('litmus.opts', opts)
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
+    raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
+    raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
+    raise 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`' if
+      [opts[:catch_changes], opts[:expect_changes], opts[:catch_failures], opts[:expect_failures]].compact.length > 1
 
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
-      raise 'manifest and manifest_file_location in the opts hash are mutually exclusive arguments, pick one' if !manifest.nil? && !opts[:manifest_file_location].nil?
-      raise 'please pass a manifest or the manifest_file_location in the opts hash' if (manifest.nil? || manifest == '') && opts[:manifest_file_location].nil?
-      raise 'please specify only one of `catch_changes`, `expect_changes`, `catch_failures` or `expect_failures`' if
-        [opts[:catch_changes], opts[:expect_changes], opts[:catch_failures], opts[:expect_failures]].compact.length > 1
+    opts = { trace: true }.merge(opts)
 
-      opts = { trace: true }.merge(opts)
-
-      if opts[:catch_changes]
-        use_detailed_exit_codes = true
-        acceptable_exit_codes = [0]
-      elsif opts[:catch_failures]
-        use_detailed_exit_codes = true
-        acceptable_exit_codes = [0, 2]
-      elsif opts[:expect_failures]
-        use_detailed_exit_codes = true
-        acceptable_exit_codes = [1, 4, 6]
-      elsif opts[:expect_changes]
-        use_detailed_exit_codes = true
-        acceptable_exit_codes = [2]
-      else
-        use_detailed_exit_codes = false
-        acceptable_exit_codes = [0]
-      end
-
-      manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
-      inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-
-      target_option = opts['targets'] || opts[:targets]
-      if target_option.nil?
-        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
-      else
-        target_node_name = search_for_target(target_option, inventory_hash)
-      end
-
-      add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-      # Forcibly set the locale of the command
-      locale = if os[:family] == 'windows'
-                 ''
-               else
-                 'LC_ALL=en_US.UTF-8 '
-               end
-      command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
-      command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
-      command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
-      command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
-      command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
-      command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
-      command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
-
-      span.add_field('litmus.target_node_name', target_node_name)
-
-      if os[:family] == 'windows'
-        # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
-        command_to_run = "try { #{command_to_run}; exit $LASTEXITCODE } catch { write-error $_ ; exit 1 }"
-        span.add_field('litmus.command_to_run', command_to_run)
-        bolt_result = Tempfile.open(['temp', '.ps1']) do |script|
-          script.write(command_to_run)
-          script.close
-          run_script(script.path, target_node_name, [], options: {}, config: nil, inventory: inventory_hash)
-        end
-      else
-        span.add_field('litmus.command_to_run', command_to_run)
-        bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      end
-      span.add_field('litmus.bolt_result', bolt_result)
-      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
-                              stdout: bolt_result.first['value']['stdout'],
-                              stderr: bolt_result.first['value']['stderr'])
-      span.add_field('litmus.result', result.to_h)
-
-      status = result.exit_code
-      if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
-        report_puppet_apply_change(command_to_run, bolt_result)
-      elsif !acceptable_exit_codes.include?(status)
-        report_puppet_apply_error(command_to_run, bolt_result, acceptable_exit_codes)
-      end
-
-      yield result if block_given?
-
-      if ENV['RSPEC_DEBUG']
-        puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
-        puts result.stderr
-        puts result.stdout
-      end
-      result
+    if opts[:catch_changes]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [0]
+    elsif opts[:catch_failures]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [0, 2]
+    elsif opts[:expect_failures]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [1, 4, 6]
+    elsif opts[:expect_changes]
+      use_detailed_exit_codes = true
+      acceptable_exit_codes = [2]
+    else
+      use_detailed_exit_codes = false
+      acceptable_exit_codes = [0]
     end
+
+    manifest_file_location = opts[:manifest_file_location] || create_manifest_file(manifest)
+    inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+
+    target_option = opts['targets'] || opts[:targets]
+    if target_option.nil?
+      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    else
+      target_node_name = search_for_target(target_option, inventory_hash)
+    end
+
+    # Forcibly set the locale of the command
+    locale = if os[:family] == 'windows'
+               ''
+             else
+               'LC_ALL=en_US.UTF-8 '
+             end
+    command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
+    command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
+    command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
+    command_to_run += " --hiera_config='#{opts[:hiera_config]}'" unless opts[:hiera_config].nil?
+    command_to_run += ' --debug' if !opts[:debug].nil? && (opts[:debug] == true)
+    command_to_run += ' --noop' if !opts[:noop].nil? && (opts[:noop] == true)
+    command_to_run += ' --detailed-exitcodes' if use_detailed_exit_codes == true
+
+    if os[:family] == 'windows'
+      # IAC-1365 - Workaround for BOLT-1535 and bolt issue #1650
+      command_to_run = "try { #{command_to_run}; exit $LASTEXITCODE } catch { write-error $_ ; exit 1 }"
+      bolt_result = Tempfile.open(['temp', '.ps1']) do |script|
+        script.write(command_to_run)
+        script.close
+        run_script(script.path, target_node_name, [], options: {}, config: nil, inventory: inventory_hash)
+      end
+    else
+      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+    end
+    result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                            stdout: bolt_result.first['value']['stdout'],
+                            stderr: bolt_result.first['value']['stderr'])
+
+    status = result.exit_code
+    if opts[:catch_changes] && !acceptable_exit_codes.include?(status)
+      report_puppet_apply_change(command_to_run, bolt_result)
+    elsif !acceptable_exit_codes.include?(status)
+      report_puppet_apply_error(command_to_run, bolt_result, acceptable_exit_codes)
+    end
+
+    yield result if block_given?
+
+    if ENV['RSPEC_DEBUG']
+      puts "apply manifest succeded\n #{command_to_run}\n======\nwith status #{result.exit_code}"
+      puts result.stderr
+      puts result.stdout
+    end
+    result
   end
 
   # Creates a manifest file locally in a temp location, if its a remote target copy it to there.
@@ -149,36 +132,27 @@ module PuppetLitmus::PuppetHelpers
   # @param manifest [String] puppet manifest code.
   # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest, opts = {})
-    Honeycomb.start_span(name: 'litmus.create_manifest_file') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.manifest', manifest)
+    require 'tmpdir'
+    target_node_name = ENV.fetch('TARGET_HOST', nil)
+    tmp_filename = File.join(Dir.tmpdir, "manifest_#{Time.now.strftime('%Y%m%d')}_#{Process.pid}_#{rand(0x100000000).to_s(36)}.pp")
+    manifest_file = File.open(tmp_filename, 'w')
+    manifest_file.write(manifest)
+    manifest_file.close
+    if target_node_name.nil? || target_node_name == 'localhost'
+      # no need to transfer
+      manifest_file_location = manifest_file.path
+    else
+      # transfer to TARGET_HOST
+      inventory_hash = inventory_hash_from_inventory_file
+      target_option = opts['targets'] || opts[:targets]
+      target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
 
-      require 'tmpdir'
-      target_node_name = ENV.fetch('TARGET_HOST', nil)
-      tmp_filename = File.join(Dir.tmpdir, "manifest_#{Time.now.strftime('%Y%m%d')}_#{Process.pid}_#{rand(0x100000000).to_s(36)}.pp")
-      manifest_file = File.open(tmp_filename, 'w')
-      manifest_file.write(manifest)
-      manifest_file.close
-      if target_node_name.nil? || target_node_name == 'localhost'
-        # no need to transfer
-        manifest_file_location = manifest_file.path
-      else
-        # transfer to TARGET_HOST
-        inventory_hash = inventory_hash_from_inventory_file
-        target_option = opts['targets'] || opts[:targets]
-        target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
-        add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-        manifest_file_location = File.basename(manifest_file)
-        bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
-        span.add_field('litmus.bolt_result', bolt_result)
-        raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
-      end
-
-      span.add_field('litmus.manifest_file_location', manifest_file_location)
-
-      manifest_file_location
+      manifest_file_location = File.basename(manifest_file)
+      bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+      raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
     end
+
+    manifest_file_location
   end
 
   # Writes a string variable to a file on a target node at a specified path.
@@ -187,35 +161,27 @@ module PuppetLitmus::PuppetHelpers
   # @param destination [String] The path on the target node to write the file.
   # @return [Bool] Success. The file was succesfully writtne on the target.
   def write_file(content, destination, opts = {})
-    Honeycomb.start_span(name: 'litmus.write_file') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.destination', destination)
+    require 'tmpdir'
+    inventory_hash = inventory_hash_from_inventory_file
+    target_node_name = ENV.fetch('TARGET_HOST', nil)
+    target_option = opts['targets'] || opts[:targets]
+    target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
 
-      require 'tmpdir'
-      inventory_hash = inventory_hash_from_inventory_file
-      target_node_name = ENV.fetch('TARGET_HOST', nil)
-      target_option = opts['targets'] || opts[:targets]
-      target_node_name = search_for_target(target_option, inventory_hash) unless target_option.nil?
-
-      Tempfile.create('litmus') do |tmp_file|
-        tmp_file.write(content)
-        tmp_file.flush
-        if target_node_name.nil? || target_node_name == 'localhost'
-          require 'fileutils'
-          # no need to transfer
-          FileUtils.cp(tmp_file.path, destination)
-        else
-          # transfer to TARGET_HOST
-          add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-          bolt_result = upload_file(tmp_file.path, destination, target_node_name, options: {}, config: nil, inventory: inventory_hash)
-          span.add_field('litmus.bolt_result.file_upload', bolt_result)
-          raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
-        end
+    Tempfile.create('litmus') do |tmp_file|
+      tmp_file.write(content)
+      tmp_file.flush
+      if target_node_name.nil? || target_node_name == 'localhost'
+        require 'fileutils'
+        # no need to transfer
+        FileUtils.cp(tmp_file.path, destination)
+      else
+        # transfer to TARGET_HOST
+        bolt_result = upload_file(tmp_file.path, destination, target_node_name, options: {}, config: nil, inventory: inventory_hash)
+        raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
       end
-
-      true
     end
+
+    true
   end
 
   # Runs a command against the target system
@@ -225,36 +191,26 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def run_shell(command_to_run, opts = {})
-    Honeycomb.start_span(name: 'litmus.run_shell') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.command_to_run', command_to_run)
-      span.add_field('litmus.opts', opts)
+    inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
 
-      inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-
-      target_option = opts['targets'] || opts[:targets]
-      if target_option.nil?
-        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
-        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
-      else
-        target_node_name = search_for_target(target_option, inventory_hash)
-      end
-
-      add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-      bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
-      span.add_field('litmus.bolt_result', bolt_result)
-
-      raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
-
-      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
-                              exit_status: bolt_result.first['value']['exit_code'],
-                              stdout: bolt_result.first['value']['stdout'],
-                              stderr: bolt_result.first['value']['stderr'])
-      span.add_field('litmus.result', result.to_h)
-      yield result if block_given?
-      result
+    target_option = opts['targets'] || opts[:targets]
+    if target_option.nil?
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
+      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    else
+      target_node_name = search_for_target(target_option, inventory_hash)
     end
+
+    bolt_result = run_command(command_to_run, target_node_name, config: nil, inventory: inventory_hash)
+
+    raise "shell failed\n`#{command_to_run}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
+
+    result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                            exit_status: bolt_result.first['value']['exit_code'],
+                            stdout: bolt_result.first['value']['stdout'],
+                            stderr: bolt_result.first['value']['stderr'])
+    yield result if block_given?
+    result
   end
 
   # Copies file to the target, using its respective transport
@@ -265,51 +221,36 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the command.
   def bolt_upload_file(source, destination, opts = {}, options = {})
-    Honeycomb.start_span(name: 'litmus.bolt_upload_file') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.source', source)
-      span.add_field('litmus.destination', destination)
-      span.add_field('litmus.opts', opts)
-      span.add_field('litmus.options', options)
-
-      inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      target_option = opts['targets'] || opts[:targets]
-      if target_option.nil?
-        target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
-        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
-      else
-        target_node_name = search_for_target(target_option, inventory_hash)
-      end
-
-      add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-      bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
-      span.add_field('litmus.bolt_result', bolt_result)
-
-      result_obj = {
-        exit_code: 0,
-        stdout: bolt_result.first['value']['_output'],
-        stderr: nil,
-        result: bolt_result.first['value']
-      }
-
-      if bolt_result.first['status'] != 'success'
-        if opts[:expect_failures] != true
-          span.add_field('litmus_uploadfilefailure', bolt_result)
-          raise "upload file failed\n======\n#{bolt_result}"
-        end
-
-        result_obj[:exit_code] = 255
-        result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
-      end
-
-      result = OpenStruct.new(exit_code: result_obj[:exit_code],
-                              stdout: result_obj[:stdout],
-                              stderr: result_obj[:stderr])
-      span.add_field('litmus.result', result.to_h)
-      yield result if block_given?
-      result
+    inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    target_option = opts['targets'] || opts[:targets]
+    if target_option.nil?
+      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
+      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    else
+      target_node_name = search_for_target(target_option, inventory_hash)
     end
+
+    bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+
+    result_obj = {
+      exit_code: 0,
+      stdout: bolt_result.first['value']['_output'],
+      stderr: nil,
+      result: bolt_result.first['value']
+    }
+
+    if bolt_result.first['status'] != 'success'
+      raise "upload file failed\n======\n#{bolt_result}" if opts[:expect_failures] != true
+
+      result_obj[:exit_code] = 255
+      result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
+    end
+
+    result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                            stdout: result_obj[:stdout],
+                            stderr: result_obj[:stderr])
+    yield result if block_given?
+    result
   end
 
   # Runs a task against the target system.
@@ -321,69 +262,56 @@ module PuppetLitmus::PuppetHelpers
   #  :inventory_file [String] path to the inventory file to use with the task.
   # @return [Object] A result object from the task.The values available are stdout, stderr and result.
   def run_bolt_task(task_name, params = {}, opts = {})
-    Honeycomb.start_span(name: 'litmus.run_task') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.task_name', task_name)
-      span.add_field('litmus.params', params)
-      span.add_field('litmus.opts', opts)
+    config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
+    inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
+                       inventory_hash_from_inventory_file(opts[:inventory_file])
+                     elsif File.exist?('spec/fixtures/litmus_inventory.yaml')
+                       inventory_hash_from_inventory_file('spec/fixtures/litmus_inventory.yaml')
+                     else
+                       localhost_inventory_hash
+                     end
 
-      config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
-      inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
-                         inventory_hash_from_inventory_file(opts[:inventory_file])
-                       elsif File.exist?('spec/fixtures/litmus_inventory.yaml')
-                         inventory_hash_from_inventory_file('spec/fixtures/litmus_inventory.yaml')
-                       else
-                         localhost_inventory_hash
-                       end
-
-      target_option = opts['targets'] || opts[:targets]
-      if target_option.nil?
-        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
-      else
-        target_node_name = search_for_target(target_option, inventory_hash)
-      end
-
-      add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-      bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
-      result_obj = {
-        exit_code: 0,
-        stdout: nil,
-        stderr: nil,
-        result: bolt_result.first['value']
-      }
-
-      if bolt_result.first['status'] == 'success'
-        # stdout returns unstructured data if structured data is not available
-        result_obj[:stdout] = if bolt_result.first['value']['_output'].nil?
-                                bolt_result.first['value'].to_s
-                              else
-                                bolt_result.first['value']['_output']
-                              end
-
-      else
-        if opts[:expect_failures] != true
-          span.add_field('litmus_runtaskfailure', bolt_result)
-          raise "task failed\n`#{task_name}`\n======\n#{bolt_result}"
-        end
-
-        result_obj[:exit_code] = if bolt_result.first['value']['_error']['details'].nil?
-                                   255
-                                 else
-                                   bolt_result.first['value']['_error']['details'].fetch('exitcode', 255)
-                                 end
-        result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
-      end
-
-      result = OpenStruct.new(exit_code: result_obj[:exit_code],
-                              stdout: result_obj[:stdout],
-                              stderr: result_obj[:stderr],
-                              result: result_obj[:result])
-      yield result if block_given?
-      span.add_field('litmus.result', result.to_h)
-      result
+    target_option = opts['targets'] || opts[:targets]
+    if target_option.nil?
+      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    else
+      target_node_name = search_for_target(target_option, inventory_hash)
     end
+
+    bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash)
+    result_obj = {
+      exit_code: 0,
+      stdout: nil,
+      stderr: nil,
+      result: bolt_result.first['value']
+    }
+
+    if bolt_result.first['status'] == 'success'
+      # stdout returns unstructured data if structured data is not available
+      result_obj[:stdout] = if bolt_result.first['value']['_output'].nil?
+                              bolt_result.first['value'].to_s
+                            else
+                              bolt_result.first['value']['_output']
+                            end
+
+    else
+      raise "task failed\n`#{task_name}`\n======\n#{bolt_result}" if opts[:expect_failures] != true
+
+      result_obj[:exit_code] = if bolt_result.first['value']['_error']['details'].nil?
+                                 255
+                               else
+                                 bolt_result.first['value']['_error']['details'].fetch('exitcode', 255)
+                               end
+      result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
+    end
+
+    result = OpenStruct.new(exit_code: result_obj[:exit_code],
+                            stdout: result_obj[:stdout],
+                            stderr: result_obj[:stderr],
+                            result: result_obj[:result])
+    yield result if block_given?
+    result
   end
 
   # Runs a script against the target system.
@@ -394,37 +322,24 @@ module PuppetLitmus::PuppetHelpers
   # @yieldreturn [Block] this method will yield to a block of code passed by the caller; this can be used for additional validation, etc.
   # @return [Object] A result object from the script run.
   def bolt_run_script(script, opts = {}, arguments: [])
-    Honeycomb.start_span(name: 'litmus.bolt_run_script') do |span|
-      ENV['HONEYCOMB_TRACE'] = span.to_trace_header
-      span.add_field('litmus.script', script)
-      span.add_field('litmus.opts', opts)
-      span.add_field('litmus.arguments', arguments)
-
-      target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
-      inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
-      target_option = opts['targets'] || opts[:targets]
-      if target_option.nil?
-        raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
-      else
-        target_node_name = search_for_target(target_option, inventory_hash)
-      end
-
-      add_node_fields_to_span(span, target_node_name, inventory_hash)
-
-      bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
-
-      if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
-        span.add_field('litmus_runscriptfailure', bolt_result)
-        raise "script run failed\n`#{script}`\n======\n#{bolt_result}"
-      end
-
-      result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
-                              stdout: bolt_result.first['value']['stdout'],
-                              stderr: bolt_result.first['value']['stderr'])
-      yield result if block_given?
-      span.add_field('litmus.result', result.to_h)
-      result
+    target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
+    inventory_hash = File.exist?('spec/fixtures/litmus_inventory.yaml') ? inventory_hash_from_inventory_file : localhost_inventory_hash
+    target_option = opts['targets'] || opts[:targets]
+    if target_option.nil?
+      raise "Target '#{target_node_name}' not found in spec/fixtures/litmus_inventory.yaml" unless target_in_inventory?(inventory_hash, target_node_name)
+    else
+      target_node_name = search_for_target(target_option, inventory_hash)
     end
+
+    bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
+
+    raise "script run failed\n`#{script}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
+
+    result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
+                            stdout: bolt_result.first['value']['stdout'],
+                            stderr: bolt_result.first['value']['stderr'])
+    yield result if block_given?
+    result
   end
 
   # Determines if the current execution is targeting localhost or not

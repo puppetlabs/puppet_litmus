@@ -31,7 +31,6 @@ The following list is the current set of components and implementation choices. 
 * utility code
   * puppetlabs-facts module
   * puppetlabs-puppet_agent module
-* Test Tracing: honeycomb
 * Testing System
   * runner: RSpec
   * test case definition: RSpec
@@ -189,15 +188,6 @@ Reusing them provides for a consistent behaviour across different products and a
 
 **Alternatives:**
 None required at the moment.
-
-## Test Tracing
-
-For puppet-internal use we have instrumented Litmus and RSpec with [Honeycomb](https://honeycomb.io).
-This is a optional component that is deactivated by default.
-
-**Reasoning:**
-As the IAC team is maintaining ~50 modules' test suites across Travis CI, Appveyor and Github Actions, we were looking for a unified way to keep track of everything that is going on.
-While not originally designed for it, Honeycomb fit the bill easily.
 
 **Alternatives:**
 None required at the moment.

@@ -27,11 +27,9 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
   spec.add_runtime_dependency 'bolt', '~> 3.0'
   spec.add_runtime_dependency 'docker-api',  '>= 1.34', '< 3.0.0'
-  spec.add_runtime_dependency 'honeycomb-beeline'
   spec.add_runtime_dependency 'parallel'
   spec.add_runtime_dependency 'puppet-modulebuilder', '>= 0.3.0'
   spec.add_runtime_dependency 'retryable', '~> 3.0'
   spec.add_runtime_dependency 'rspec'
-  spec.add_runtime_dependency 'rspec_honeycomb_formatter'
   spec.add_runtime_dependency 'tty-spinner', ['>= 0.5.0', '< 1.0.0']
 end
