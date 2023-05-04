@@ -70,7 +70,7 @@ module PuppetLitmus::RakeHelper
 
     params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
     params['vars'] = inventory_vars unless inventory_vars.nil?
-  
+
     task_name = provisioner_task(provisioner)
     bolt_result = run_task(task_name, 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
     raise_bolt_errors(bolt_result, "provisioning of #{platform} failed.")
@@ -132,10 +132,10 @@ module PuppetLitmus::RakeHelper
   def install_agent(collection, targets, inventory_hash)
     include ::BoltSpec::Run
     params = if collection.nil?
-                {}
-              else
-                { 'collection' => collection }
-              end
+               {}
+             else
+               { 'collection' => collection }
+             end
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" \
       unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
@@ -265,9 +265,7 @@ module PuppetLitmus::RakeHelper
 
   def check_connectivity?(inventory_hash, target_node_name)
     # if we're only checking connectivity for a single node
-    if target_node_name
-      add_platform_field(inventory_hash, target_node_name)
-    end
+    add_platform_field(inventory_hash, target_node_name) if target_node_name
 
     include ::BoltSpec::Run
     target_nodes = find_targets(inventory_hash, target_node_name)

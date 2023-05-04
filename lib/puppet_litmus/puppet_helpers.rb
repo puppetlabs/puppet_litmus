@@ -83,10 +83,10 @@ module PuppetLitmus::PuppetHelpers
 
     # Forcibly set the locale of the command
     locale = if os[:family] == 'windows'
-                ''
-              else
-                'LC_ALL=en_US.UTF-8 '
-              end
+               ''
+             else
+               'LC_ALL=en_US.UTF-8 '
+             end
     command_to_run = "#{locale}#{opts[:prefix_command]} puppet apply #{manifest_file_location}"
     command_to_run += ' --trace' if !opts[:trace].nil? && (opts[:trace] == true)
     command_to_run += " --modulepath #{Dir.pwd}/spec/fixtures/modules" if target_node_name == 'litmus_localhost'
@@ -132,7 +132,7 @@ module PuppetLitmus::PuppetHelpers
   # @param manifest [String] puppet manifest code.
   # @return [String] The path to the location of the manifest.
   def create_manifest_file(manifest, opts = {})
-      require 'tmpdir'
+    require 'tmpdir'
     target_node_name = ENV.fetch('TARGET_HOST', nil)
     tmp_filename = File.join(Dir.tmpdir, "manifest_#{Time.now.strftime('%Y%m%d')}_#{Process.pid}_#{rand(0x100000000).to_s(36)}.pp")
     manifest_file = File.open(tmp_filename, 'w')
@@ -151,7 +151,6 @@ module PuppetLitmus::PuppetHelpers
       bolt_result = upload_file(manifest_file.path, manifest_file_location, target_node_name, options: {}, config: nil, inventory: inventory_hash)
       raise bolt_result.first['value'].to_s unless bolt_result.first['status'] == 'success'
     end
-
 
     manifest_file_location
   end
@@ -241,9 +240,7 @@ module PuppetLitmus::PuppetHelpers
     }
 
     if bolt_result.first['status'] != 'success'
-      if opts[:expect_failures] != true
-        raise "upload file failed\n======\n#{bolt_result}"
-      end
+      raise "upload file failed\n======\n#{bolt_result}" if opts[:expect_failures] != true
 
       result_obj[:exit_code] = 255
       result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
@@ -268,12 +265,12 @@ module PuppetLitmus::PuppetHelpers
     config_data = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') }
     target_node_name = targeting_localhost? ? 'litmus_localhost' : ENV.fetch('TARGET_HOST', nil)
     inventory_hash = if !opts[:inventory_file].nil? && File.exist?(opts[:inventory_file])
-                        inventory_hash_from_inventory_file(opts[:inventory_file])
-                      elsif File.exist?('spec/fixtures/litmus_inventory.yaml')
-                        inventory_hash_from_inventory_file('spec/fixtures/litmus_inventory.yaml')
-                      else
-                        localhost_inventory_hash
-                      end
+                       inventory_hash_from_inventory_file(opts[:inventory_file])
+                     elsif File.exist?('spec/fixtures/litmus_inventory.yaml')
+                       inventory_hash_from_inventory_file('spec/fixtures/litmus_inventory.yaml')
+                     else
+                       localhost_inventory_hash
+                     end
 
     target_option = opts['targets'] || opts[:targets]
     if target_option.nil?
@@ -299,15 +296,13 @@ module PuppetLitmus::PuppetHelpers
                             end
 
     else
-      if opts[:expect_failures] != true
-        raise "task failed\n`#{task_name}`\n======\n#{bolt_result}"
-      end
+      raise "task failed\n`#{task_name}`\n======\n#{bolt_result}" if opts[:expect_failures] != true
 
       result_obj[:exit_code] = if bolt_result.first['value']['_error']['details'].nil?
-                                  255
-                                else
-                                  bolt_result.first['value']['_error']['details'].fetch('exitcode', 255)
-                                end
+                                 255
+                               else
+                                 bolt_result.first['value']['_error']['details'].fetch('exitcode', 255)
+                               end
       result_obj[:stderr]    = bolt_result.first['value']['_error']['msg']
     end
 
@@ -338,9 +333,7 @@ module PuppetLitmus::PuppetHelpers
 
     bolt_result = run_script(script, target_node_name, arguments, options: opts, config: nil, inventory: inventory_hash)
 
-    if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
-      raise "script run failed\n`#{script}`\n======\n#{bolt_result}"
-    end
+    raise "script run failed\n`#{script}`\n======\n#{bolt_result}" if bolt_result.first['value']['exit_code'] != 0 && opts[:expect_failures] != true
 
     result = OpenStruct.new(exit_code: bolt_result.first['value']['exit_code'],
                             stdout: bolt_result.first['value']['stdout'],
