@@ -224,15 +224,26 @@ module PuppetLitmus::RakeHelper
     include ::BoltSpec::Run
 
     target_nodes = find_targets(inventory_hash, target_node_name)
-    bolt_result = upload_file(module_tar, File.basename(module_tar), target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
+    bolt_result = upload_file(module_tar, "/tmp/#{File.basename(module_tar)}", target_nodes, options: {}, config: nil, inventory: inventory_hash.clone)
     raise_bolt_errors(bolt_result, 'Failed to upload module.')
 
     module_repository_opts = "--module_repository '#{module_repository}'" unless module_repository.nil?
-    install_module_command = "puppet module install #{module_repository_opts} #{File.basename(module_tar)}"
+    install_module_command = "puppet module install #{module_repository_opts} /tmp/#{File.basename(module_tar)}"
     install_module_command += ' --ignore-dependencies --force' if ignore_dependencies.to_s.casecmp('true').zero?
 
     bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
     raise_bolt_errors(bolt_result, "Installation of package #{File.basename(module_tar)} failed.")
+
+    return bolt_result if metadata_module_dependencies.nil?
+
+    metadata_module_dependencies.each do |dependency|
+      module_repository_opts = "--module_repository '#{module_repository}'" unless module_repository.nil?
+      install_module_command = "puppet module install #{module_repository_opts} #{dependency['name']}"
+      install_module_command += " --version '#{dependency['version_requirement']}'" if dependency.key?('version_requirement')
+
+      bolt_result = run_command(install_module_command, target_nodes, config: nil, inventory: inventory_hash.clone)
+      raise_bolt_errors(bolt_result, "Installation of package #{dependency['name']} failed.")
+    end
     bolt_result
   end
 
@@ -244,6 +255,14 @@ module PuppetLitmus::RakeHelper
     raise 'Could not read module name from metadata.json' if metadata['name'].nil?
 
     metadata['name']
+  end
+
+  def metadata_module_dependencies
+    require 'json'
+    raise 'Could not find metadata.json' unless File.exist?(File.join(Dir.pwd, 'metadata.json'))
+
+    metadata = JSON.parse(File.read(File.join(Dir.pwd, 'metadata.json')))
+    metadata['dependencies']
   end
 
   # Uninstall a module from a specified target
