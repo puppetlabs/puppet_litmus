@@ -127,7 +127,7 @@ if ARGV.include?('--custom-matrix')
   raise '--custom-matrix argument should be present just one time in the command' unless custom_matrix_occurrences <= 1
 
   file_path = ARGV[ARGV.find_index('--custom-matrix') + 1]
-  raise 'you need to specify a file path' if file_path.nil?
+  raise 'no file path specified' if file_path.nil?
 
   begin
     custom_matrix = JSON.parse(File.read(file_path))
