@@ -101,9 +101,10 @@ if ARGV.include?('--provision-service')
 
   # NOTE: that the below are the only available images for the provision service
   updated_platforms = {
+    'AlmaLinux-8' => 'almalinux-cloud/almalinux-8',
     'CentOS-7' => 'centos-7',
     'CentOS-8' => 'centos-stream-8',
-    'Rocky-8' => 'rocky-linux-8',
+    'Rocky-8' => 'rocky-linux-cloud/rocky-linux-8',
     'Debian-10' => 'debian-10',
     'Debian-11' => 'debian-11',
     'Ubuntu-20.04' => 'ubuntu-2004-lts',
@@ -120,6 +121,7 @@ end
 metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
 metadata = JSON.parse(File.read(metadata_path))
 
+# Allow the user to pass a file containing a custom matrix
 if ARGV.include?('--custom-matrix')
   custom_matrix_occurrences = ARGV.count { |arg| arg == '--custom-matrix' }
   raise '--custom-matrix argument should be present just one time in the command' unless custom_matrix_occurrences <= 1
