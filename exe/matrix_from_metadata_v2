@@ -94,6 +94,29 @@ else
   exclude_list = []
 end
 
+# Force the use of the provision_service provisioner, if the --provision-service argument is present
+if ARGV.include?('--provision-service')
+  provision_service_occurrences = ARGV.count { |arg| arg == '--provision-service' }
+  raise 'the --provision-service argument should be present just one time in the command' unless provision_service_occurrences <= 1
+
+  # NOTE: that the below are the only available images for the provision service
+  updated_platforms = {
+    'CentOS-7' => 'centos-7',
+    'CentOS-8' => 'centos-stream-8',
+    'Rocky-8' => 'rocky-linux-8',
+    'Debian-10' => 'debian-10',
+    'Debian-11' => 'debian-11',
+    'Ubuntu-20.04' => 'ubuntu-2004-lts',
+    'Ubuntu-22.04' => 'ubuntu-2204-lts'
+  }
+
+  updated_list = IMAGE_TABLE.dup.clone
+  updated_list.merge!(updated_platforms)
+
+  IMAGE_TABLE = updated_list.freeze
+  DOCKER_PLATFORMS = {}.freeze
+end
+
 metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
 metadata = JSON.parse(File.read(metadata_path))
 # Set platforms based on declared operating system support
@@ -105,13 +128,13 @@ metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do
     if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
       matrix[:platforms] << {
         label: image_key,
-        provider: 'provision::provision_service',
+        provider: 'provision_service',
         image: IMAGE_TABLE[image_key]
       }
     elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
       matrix[:platforms] << {
         label: image_key,
-        provider: 'provision::docker',
+        provider: 'docker',
         image: DOCKER_PLATFORMS[image_key]
       }
     else
