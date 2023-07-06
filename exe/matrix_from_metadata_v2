@@ -119,27 +119,52 @@ end
 
 metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
 metadata = JSON.parse(File.read(metadata_path))
-# Set platforms based on declared operating system support
-metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
-  os = sup['operatingsystem']
-  sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
-    image_key = "#{os}-#{ver}"
 
-    if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
-      matrix[:platforms] << {
-        label: image_key,
-        provider: 'provision_service',
-        image: IMAGE_TABLE[image_key]
-      }
-    elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
-      matrix[:platforms] << {
-        label: image_key,
-        provider: 'docker',
-        image: DOCKER_PLATFORMS[image_key]
-      }
+if ARGV.include?('--custom-matrix')
+  custom_matrix_occurrences = ARGV.count { |arg| arg == '--custom-matrix' }
+  raise '--custom-matrix argument should be present just one time in the command' unless custom_matrix_occurrences <= 1
+
+  file_path = ARGV[ARGV.find_index('--custom-matrix') + 1]
+  raise 'you need to specify a file path' if file_path.nil?
+
+  begin
+    custom_matrix = JSON.parse(File.read(file_path))
+  rescue StandardError => e
+    case e
+    when JSON::ParserError
+      raise 'the matrix must be an array of valid JSON objects'
+    when Errno::ENOENT
+      raise "File not found: #{e.message}"
     else
-      puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
-      puts "::warning::Cannot find image for #{image_key}" unless exclude_list.include?(image_key.downcase)
+      raise "An unknown exception occurred: #{e.message}"
+    end
+  end
+  custom_matrix.each do |platform|
+    matrix[:platforms] << platform
+  end
+else
+  # Set platforms based on declared operating system support
+  metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
+    os = sup['operatingsystem']
+    sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
+      image_key = "#{os}-#{ver}"
+
+      if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
+        matrix[:platforms] << {
+          label: image_key,
+          provider: 'provision_service',
+          image: IMAGE_TABLE[image_key]
+        }
+      elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
+        matrix[:platforms] << {
+          label: image_key,
+          provider: 'docker',
+          image: DOCKER_PLATFORMS[image_key]
+        }
+      else
+        puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
+        puts "::warning::Cannot find image for #{image_key}" unless exclude_list.include?(image_key.downcase)
+      end
     end
   end
 end
