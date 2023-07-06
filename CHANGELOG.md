@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.1.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.0) - 2023-07-06
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.3...v1.1.0)
+
+### Added
+
+- (FEAT) - Add ability to supply a custom matrix and override default provisioner [#506](https://github.com/puppetlabs/puppet_litmus/pull/506) ([jordanbreen28](https://github.com/jordanbreen28))
+
 ## [v1.0.3](https://github.com/puppetlabs/puppet_litmus/tree/v1.0.3) - 2023-05-04
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.0.2...v1.0.3)
