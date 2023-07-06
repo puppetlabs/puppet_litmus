@@ -205,9 +205,8 @@ end
 
 # Set to defaults (all collections) if no matches are found
 matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
-
 # Just to make sure there aren't any duplicates
-matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] }
+matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] } unless ARGV.include?('--custom-matrix')
 matrix[:collection] = matrix[:collection].uniq.sort
 
 set_output('matrix', JSON.generate(matrix))
