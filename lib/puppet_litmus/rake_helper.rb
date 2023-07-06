@@ -287,7 +287,7 @@ module PuppetLitmus::RakeHelper
     if SUPPORTED_PROVISIONERS.include?(provisioner)
       "provision::#{provisioner}"
     else
-      warn "WARNING: Unsuported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
+      warn "WARNING: Unsupported provisioner '#{provisioner}', try #{SUPPORTED_PROVISIONERS.join('/')}"
       provisioner.to_s
     end
   end

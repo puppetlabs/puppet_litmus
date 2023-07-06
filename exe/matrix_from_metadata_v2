@@ -94,29 +94,79 @@ else
   exclude_list = []
 end
 
+# Force the use of the provision_service provisioner, if the --provision-service argument is present
+if ARGV.include?('--provision-service')
+  provision_service_occurrences = ARGV.count { |arg| arg == '--provision-service' }
+  raise 'the --provision-service argument should be present just one time in the command' unless provision_service_occurrences <= 1
+
+  # NOTE: that the below are the only available images for the provision service
+  updated_platforms = {
+    'AlmaLinux-8' => 'almalinux-cloud/almalinux-8',
+    'CentOS-7' => 'centos-7',
+    'CentOS-8' => 'centos-stream-8',
+    'Rocky-8' => 'rocky-linux-cloud/rocky-linux-8',
+    'Debian-10' => 'debian-10',
+    'Debian-11' => 'debian-11',
+    'Ubuntu-20.04' => 'ubuntu-2004-lts',
+    'Ubuntu-22.04' => 'ubuntu-2204-lts'
+  }
+
+  updated_list = IMAGE_TABLE.dup.clone
+  updated_list.merge!(updated_platforms)
+
+  IMAGE_TABLE = updated_list.freeze
+  DOCKER_PLATFORMS = {}.freeze
+end
+
 metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
 metadata = JSON.parse(File.read(metadata_path))
-# Set platforms based on declared operating system support
-metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
-  os = sup['operatingsystem']
-  sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
-    image_key = "#{os}-#{ver}"
 
-    if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
-      matrix[:platforms] << {
-        label: image_key,
-        provider: 'provision::provision_service',
-        image: IMAGE_TABLE[image_key]
-      }
-    elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
-      matrix[:platforms] << {
-        label: image_key,
-        provider: 'provision::docker',
-        image: DOCKER_PLATFORMS[image_key]
-      }
+# Allow the user to pass a file containing a custom matrix
+if ARGV.include?('--custom-matrix')
+  custom_matrix_occurrences = ARGV.count { |arg| arg == '--custom-matrix' }
+  raise '--custom-matrix argument should be present just one time in the command' unless custom_matrix_occurrences <= 1
+
+  file_path = ARGV[ARGV.find_index('--custom-matrix') + 1]
+  raise 'no file path specified' if file_path.nil?
+
+  begin
+    custom_matrix = JSON.parse(File.read(file_path))
+  rescue StandardError => e
+    case e
+    when JSON::ParserError
+      raise 'the matrix must be an array of valid JSON objects'
+    when Errno::ENOENT
+      raise "File not found: #{e.message}"
     else
-      puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
-      puts "::warning::Cannot find image for #{image_key}" unless exclude_list.include?(image_key.downcase)
+      raise "An unknown exception occurred: #{e.message}"
+    end
+  end
+  custom_matrix.each do |platform|
+    matrix[:platforms] << platform
+  end
+else
+  # Set platforms based on declared operating system support
+  metadata['operatingsystem_support'].sort_by { |a| a['operatingsystem'] }.each do |sup|
+    os = sup['operatingsystem']
+    sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
+      image_key = "#{os}-#{ver}"
+
+      if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
+        matrix[:platforms] << {
+          label: image_key,
+          provider: 'provision_service',
+          image: IMAGE_TABLE[image_key]
+        }
+      elsif DOCKER_PLATFORMS.key?(image_key) && !exclude_list.include?(image_key.downcase)
+        matrix[:platforms] << {
+          label: image_key,
+          provider: 'docker',
+          image: DOCKER_PLATFORMS[image_key]
+        }
+      else
+        puts "::warning::#{image_key} was excluded from testing" if exclude_list.include?(image_key.downcase)
+        puts "::warning::Cannot find image for #{image_key}" unless exclude_list.include?(image_key.downcase)
+      end
     end
   end
 end
@@ -155,9 +205,8 @@ end
 
 # Set to defaults (all collections) if no matches are found
 matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
-
 # Just to make sure there aren't any duplicates
-matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] }
+matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] } unless ARGV.include?('--custom-matrix')
 matrix[:collection] = matrix[:collection].uniq.sort
 
 set_output('matrix', JSON.generate(matrix))
