@@ -22,9 +22,9 @@ RSpec.describe 'matrix_from_metadata_v2' do
         [
           'matrix={',
           '"platforms":[',
-          '{"label":"CentOS-6","provider":"provision::docker","image":"litmusimage/centos:6"},',
-          '{"label":"RedHat-8","provider":"provision::provision_service","image":"rhel-8"},',
-          '{"label":"Ubuntu-18.04","provider":"provision::docker","image":"litmusimage/ubuntu:18.04"}',
+          '{"label":"CentOS-6","provider":"docker","image":"litmusimage/centos:6"},',
+          '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"},',
+          '{"label":"Ubuntu-18.04","provider":"docker","image":"litmusimage/ubuntu:18.04"}',
           '],',
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
@@ -59,8 +59,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
         [
           'matrix={',
           '"platforms":[',
-          '{"label":"CentOS-6","provider":"provision::docker","image":"litmusimage/centos:6"},',
-          '{"label":"RedHat-8","provider":"provision::provision_service","image":"rhel-8"}',
+          '{"label":"CentOS-6","provider":"docker","image":"litmusimage/centos:6"},',
+          '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"}',
           '],',
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
@@ -96,7 +96,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
         [
           'matrix={',
           '"platforms":[',
-          '{"label":"CentOS-6","provider":"provision::docker","image":"litmusimage/centos:6"}',
+          '{"label":"CentOS-6","provider":"docker","image":"litmusimage/centos:6"}',
           '],',
           '"collection":[',
           '"puppet7-nightly","puppet8-nightly"',
