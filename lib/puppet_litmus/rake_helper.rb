@@ -98,7 +98,8 @@ module PuppetLitmus::RakeHelper
 
     results = {}
     targets.each do |node_name|
-      next if node_name == 'litmus_localhost'
+      #  next if local host or provisioner fact empty/not set (GH-421)
+      next if node_name == 'litmus_localhost' || facts_from_node(inventory_hash, node_name)['provisioner'].nil?
 
       result = tear_down(node_name, inventory_hash)
       # Some provisioners tear_down targets that were created as a batch job.
