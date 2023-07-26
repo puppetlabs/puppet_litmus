@@ -27,19 +27,20 @@ Litmus also facilitates parallel test runs and running tests in isolation. Each 
 
 Install Litmus as a gem by running `gem install puppet_litmus`.
 
-- Note if you choose to override the `litmus_inventory.yaml` location, please ensure that the directory strutcture you define exists.
+- Note if you choose to override the `litmus_inventory.yaml` location, please ensure that the directory structure you define exists.
 
 ## matrix_from_metadata_v2
 
-matrix_from_metadata_v2 tool generates github actions matrix from metadata.json
+matrix_from_metadata_v2 tool generates a github action matrix from the supported operating systems listed in the module's metadata.json.
 
-How to use it: in the project module root directory run `bundle exec matrix_from_metadata_v2`
+How to use it:
+in the project module root directory run `bundle exec matrix_from_metadata_v2`
 
 ### --exclude-platforms parameter
 
-matrix_from_metadata_v2 accepts the `--exclude-platforms <JSON array>` argument in order to exclude some platforms from GA matrixes.
+matrix_from_metadata_v2 accepts the `--exclude-platforms <JSON array>` argument in order to exclude some platforms from the matrix.
 
-In order to use this new functionality just simply run:
+For example:
 
 `$: bundle exec matrix_from_metadata_v2 --exclude-platforms '["debian-11","centos-8"]'`
 
