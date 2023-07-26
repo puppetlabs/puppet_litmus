@@ -328,7 +328,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def start_spinner(message)
-    if (ENV['CI'] || '').casecmp('true').zero?
+    if (ENV['CI'] || '').casecmp('true').zero? || Gem.win_platform?
       puts message
       spinner = Thread.new do
         # CI systems are strange beasts, we only output a '.' every wee while to keep the terminal alive.
@@ -346,7 +346,7 @@ module PuppetLitmus::RakeHelper
   end
 
   def stop_spinner(spinner)
-    if (ENV['CI'] || '').casecmp('true').zero?
+    if (ENV['CI'] || '').casecmp('true').zero? || Gem.win_platform?
       Thread.kill(spinner)
     else
       spinner.success
