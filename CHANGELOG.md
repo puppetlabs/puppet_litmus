@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.1.2](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.2) - 2023-07-28
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.1...v1.1.2)
+
+### Fixed
+
+- (CAT-1241) - Adding retry when provision failed with Timeout [#516](https://github.com/puppetlabs/puppet_litmus/pull/516) ([Ramesh7](https://github.com/Ramesh7))
+
 ## [v1.1.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.1) - 2023-07-27
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.0...v1.1.1)
