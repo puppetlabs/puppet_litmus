@@ -99,7 +99,7 @@ namespace :litmus do
     rescue PuppetLitmus::RakeHelper::LitmusTimeoutError
       current_retry_count += 1
       Rake::Task['litmus:tear_down'].invoke(target_names.first)
-      raise if current_retry_count >= retry_count
+      raise if current_retry_count > retry_count
 
       puts "Provision of node #{target_names.first} failed, Retrying #{current_retry_count} of #{retry_count}"
       retry
