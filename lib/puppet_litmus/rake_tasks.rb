@@ -75,6 +75,8 @@ namespace :litmus do
   task :provision, [:provisioner, :platform, :inventory_vars] do |_task, args|
     Rake::Task['spec_prep'].invoke
 
+    retry_count = 3
+    current_retry_count = 0
     begin
       spinner = start_spinner("Provisioning #{args[:platform]} using #{args[:provisioner]} provisioner.")
 
@@ -94,6 +96,13 @@ namespace :litmus do
           check_connectivity?(inventory_hash_from_inventory_file, target)
         end
       end
+    rescue PuppetLitmus::RakeHelper::LitmusTimeoutError
+      current_retry_count += 1
+      Rake::Task['litmus:tear_down'].invoke(target_names.first)
+      raise if current_retry_count >= retry_count
+
+      puts "Provision of node #{target_names.first} failed, Retrying #{current_retry_count} of #{retry_count}"
+      retry
     ensure
       stop_spinner(spinner)
     end
