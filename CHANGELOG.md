@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.1.3](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.3) - 2023-07-31
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.2...v1.1.3)
+
+### Fixed
+
+- (CAT-1265) - Fix agent install on vagrant boxes [#518](https://github.com/puppetlabs/puppet_litmus/pull/518) ([jordanbreen28](https://github.com/jordanbreen28))
+
 ## [v1.1.2](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.2) - 2023-07-28
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.1...v1.1.2)
