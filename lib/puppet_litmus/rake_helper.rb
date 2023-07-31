@@ -142,6 +142,17 @@ module PuppetLitmus::RakeHelper
 
     # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
     bolt_result = run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+    targets.each do |target|
+      params = {
+        'path' => '/opt/puppetlabs/bin'
+      }
+      node_facts = facts_from_node(inventory_hash, target)
+      next unless node_facts['provisioner'] == 'vagrant'
+
+      puts "Adding puppet agent binary to the secure_path on target #{target}."
+      result = run_task('provision::fix_secure_path', target, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      raise_bolt_errors(result, "Failed to add the Puppet agent binary to the secure_path on target #{target}.")
+    end
     raise_bolt_errors(bolt_result, 'Installation of agent failed.')
     bolt_result
   end
