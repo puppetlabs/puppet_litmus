@@ -117,16 +117,16 @@ default:
 vagrant:
   provisioner: vagrant
   images: ['centos/7', 'generic/ubuntu1804', 'gusztavvargadr/windows-server']
-travis_deb:
+docker_deb:
   provisioner: docker
   images: ['litmusimage/debian:8', 'litmusimage/debian:9', 'litmusimage/debian:10']
-travis_ub:
+docker_ub:
   provisioner: docker
   images: ['litmusimage/ubuntu:14.04', 'litmusimage/ubuntu:16.04', 'litmusimage/ubuntu:18.04']
-travis_el6:
+docker_el6:
   provisioner: docker
   images: ['litmusimage/centos:6', 'litmusimage/oraclelinux:6', 'litmusimage/scientificlinux:6']
-travis_el7:
+docker_el7:
   provisioner: docker
   images: ['litmusimage/centos:7', 'litmusimage/oraclelinux:7', 'litmusimage/scientificlinux:7']
 release_checks:
