@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.2.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.2.0) - 2023-08-30
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.3...v1.2.0)
+
+### Added
+
+- (CAT-1287) - Adding Debian 12 docker for Compatibility testing [#523](https://github.com/puppetlabs/puppet_litmus/pull/523) ([Ramesh7](https://github.com/Ramesh7))
+
 ## [v1.1.3](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.3) - 2023-07-31
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.2...v1.1.3)
