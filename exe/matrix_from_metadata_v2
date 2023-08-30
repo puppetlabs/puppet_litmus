@@ -45,6 +45,7 @@ DOCKER_PLATFORMS = {
   'Debian-9' => 'litmusimage/debian:9',
   'Debian-10' => 'litmusimage/debian:10',
   'Debian-11' => 'litmusimage/debian:11',
+  'Debian-12' => 'litmusimage/debian:12',
   'OracleLinux-6' => 'litmusimage/oraclelinux:6',
   'OracleLinux-7' => 'litmusimage/oraclelinux:7',
   'Scientific-6' => 'litmusimage/scientificlinux:6',
