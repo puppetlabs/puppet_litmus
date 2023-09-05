@@ -88,4 +88,4 @@ gem  'pry-byebug', '> 3.4.3'
 
 ## Setting up Travis and Appveyor
 
-To see this running on CI, enable the `use_litmus` flags for Travis CI and/or Appveyor. See the [pdk-templates docs](https://github.com/puppetlabs/pdk-templates#travisyml) for details and additional options.
+To see this running on CI, enable the `use_litmus` flags for Travis CI and/or Appveyor.
