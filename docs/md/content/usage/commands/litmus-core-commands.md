@@ -17,6 +17,7 @@ Litmus has five commands:
 These commands allow you to create a test environment and run tests against your systems. Note that not all of these steps are needed for every deployment.
 
 Three common test setups are:
+
   * Run against localhost
   * Run against an existing machine that has Puppet installed
   * Provision a fresh system and install Puppet
@@ -37,9 +38,9 @@ Using the Litmus [provision](https://github.com/puppetlabs/provision) command, y
 
 For example:
 
-```
-pdk bundle exec rake 'litmus:provision[vmpooler, redhat-6-x86_64]'
-pdk bundle exec rake 'litmus:provision[docker, litmusimage/ubuntu:18.04]'
+```bash
+pdk bundle exec rake 'litmus:provision[vmpooler, redhat-9-x86_64]'
+pdk bundle exec rake 'litmus:provision[docker, litmusimage/ubuntu:22.04]'
 pdk bundle exec rake 'litmus:provision[vagrant, gusztavvargadr/windows-server]'
 ```
 
@@ -67,8 +68,8 @@ groups:
         host-key-check: false
     facts:
       provisioner: docker
-      container_name: centos_7-2222
-      platform: centos:7
+      container_name: centos_stream9-2222
+      platform: centos:stream9
 - name: winrm_nodes
   targets: []
 ```
@@ -79,7 +80,7 @@ Note that you can test some modules against localhost — the machine you are ru
 
 ### Testing services
 
-For testing services that require a service manager (like systemd), the default Docker images might not be enough. In this case, there is a collection of Docker images, with a service manager enabled, based on https://github.com/puppetlabs/litmusimage. For available images, see the [docker hub](https://hub.docker.com/u/litmusimage).
+For testing services that require a service manager (like systemd), the default Docker images might not be enough. In this case, there is a collection of Docker images, with a service manager enabled, based on our [litmus image repository](https://github.com/puppetlabs/litmusimage). For available images, see the [docker hub](https://hub.docker.com/u/litmusimage).
 
 Alternatively, you can use a dedicated VM that uses another provisioner, for example vmpooler or vagrant.
 
@@ -93,7 +94,7 @@ An example of a `provision.yaml` defining a single node:
 ---
 list_name:
   provisioner: vagrant
-  images: ['centos/7', 'generic/ubuntu1804', 'gusztavvargadr/windows-server']
+  images: ['centos/stream9', 'generic/ubuntu2204', 'gusztavvargadr/windows-server']
   params:
     param_a: someone
     param_b: something
@@ -101,10 +102,10 @@ list_name:
 
 Take note of the following:
 
-- The `list_name` is arbitrary and can be any string you want.
-- The `provisioner` specifies which provision task to use.
-- The `images` must specify an array of one or more images to provision.
-- Any keys inside of `params` will be turned into process-scope environment variables as the key, upcased. In the example above, `param_a` would become an environment variable called `PARAM_A` with a value of `someone`.
+* The `list_name` is arbitrary and can be any string you want.
+* The `provisioner` specifies which provision task to use.
+* The `images` must specify an array of one or more images to provision.
+* Any keys inside of `params` will be turned into process-scope environment variables as the key, upcased. In the example above, `param_a` would become an environment variable called `PARAM_A` with a value of `someone`.
 
 An example of a `provision.yaml` defining multiple nodes:
 
@@ -113,16 +114,16 @@ An example of a `provision.yaml` defining multiple nodes:
 ---
 default:
   provisioner: docker
-  images: ['litmusimage/centos:7']
+  images: ['litmusimage/centos:stream9']
 vagrant:
   provisioner: vagrant
-  images: ['centos/7', 'generic/ubuntu1804', 'gusztavvargadr/windows-server']
+  images: ['centos/stream9', 'generic/ubuntu2204', 'gusztavvargadr/windows-server']
 docker_deb:
   provisioner: docker
-  images: ['litmusimage/debian:8', 'litmusimage/debian:9', 'litmusimage/debian:10']
+  images: ['litmusimage/debian:10', 'litmusimage/debian:11', 'litmusimage/debian:12']
 docker_ub:
   provisioner: docker
-  images: ['litmusimage/ubuntu:14.04', 'litmusimage/ubuntu:16.04', 'litmusimage/ubuntu:18.04']
+  images: ['litmusimage/ubuntu:18.04', 'litmusimage/ubuntu:20.04', 'litmusimage/ubuntu:22.04']
 docker_el6:
   provisioner: docker
   images: ['litmusimage/centos:6', 'litmusimage/oraclelinux:6', 'litmusimage/scientificlinux:6']
@@ -155,15 +156,15 @@ Use the following command to install an agent on a single target or on all the t
 
 Install an agent on a target using the following commands:
 
-```
+```bash
 # Install the latest Puppet agent on a specific target
 pdk bundle exec rake 'litmus:install_agent[gn55owqktvej9fp.delivery.puppetlabs.net]'
 
 # Install the latest Puppet agent on all targets
 pdk bundle exec rake "litmus:install_agent"
 
-# Install Puppet 5 on all targets
-pdk bundle exec rake 'litmus:install_agent[puppet5]'
+# Install Puppet 8 on all targets
+pdk bundle exec rake 'litmus:install_agent[puppet8-nightly]'
 
 ```
 
@@ -175,13 +176,13 @@ Using PDK and Bolt, the `rake litmus:install_module` command builds and installs
 
 For example:
 
-```
+```bash
 pdk bundle exec rake "litmus:install_module"
 ```
 
 If you need multiple modules on the target system (e.g. fixtures pulled down through `pdk bundle exec rake spec_prep`, or a previous unit test run):
 
-```
+```bash
 pdk bundle exec rake "litmus:install_modules_from_directory[spec/fixtures/modules]"
 ```
 
@@ -192,16 +193,20 @@ pdk bundle exec rake "litmus:install_modules_from_directory[spec/fixtures/module
 There are several options for running tests. Litmus primarily uses [serverspec](https://serverspec.org/), though you can use other testing tools.
 
 When running tests with Litmus, you can:
+
 * Run all tests against a single target.
 * Run all tests against all targets in parallel.
 * Run a single test against a single target.
 
 An example running all tests against a single target:
 
-```
+```bash
 # On Linux/MacOS:
 TARGET_HOST=lk8g530gzpjxogh.delivery.puppetlabs.net pdk bundle exec rspec ./spec/acceptance
 TARGET_HOST=localhost:2223 pdk bundle exec rspec ./spec/acceptance
+```
+
+```powershell
 # On Windows:
 $ENV:TARGET_HOST = 'lk8g530gzpjxogh.delivery.puppetlabs.net'
 pdk bundle exec rspec ./spec/acceptance
@@ -209,10 +214,13 @@ pdk bundle exec rspec ./spec/acceptance
 
 An example running a specific test against a single target:
 
-```
+```bash
 # On Linux/MacOS:
 TARGET_HOST=lk8g530gzpjxogh.delivery.puppetlabs.net pdk bundle exec rspec ./spec/acceptance/test_spec.rb:21
 TARGET_HOST=localhost:2223 pdk bundle exec rspec ./spec/acceptance/test_spec.rb:21
+```
+
+```powershell
 # On Windows:
 $ENV:TARGET_HOST = 'lk8g530gzpjxogh.delivery.puppetlabs.net'
 pdk bundle exec rspec ./spec/acceptance/test_spec.rb:21
@@ -220,13 +228,13 @@ pdk bundle exec rspec ./spec/acceptance/test_spec.rb:21
 
 An example running all tests against all targets, as specified in the `spec/fixtures/litmus_inventory.yaml` file:
 
-```
+```bash
 pdk bundle exec rake litmus:acceptance:parallel
 ```
 
 An example running all tests against localhost. Note that this is only recommended if you are familiar with the code base, as tests may have unexpected side effects on your local machine.
 
-```
+```bash
 pdk bundle exec rake litmus:acceptance:localhost
 ```
 
@@ -238,7 +246,7 @@ For more test examples, see [run_tests task](https://github.com/puppetlabs/provi
 
 Use the commands below to clean up provisioned systems after running tests. Specify whether to to remove an individual target or all the targets in the `spec/fixtures/litmus_inventory.yaml` file.
 
-```
+```bash
 # Tear down a specific target vm
 pdk bundle exec rake "litmus:tear_down[c985f9svvvu95nv.delivery.puppetlabs.net]"
 

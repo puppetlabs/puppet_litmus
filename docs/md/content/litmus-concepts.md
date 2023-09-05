@@ -81,7 +81,7 @@ There is currently no reason to consider alternatives to Bolt.
 
 Configuration for Litmus currently is spread over several files.
 The `provision.yaml` contains various lists of platforms to target for tests.
-The CI job setup (usually in `.travis.yml`, `appveyor.yml` or similar) contains the overall sequencing of steps for testing.
+The CI job setup (usually in `.travis.yml`, `appveyor.yml`, `Github Actions` or similiar) contains the overall sequencing of steps for testing.
 This setup is usually the same everywhere and is encoded in pdk-templates.
 There are slight variations to choose the puppet version and platform combinations from `provision.yaml`.
 
