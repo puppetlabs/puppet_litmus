@@ -10,7 +10,7 @@ The process involves these steps:
 
 1. Clone the MoTD module from GitHub.
 1. Provision a CentOS Docker image.
-1. Install a Puppet 6 agent on the CentOS image.
+1. Install Puppet agent on the CentOS image.
 1. Install the MoTD module on the CentOS image.
 1. Run the MoTD acceptance tests.
 1. Remove the Docker image.
@@ -21,7 +21,7 @@ Ensure you have installed the following:
 
 * [Docker](https://runnable.com/docker/getting-started/).
 	* To check whether you already have Docker, run `docker --version` from the command line.
-	* To check Docker is working, run `docker run centos:7 ls` in your terminal. You should see a list of folders in the CentOS image.
+	* To check Docker is working, run `docker run litmusimage/centos:stream9 ls` in your terminal. You should see a list of folders in the CentOS image.
 * [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 	* To check  where you already have git, run `git --version` in your terminal.
 * [Puppet Development Kit (PDK)](https://puppet.com/docs/pdk/3.x/pdk_install.html).
