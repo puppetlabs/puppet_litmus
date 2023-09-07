@@ -53,6 +53,11 @@ matrix_from_metadata_v2 accepts the `--custom-matrix /path/to/matrix.json` argum
 
 In order to use this new functionality, run:
 
+
+
+
+
+
 `$: bundle exec matrix_from_metadata_v2 --custom-matrix matrix.json`
 
 > Note: The file should contain a valid Array of JSON Objects (i.e. `[{"label":"AlmaLinux-8","provider":"provision_service","image":"almalinux-cloud/almalinux-8"}, {..}]`), otherwise it will throw an error.
