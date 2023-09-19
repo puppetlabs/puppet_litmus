@@ -1,5 +1,9 @@
 # Litmus
 
+[![Code Owners](https://img.shields.io/badge/owners-DevX--team-blue)](https://github.com/puppetlabs/pdk/blob/main/CODEOWNERS)
+![ci](https://github.com/puppetlabs/puppet_litmus/actions/workflows/ci.yml/badge.svg)
+[![Gem Version](https://badge.fury.io/rb/puppet_litmus.svg)](https://badge.fury.io/rb/puppet_litmus)
+
 <div name="logo">
   <img src="resources/litmus-dark-RGB.png"
   style="display: block; margin-left: auto; margin-right: auto;"
