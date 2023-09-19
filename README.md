@@ -1,6 +1,6 @@
 # Litmus
 
-[![Code Owners](https://img.shields.io/badge/owners-DevX--team-blue)](https://github.com/puppetlabs/pdk/blob/main/CODEOWNERS)
+[![Code Owners](https://img.shields.io/badge/owners-DevX--team-blue)](https://github.com/puppetlabs/puppet_litmus/blob/main/CODEOWNERS)
 ![ci](https://github.com/puppetlabs/puppet_litmus/actions/workflows/ci.yml/badge.svg)
 [![Gem Version](https://badge.fury.io/rb/puppet_litmus.svg)](https://badge.fury.io/rb/puppet_litmus)
 
