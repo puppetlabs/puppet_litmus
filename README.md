@@ -65,6 +65,10 @@ In order to use this new functionality, run:
 
 For documentation, see our [Litmus Docs Site](https://puppetlabs.github.io/content-and-tooling-team/docs/litmus/).
 
+## License
+
+This codebase is licensed under Apache 2.0. However, the open source dependencies included in this codebase might be subject to other software licenses such as AGPL, GPL2.0, and MIT.
+
 ## Other Resources
 
 - [Is it Worth the Time?](https://xkcd.com/1205/)
