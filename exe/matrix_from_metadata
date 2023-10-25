@@ -27,6 +27,8 @@ end
 IMAGE_TABLE = {
   'RedHat-7' => 'rhel-7',
   'RedHat-8' => 'rhel-8',
+  'RedHat-9' => 'rhel-9',
+  'RedHat-9-arm' => 'rhel-9-arm64',
   'SLES-12' => 'sles-12',
   'SLES-15' => 'sles-15',
   'Windows-2012 R2' => 'windows-2012-r2-core',
