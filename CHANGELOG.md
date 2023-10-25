@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.2.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.2.0) - 2023-10-25
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.3...v1.2.0)
+
+### Added
+
+- (CAT-1521) - Adding new OS RHEL-9 ARM [#530](https://github.com/puppetlabs/puppet_litmus/pull/530) ([Ramesh7](https://github.com/Ramesh7))
+- (CAT-1287) - Adding Debian 12 docker for Compatibility testing [#523](https://github.com/puppetlabs/puppet_litmus/pull/523) ([Ramesh7](https://github.com/Ramesh7))
+
 ## [v1.1.3](https://github.com/puppetlabs/puppet_litmus/tree/v1.1.3) - 2023-07-31
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.2...v1.1.3)
@@ -70,12 +79,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.1...v1.0.0.rc.1)
 
+### Changed
+- (CONT-806) Add Ruby 3.2 support [#485](https://github.com/puppetlabs/puppet_litmus/pull/485) ([GSPatton](https://github.com/GSPatton))
+
 ### Added
 
 - (CONT-806) Ruby 3 / Puppet 8 additions [#491](https://github.com/puppetlabs/puppet_litmus/pull/491) ([chelnak](https://github.com/chelnak))
-
-### Changed
-- (CONT-806) Add Ruby 3.2 support [#485](https://github.com/puppetlabs/puppet_litmus/pull/485) ([GSPatton](https://github.com/GSPatton))
 
 ## [v0.36.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.36.1) - 2023-03-28
 
@@ -478,6 +487,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.13.1...0.14.0)
 
+### Changed
+- (feat) move to v2 of bolt inventory file [#233](https://github.com/puppetlabs/puppet_litmus/pull/233) ([tphoney](https://github.com/tphoney))
+
 ### Added
 
 - (MODULES-10478) honeycomb integration to litmus [#238](https://github.com/puppetlabs/puppet_litmus/pull/238) ([sheenaajay](https://github.com/sheenaajay))
@@ -485,9 +497,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - (feat) check connectivity status, after testing completes [#231](https://github.com/puppetlabs/puppet_litmus/pull/231) ([tphoney](https://github.com/tphoney))
 - (feat) new rake task to check nodes are available [#230](https://github.com/puppetlabs/puppet_litmus/pull/230) ([tphoney](https://github.com/tphoney))
 - (MAINT) Ensure acceptance:localhost task also runs spec_prep [#206](https://github.com/puppetlabs/puppet_litmus/pull/206) ([RandomNoun7](https://github.com/RandomNoun7))
-
-### Changed
-- (feat) move to v2 of bolt inventory file [#233](https://github.com/puppetlabs/puppet_litmus/pull/233) ([tphoney](https://github.com/tphoney))
 
 ### Fixed
 
@@ -561,13 +570,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.1...0.10.0)
 
-### Added
-
-- (FM-8342) Handle mocking of localhost [#179](https://github.com/puppetlabs/puppet_litmus/pull/179) ([michaeltlombardi](https://github.com/michaeltlombardi))
-
 ### Changed
 - (FM-8513) Better handling of errors and changes [#185](https://github.com/puppetlabs/puppet_litmus/pull/185) ([florindragos](https://github.com/florindragos))
 - (FM-8456) set inventory vars when provisioning [#184](https://github.com/puppetlabs/puppet_litmus/pull/184) ([tphoney](https://github.com/tphoney))
+
+### Added
+
+- (FM-8342) Handle mocking of localhost [#179](https://github.com/puppetlabs/puppet_litmus/pull/179) ([michaeltlombardi](https://github.com/michaeltlombardi))
 
 ### Fixed
 
@@ -747,13 +756,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.0.1...0.1.0)
 
+### Changed
+- (FM-7470) change method names, use upload_file [#91](https://github.com/puppetlabs/puppet_litmus/pull/91) ([tphoney](https://github.com/tphoney))
+
 ### Added
 
 - (FM-7891) separate serverspec helpers and add unit [#90](https://github.com/puppetlabs/puppet_litmus/pull/90) ([tphoney](https://github.com/tphoney))
 - (feat) changelog-generator working with litmus [#87](https://github.com/puppetlabs/puppet_litmus/pull/87) ([tphoney](https://github.com/tphoney))
-
-### Changed
-- (FM-7470) change method names, use upload_file [#91](https://github.com/puppetlabs/puppet_litmus/pull/91) ([tphoney](https://github.com/tphoney))
 
 ### Fixed
 
