@@ -16,7 +16,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(result.status_code).to eq 0
     end
 
-    it 'generates the matrix' do
+    it 'generates the matrix' do # rubocop:disable RSpec/ExampleLength
       expect(result.stdout).to include('::warning::Cannot find image for Ubuntu-14.04')
       expect(github_output_content).to include(
         [
@@ -24,6 +24,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '"platforms":[',
           '{"label":"CentOS-6","provider":"docker","image":"litmusimage/centos:6"},',
           '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"},',
+          '{"label":"RedHat-9","provider":"provision_service","image":"rhel-9"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
           '{"label":"Ubuntu-18.04","provider":"docker","image":"litmusimage/ubuntu:18.04"}',
           '],',
@@ -36,7 +37,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 10 cells:\n  - Acceptance Test Cells: 8\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 12 cells:\n  - Acceptance Test Cells: 10\n  - Spec Test Cells: 2")
     end
   end
 
@@ -53,7 +54,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(result.status_code).to eq 0
     end
 
-    it 'generates the matrix without excluded platforms' do
+    it 'generates the matrix without excluded platforms' do # rubocop:disable RSpec/ExampleLength
       expect(result.stdout).to include('::warning::Cannot find image for Ubuntu-14.04')
       expect(result.stdout).to include('::warning::Ubuntu-18.04 was excluded from testing')
       expect(github_output_content).to include(
@@ -62,6 +63,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '"platforms":[',
           '{"label":"CentOS-6","provider":"docker","image":"litmusimage/centos:6"},',
           '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"},',
+          '{"label":"RedHat-9","provider":"provision_service","image":"rhel-9"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"}',
           '],',
           '"collection":[',
@@ -73,7 +75,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 8 cells:\n  - Acceptance Test Cells: 6\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 10 cells:\n  - Acceptance Test Cells: 8\n  - Spec Test Cells: 2")
     end
   end
 
