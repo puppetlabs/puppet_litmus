@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.2.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.2.1) - 2023-11-10
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.2.0...v1.2.1)
+
+### Fixed
+
+- (CAT-1545) - Return RHEL-9 ARM images in matrix [#532](https://github.com/puppetlabs/puppet_litmus/pull/532) ([jordanbreen28](https://github.com/jordanbreen28))
+
 ## [v1.2.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.2.0) - 2023-10-25
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.1.3...v1.2.0)
