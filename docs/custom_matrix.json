@@ -1,0 +1,17 @@
+[
+    {
+        "label":"AlmaLinux-8",
+        "provider":"provision_service",
+        "image":"almalinux-cloud/almalinux-8"
+    },
+    {
+        "label":"RedHat-9",
+        "provider":"provision_service",
+        "image":"rhel-9"
+    },
+    {
+        "label":"centos-7",
+        "provider":"docker",
+        "image":"litmusimage/centos-7"
+    }
+]
