@@ -59,7 +59,7 @@ In order to use this new functionality, run:
 
 `$: bundle exec matrix_from_metadata_v2 --custom-matrix matrix.json`
 
-> Note: The file should contain a valid Array of JSON Objects (i.e. `[{"label":"AlmaLinux-8","provider":"provision_service","image":"almalinux-cloud/almalinux-8"}, {..}]`), otherwise it will throw an error.
+> Note: The file should contain a valid Array of JSON Objects (i.e. see [here](https://github.com/puppetlabs/puppet_litmus/blob/main/docs/custom_matrix.json)), otherwise it will throw an error.
 
 ## Documentation
 
