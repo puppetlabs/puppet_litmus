@@ -46,7 +46,7 @@ matrix_from_metadata_v2 accepts the `--exclude-platforms <JSON array>` argument 
 
 For example:
 
-`$: bundle exec matrix_from_metadata_v2 --exclude-platforms '["debian-11","centos-8"]'`
+`$: bundle exec matrix_from_metadata_v2 --exclude-platforms '["debian-12","centos-8"]'`
 
 > Note: The option value should be JSON string otherwise it will throw an error.
 > The values provided in the json array are case-insensitive `["debian-11","centos-8"]'` or `["Debian-11","CentOS-8"]'` are treated as being the same.
