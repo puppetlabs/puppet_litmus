@@ -13,7 +13,7 @@
 
 ## Overview
 
-Litmus is a command line tool that allows you to run acceptance tests against Puppet modules.
+Litmus is a command line tool that allows you to run acceptance tests against Puppet modules. test
 
 Litmus allows you to:
 
