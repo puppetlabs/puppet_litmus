@@ -154,13 +154,16 @@ else
     os = sup['operatingsystem']
     sup['operatingsystemrelease'].sort_by(&:to_i).each do |ver|
       image_key = "#{os}-#{ver}"
-      # Add ARM images if they exist and are not excluded
-      if ARM_IMAGE_TABLE.key?("#{image_key}-arm") && !exclude_list.include?("#{image_key.downcase}-arm")
-        matrix[:platforms] << {
-          label: "#{image_key}-arm",
-          provider: 'provision_service',
-          image: ARM_IMAGE_TABLE["#{image_key}-arm"]
-        }
+      # if --arm is passed, add arm images to the matrix
+      if ARGV.include?('--arm')
+        # Add ARM images if they exist and are not excluded
+        if ARM_IMAGE_TABLE.key?("#{image_key}-arm") && !exclude_list.include?("#{image_key.downcase}-arm")
+          matrix[:platforms] << {
+            label: "#{image_key}-arm",
+            provider: 'provision_service',
+            image: ARM_IMAGE_TABLE["#{image_key}-arm"]
+          }
+        end
       end
       if IMAGE_TABLE.key?(image_key) && !exclude_list.include?(image_key.downcase)
         matrix[:platforms] << {
