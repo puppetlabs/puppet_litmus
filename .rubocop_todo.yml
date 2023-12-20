@@ -80,7 +80,7 @@ RSpec/DescribeClass:
 # Offense count: 31
 # Configuration parameters: CountAsOne.
 RSpec/ExampleLength:
-  Max: 20
+  Max: 22
 
 # Offense count: 126
 # Configuration parameters: .

@@ -36,7 +36,8 @@ IMAGE_TABLE = {
 }.freeze
 
 ARM_IMAGE_TABLE = {
-  'RedHat-9-arm' => 'rhel-9-arm64'
+  'RedHat-9-arm' => 'rhel-9-arm64',
+  'Ubuntu-22.04-arm' => 'ubuntu-2204-lts-arm64'
 }.freeze
 
 DOCKER_PLATFORMS = {
