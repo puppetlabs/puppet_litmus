@@ -14,6 +14,7 @@ group :test do
 
   gem 'codecov'
   gem 'simplecov'
+  gem 'simplecov-console'
 end
 
 group :development do
