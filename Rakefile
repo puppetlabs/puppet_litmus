@@ -7,5 +7,13 @@ require 'yard'
 RSpec::Core::RakeTask.new(:spec)
 task :default => :spec
 
+namespace :spec do
+    desc 'Run RSpec code examples with coverage collection'
+    task :coverage do
+        ENV['COVERAGE'] = 'yes'
+        Rake::Task['spec'].execute
+    end
+end
+
 YARD::Rake::YardocTask.new do |t|
 end

@@ -5,32 +5,29 @@ require 'open3'
 require 'ostruct'
 
 if ENV['COVERAGE'] == 'yes'
-  require 'simplecov'
-
-  if ENV['CI'] == 'true'
-    require 'codecov'
-    SimpleCov.formatter = SimpleCov::Formatter::Codecov
-  else
+  begin
+    require 'simplecov'
+    require 'simplecov-console'
     SimpleCov.formatters = [
-      SimpleCov::Formatter::HTMLFormatter
+      SimpleCov::Formatter::HTMLFormatter,
+      SimpleCov::Formatter::Console
     ]
-  end
-  SimpleCov.start do
-    track_files 'lib/**/*.rb'
-
-    add_filter '/spec'
-
-    # do not track vendored files
-    add_filter '/vendor'
-    add_filter '/.vendor'
-
-    # do not track gitignored files
-    # this adds about 4 seconds to the coverage check
-    # this could definitely be optimized
-    add_filter do |f|
-      # system returns true if exit status is 0, which with git-check-ignore means file is ignored
-      system("git check-ignore --quiet #{f.filename}")
+    if ENV['CI'] == 'true'
+      require 'codecov'
+      SimpleCov.formatters << SimpleCov::Formatter::Codecov
     end
+
+    SimpleCov.start do
+      track_files 'lib/**/*.rb'
+
+      add_filter '/spec'
+      add_filter 'lib/puppet_litmus/version.rb'
+      # do not track vendored files
+      add_filter '/vendor'
+      add_filter '/.vendor'
+    end
+  rescue LoadError
+    raise 'Add the simplecov, simplecov-console, and codecov gems to Gemfile to enable this task'
   end
 end
 
