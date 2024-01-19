@@ -17,3 +17,7 @@ AllCops:
 # Disabled
 Style/ClassAndModuleChildren:
   Enabled: false
+Layout/LineLength:
+  Max: 200
+Gemspec/RequireMFA:
+  Enabled: false
