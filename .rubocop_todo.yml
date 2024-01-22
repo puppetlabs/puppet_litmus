@@ -6,14 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: Severity, Include.
-# Include: **/*.gemspec
-Gemspec/RequireMFA:
-  Exclude:
-    - 'puppet_litmus.gemspec'
-
 # Offense count: 17
 # Configuration parameters: AllowedMethods, AllowedPatterns, CountRepeatedAttributes.
 Metrics/AbcSize:
@@ -116,10 +108,3 @@ Style/OpenStructUse:
   Exclude:
     - 'lib/puppet_litmus/puppet_helpers.rb'
     - 'spec/spec_helper.rb'
-
-# Offense count: 135
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, AllowedPatterns.
-# URISchemes: http, https
-Layout/LineLength:
-  Max: 199
