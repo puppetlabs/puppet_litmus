@@ -12,7 +12,6 @@ group :test do
   gem 'rubocop-rspec', '~> 2.19'
   gem 'rubocop-performance', '~> 1.16'
 
-  gem 'codecov'
   gem 'simplecov'
   gem 'simplecov-console'
 end
