@@ -22,7 +22,7 @@ The following list is the current set of components and implementation choices. 
   * test dependencies: .fixtures.yml
 * Test Infrastructure:
   * puppetlabs-provision module
-  * hypervisors: docker, vagrant, vmpooler, abs
+  * hypervisors: docker, lxd, vagrant, vmpooler, abs
   * external provisioners: e.g. terraform
   * test systems:
     * litmusimage
