@@ -40,6 +40,7 @@ For example:
 
 ```bash
 pdk bundle exec rake 'litmus:provision[vmpooler, redhat-9-x86_64]'
+pdk bundle exec rake 'litmus:provision[lxd, images:debian/11]'
 pdk bundle exec rake 'litmus:provision[docker, litmusimage/ubuntu:22.04]'
 pdk bundle exec rake 'litmus:provision[vagrant, gusztavvargadr/windows-server]'
 ```
@@ -55,6 +56,8 @@ For example:
 version: 2
 groups:
 - name: docker_nodes
+  targets: []
+- name: lxd_nodes
   targets: []
 - name: ssh_nodes
   targets:
@@ -82,7 +85,7 @@ Note that you can test some modules against localhost — the machine you are ru
 
 For testing services that require a service manager (like systemd), the default Docker images might not be enough. In this case, there is a collection of Docker images, with a service manager enabled, based on our [litmus image repository](https://github.com/puppetlabs/litmusimage). For available images, see the [docker hub](https://hub.docker.com/u/litmusimage).
 
-Alternatively, you can use a dedicated VM that uses another provisioner, for example vmpooler or vagrant.
+Alternatively, you can use a dedicated VM that uses another provisioner, for example vmpooler, vagrant or lxd.
 
 ### Provisioning via YAML
 
@@ -118,6 +121,11 @@ default:
 vagrant:
   provisioner: vagrant
   images: ['centos/stream9', 'generic/ubuntu2204', 'gusztavvargadr/windows-server']
+lxd:
+  provisioner: lxd
+  images: ['images:ubuntu/22.04', 'images:centos/7']
+  params:
+    vm: true
 docker_deb:
   provisioner: docker
   images: ['litmusimage/debian:10', 'litmusimage/debian:11', 'litmusimage/debian:12']
