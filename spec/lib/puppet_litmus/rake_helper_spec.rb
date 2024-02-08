@@ -51,6 +51,14 @@ RSpec.describe PuppetLitmus::RakeHelper do
         provision_hash: { 'default' => { 'provisioner' => 'vagrant', 'images' => ['centos7'] } },
         results: [],
         params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => Dir.pwd }
+      },
+      {
+        provisioner: 'lxd',
+        platform: 'images:centos/7',
+        inventory_vars: nil,
+        provision_hash: { 'default' => { 'provisioner' => 'lxd', 'images' => ['images:centos/7'] } },
+        results: [],
+        params: { 'action' => 'provision', 'platform' => 'images:centos/7', 'inventory' => Dir.pwd }
       }
     ].freeze
 
