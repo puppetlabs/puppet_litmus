@@ -1,0 +1,305 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'English'
+require 'json'
+require 'optparse'
+require 'ostruct'
+
+# wrap up running in a Github Action
+module Action
+  class << self
+    attr_reader :type
+
+    def init(to = 'auto')
+      @notice = true
+      @type = if to.eql? 'auto'
+                ENV['GITHUB_ACTIONS'] ? 'github' : 'stdout'
+              else
+                to
+              end
+      $stderr = $stdout if @type == 'github'
+    end
+
+    def config(**args)
+      error("invalid Action.config: #{args}") unless args.is_a?(Hash)
+      args.each do |arg|
+        instance_variable_set(:"@#{arg[0]}", arg[1])
+      end
+    end
+
+    def debug(msg = nil)
+      return @debug if msg.nil?
+
+      output(msg, '::debug::') if @debug
+    end
+
+    def notice(msg = nil)
+      return @notice if msg.nil?
+
+      output(msg, '::notice::') if @notice
+    end
+
+    def error(msg)
+      output(msg, '::error::')
+      exit 1
+    end
+
+    def warning(msg)
+      output(msg, '::warning::')
+    end
+
+    def group(name, data, **kwargs)
+      output(name, '::group::')
+      output(data, **kwargs)
+      output('', '::endgroup::') if @type == 'github'
+
+      self
+    end
+
+    def set_output(key, value)
+      @output ||= @type == 'github' ? ENV.fetch('GITHUB_OUTPUT', nil) : '/dev/stdout'
+
+      if @output.nil?
+        Action.warning('GITHUB_OUTPUT environment is not set, sending output to stdout')
+        @output = '/dev/stdout'
+      end
+
+      File.open(@output, 'a') { |f| f.puts "#{key}=#{JSON.generate(value)}" }
+
+      self
+    end
+
+    private
+
+    def output(msg, prefix = nil, pretty: false)
+      $stderr.print prefix if @type == 'github'
+      $stderr.puts pretty ? JSON.pretty_generate(msg) : msg.to_s
+
+      self
+    end
+  end
+end
+
+options = OpenStruct.new(
+  puppet_exclude: [],
+  puppet_include: [],
+  platform_exclude: [],
+  platform_include: [],
+  arch_include: [],
+  arch_exclude: [],
+  provision_prefer: [],
+  provision_include: [],
+  provision_exclude: []
+)
+
+default_options = {
+  'provision-prefer': 'docker',
+  output: 'auto',
+  matrix: File.join(File.dirname(__FILE__), 'matrix.json'),
+  metadata: 'metadata.json'
+}
+
+begin
+  Action.init
+
+  # hidden argument to setup puppetlabs org defaults
+  default_options[:'provision-exclude'] = 'provision_service' if ARGV.reject! { |x| x == '--puppetlabs' }.nil?
+
+  # apply default_options if not overridden on the command line
+  default_options.each do |arg, value|
+    ARGV.unshift("--#{arg}", value) unless ARGV.grep(/\A--#{arg}(=.*)?\z/).any?
+  end
+
+  OptionParser.accept(JSON) do |v|
+    begin
+      x = JSON.parse(File.read(v)) if v
+      raise "nothing parsed from file #{v}" if x.empty?
+
+      x
+    rescue JSON::ParserError
+      raise "error parsing file #{v}"
+    end
+  rescue RuntimeError, Errno::ENOENT
+    raise OptionParser::InvalidArgument, $ERROR_INFO unless ARGV.grep(/^-(h|help)$/).any?
+  end
+
+  OutputType = ->(value) {}
+  OptionParser.accept(OutputType) do |v|
+    raise OptionParser::InvalidArgument, v \
+      unless %w[auto github stdout].include?(v)
+
+    Action.init(v)
+  end
+
+  OptionParser.accept(Regexp) { |v| Regexp.new(v, Regexp::IGNORECASE) }
+
+  OptionParser.new do |opt|
+    opt.separator "Generate Github Actions Matrices from Puppet metadata.json\n\nOptions:"
+    opt.on('--matrix FILE', JSON, 'File containing possible collections and provisioners (default: built-in)') { |o| options.matrix = o }
+    opt.on('--metadata FILE', JSON, "File containing module metadata json (default: #{default_options[:metadata]})\n\n") { |o| options.metadata = o }
+
+    opt.on('--debug', TrueClass, 'Enable debug messages') { |o| options.debug = o }
+    opt.on('--quiet', TrueClass, 'Disable notice messages') { |o| options.quiet = o }
+    opt.on('--output TYPE', OutputType, "Type of output to generate; auto, github or stdout (default: #{default_options[:output]})\n\n") { |o| options.output = o }
+
+    opt.on('--puppet-include MAJOR', Integer, 'Select puppet major version') { |o| options.puppet_include << o }
+    opt.on('--puppet-exclude MAJOR', Integer, 'Filter puppet major version') { |o| options.puppet_exclude << o }
+
+    opt.on('--platform-include REGEX', Regexp, 'Select platform') { |o| options.platform_include << o }
+    opt.on('--platform-exclude REGEX', Regexp, 'Filter platform') { |o| options.platform_exclude << o }
+
+    opt.on('--arch-include REGEX', Regexp, 'Select architecture') { |o| options.arch_include << o }
+    opt.on('--arch-exclude REGEX', Regexp, 'Filter architecture') { |o| options.arch_exclude << o }
+
+    opt.on('--provision-prefer NAME', String, "Prefer provisioner (default: #{default_options[:'provision-prefer']})") { |o| options.provision_prefer.push(*o.split(',')) }
+    opt.on('--provision-include NAME', String, 'Select provisioner (default: all)') { |o| options.provision_include.push(*o.split(',')) }
+    opt.on('--provision-exclude NAME', String, "Filter provisioner (default: #{default_options[:'provision-exclude'] || 'none'})") { |o| options.provision_exclude.push(*o.split(',')) }
+  end.parse!
+
+  Action.config(debug: true) if options[:debug]
+  Action.config(notice: false) if options[:quiet] && !options[:debug]
+
+  # validate provisioners
+  options[:provision_include].select! do |p|
+    options[:matrix]['provisioners'].key?(p) or raise OptionParser::InvalidArgument, "--provision-include '#{p}' not found in provisioners"
+  end
+
+  # filter provisioners
+  unless options[:provision_include].empty?
+    options[:matrix]['provisioners'].delete_if do |k, _|
+      unless options[:provision_include].include?(k.to_s)
+        Action.debug("provision-include filtered #{k}")
+        true
+      end
+    end
+  end
+  options[:matrix]['provisioners'].delete_if do |k, _|
+    if options[:provision_exclude].include?(k.to_s)
+      Action.debug("provision-exclude filtered #{k}")
+      true
+    end
+  end
+
+  # sort provisioners
+  options[:matrix]['provisioners'] = options[:matrix]['provisioners'].sort_by { |key, _| options[:provision_prefer].index(key.to_s) || options[:provision_prefer].length }.to_h \
+    unless options[:provision_prefer].empty?
+
+  # union regexp option values
+  %w[platform arch].each do |c|
+    ["#{c}_exclude".to_sym, "#{c}_include".to_sym].each do |k|
+      options[k] = if options[k].empty?
+                     nil
+                   else
+                     Regexp.new(format('\A(?:%s)\z', Regexp.union(options[k])), Regexp::IGNORECASE)
+                   end
+    end
+  end
+
+  raise OptionParser::ParseError, 'no provisioners left after filters applied' if options[:matrix]['provisioners'].empty?
+rescue OptionParser::ParseError => e
+  Action.error(e)
+end
+
+matrix = { platforms: [], collection: [] }
+spec_matrix = { include: [] }
+
+# collection matrix
+version_re = /([>=<]{1,2})\s*([\d.]+)/
+options[:metadata]['requirements']&.each do |req|
+  next unless req['name'] == 'puppet' && req['version_requirement']
+
+  puppet_version_reqs = req['version_requirement'].scan(version_re).map(&:join)
+  if puppet_version_reqs.empty?
+    Action.warning("Didn't recognize version_requirement '#{req['version_requirement']}'")
+    break
+  end
+
+  options[:matrix]['collections'].each do |collection|
+    next unless options[:puppet_include].each do |major|
+      break if major != collection['puppet'].to_i
+
+      Action.debug("puppet-include matched collection #{collection.inspect}")
+    end
+
+    next unless options[:puppet_exclude].each do |major|
+      if major.eql? collection['puppet'].to_i
+        Action.debug("puppet-exclude matched collection #{collection.inspect}")
+        break
+      end
+    end
+
+    # Test against the "largest" puppet version in a collection, e.g. `7.9999` to allow puppet requirements with a non-zero lower bound on minor/patch versions.
+    # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
+    gem_req = Gem::Requirement.create(puppet_version_reqs)
+    next unless gem_req.satisfied_by?(Gem::Version.new("#{collection['puppet'].to_i}.9999"))
+
+    matrix[:collection] << "puppet#{collection['puppet'].to_i}-nightly"
+
+    spec_matrix[:include] << {
+      puppet_version: "~> #{collection['puppet']}",
+      ruby_version: collection['ruby']
+    }
+  end
+end
+
+# Set platforms based on declared operating system support
+options[:metadata]['operatingsystem_support'].each do |os_sup|
+  os_sup['operatingsystemrelease'].sort_by(&:to_i).each do |os_ver|
+    os_ver_platforms = []
+    platform_key = [os_sup['operatingsystem'], os_ver]
+
+    # filter platforms
+    if options[:platform_include] && platform_key[0].match?(options[:platform_include]) == false && platform_key.join('-').match?(options[:platform_include]) == false
+      Action.notice("platform-include filtered #{platform_key.join('-')}")
+      next
+    end
+
+    if options[:platform_exclude] && (platform_key[0].match?(options[:platform_exclude]) || platform_key.join('-').match?(options[:platform_exclude]))
+      Action.notice("platform-exclude filtered #{platform_key.join('-')}")
+      next
+    end
+
+    options[:matrix]['provisioners'].each do |provisioner, platforms|
+      images = platforms.dig(*platform_key)
+      next if images.nil?
+
+      # filter arch
+      images.delete_if do |arch, _|
+        next if options[:arch_include]&.match?(arch.downcase) == true
+        next unless options[:arch_exclude]&.match?(arch.downcase)
+
+        Action.notice("arch filtered #{platform_key.join('-')}-#{arch} from #{provisioner}")
+      end
+      next if images.empty?
+
+      images.each do |arch, image|
+        label = (arch.eql?('x86_64') ? platform_key : platform_key + [arch]).join('-')
+        next if os_ver_platforms.any? { |h| h[:label] == label }
+
+        os_ver_platforms << {
+          label: label,
+          provider: provisioner,
+          arch: arch,
+          image: image
+        }
+      end
+    end
+
+    if os_ver_platforms.empty?
+      Action.warning("#{platform_key.join('-')} no provisioner found")
+    else
+      matrix[:platforms].push(*os_ver_platforms)
+    end
+  end
+end
+
+Action.group('matrix', matrix, pretty: true).group('spec_matrix', spec_matrix, pretty: true) if Action.type == 'github' && Action.notice
+
+Action.error('no supported puppet versions') if matrix[:collection].empty?
+
+if Action.type == 'stdout'
+  $stdout.puts JSON.generate({ matrix: matrix, spec_matrix: spec_matrix })
+else
+  Action.set_output('matrix', matrix).set_output('spec_matrix', spec_matrix)
+end
