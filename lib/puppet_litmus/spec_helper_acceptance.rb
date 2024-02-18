@@ -26,7 +26,7 @@ module PuppetLitmus
 
       if target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'docker_nodes')
         host = ENV.fetch('TARGET_HOST', nil)
-        set :backend, :docker
+        set :backend, :dockercli
         set :docker_container, host
       elsif target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'ssh_nodes')
         set :backend, :ssh
