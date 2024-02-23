@@ -241,10 +241,8 @@ namespace :litmus do
     include BoltSpec::Run
     module_tars.each do |module_tar|
       puts "Installing '#{module_tar}'"
-      target_nodes.each do |target_node_name|
-        install_module(inventory_hash, target_node_name, module_tar, args[:module_repository], args[:ignore_dependencies])
-        puts "Installed '#{module_tar}' on #{target_node_name}"
-      end
+      install_module(inventory_hash, target_nodes, module_tar, args[:module_repository], args[:ignore_dependencies])
+      puts "Installed '#{module_tar}' on #{target_nodes.join(', ')}"
     end
   end
 
