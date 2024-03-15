@@ -5,11 +5,12 @@ load File.expand_path('../../../lib/puppet_litmus/util.rb', __dir__)
 
 RSpec.describe PuppetLitmus::Util do
   context 'when using interpolate_powershell' do
+    let(:command) { 'foo' }
+    let(:encoded) { Base64.strict_encode64(command.encode('UTF-16LE')) }
+
     it 'interpolates the command' do
-      expect(described_class.interpolate_powershell('foo')).to match(/powershell\.exe/)
-      expect(described_class.interpolate_powershell('foo')).to match(/NoProfile/)
-      expect(described_class.interpolate_powershell('foo')).to match(/EncodedCommand/)
-      expect(described_class.interpolate_powershell('foo')).not_to match(/foo/)
+      expect(described_class.interpolate_powershell(command)).to eql("powershell.exe -NoProfile -EncodedCommand #{encoded}")
+      expect(described_class.interpolate_powershell(command)).not_to match(/#{command}/)
     end
   end
 end
