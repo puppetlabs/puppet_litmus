@@ -210,9 +210,9 @@ namespace :litmus do
     # module_tar = Dir.glob('pkg/*.tar.gz').max_by { |f| File.mtime(f) }
     raise "Unable to find package in 'pkg/*.tar.gz'" if module_tar.nil?
 
-    install_module(inventory_hash, args[:target_node_name], module_tar, args[:module_repository])
+    install_module(inventory_hash, target_nodes, module_tar, args[:module_repository])
 
-    puts "Installed '#{module_tar}' on #{args[:target_node_name]}"
+    puts "Installed '#{module_tar}' on #{target_nodes.join(', ')}"
   end
 
   # Install the puppet modules from a source directory to nodes. It does not install dependencies.
@@ -241,10 +241,8 @@ namespace :litmus do
     include BoltSpec::Run
     module_tars.each do |module_tar|
       puts "Installing '#{module_tar}'"
-      target_nodes.each do |target_node_name|
-        install_module(inventory_hash, target_node_name, module_tar, args[:module_repository], args[:ignore_dependencies])
-        puts "Installed '#{module_tar}' on #{target_node_name}"
-      end
+      install_module(inventory_hash, target_nodes, module_tar, args[:module_repository], args[:ignore_dependencies])
+      puts "Installed '#{module_tar}' on #{target_nodes.join(', ')}"
     end
   end
 

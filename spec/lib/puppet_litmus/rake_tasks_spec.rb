@@ -26,6 +26,55 @@ describe 'litmus rake tasks' do
     end
   end
 
+  context 'with litmus:install_module' do
+    let(:args) { { target_node_name: nil, module_repository: nil } }
+    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'uri' => 'some.host' }, { 'uri' => 'some.otherhost' }] }] } }
+    let(:target_nodes) { ['some.host', 'some.otherhost'] }
+    let(:dummy_tar) { 'spec/data/doot.tar.gz' }
+
+    before do
+      Rake::Task['litmus:install_module'].reenable
+      allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
+      allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:find_targets).with(inventory_hash, args[:target_node_name]).and_return(target_nodes)
+    end
+
+    it 'installs module' do
+      expect_any_instance_of(Object).to receive(:build_module).and_return(dummy_tar)
+      expect($stdout).to receive(:puts).with("Built '#{dummy_tar}'")
+
+      expect_any_instance_of(Object).to receive(:install_module).with(inventory_hash, target_nodes, dummy_tar, args[:module_repository])
+      expect($stdout).to receive(:puts).with("Installed '#{dummy_tar}' on #{target_nodes.join(', ')}")
+
+      Rake::Task['litmus:install_module'].invoke(*args.values)
+    end
+
+    context 'with unknown target' do
+      let(:args) { { target_node_name: 'un.known', module_repository: nil } }
+      let(:target_nodes) { [] }
+
+      it 'exits with No targets found' do
+        expect do
+          expect($stdout).to receive(:puts).with('No targets found')
+          Rake::Task['litmus:install_module'].invoke(*args.values)
+        end.to raise_error(SystemExit) { |error|
+          expect(error.status).to eq(0)
+        }
+      end
+    end
+
+    context 'when build_module returns nil' do
+      let(:dummy_tar) { nil }
+
+      it 'raises error if build fails' do
+        expect_any_instance_of(Object).to receive(:build_module).and_return(dummy_tar)
+        expect($stdout).to receive(:puts).with("Built '#{dummy_tar}'")
+
+        expect { Rake::Task['litmus:install_module'].invoke(*args.values) }
+          .to raise_error(RuntimeError, "Unable to find package in 'pkg/*.tar.gz'")
+      end
+    end
+  end
+
   context 'with litmus:install_modules_from_directory' do
     let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'uri' => 'some.host' }] }] } }
     let(:target_dir) { File.join(Dir.pwd, 'spec/fixtures/modules') }
