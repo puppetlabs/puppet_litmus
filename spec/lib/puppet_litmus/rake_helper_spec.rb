@@ -24,6 +24,9 @@ RSpec.shared_examples 'supported provisioner' do |args|
 end
 
 RSpec.describe PuppetLitmus::RakeHelper do
+  inventory_file = File.join(Dir.pwd, 'spec', 'fixtures', 'litmus_inventory.yaml')
+  let(:inventory_file) { inventory_file }
+
   context 'with provision_list' do
     let(:provision_hash) { { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } } }
     let(:results) { [] }
@@ -42,7 +45,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
         inventory_vars: nil,
         provision_hash: { 'default' => { 'provisioner' => 'docker', 'images' => ['waffleimage/centos7'] } },
         results: [],
-        params: { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => Dir.pwd }
+        params: { 'action' => 'provision', 'platform' => 'waffleimage/centos7', 'inventory' => inventory_file }
       },
       {
         provisioner: 'vagrant',
@@ -50,7 +53,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
         inventory_vars: nil,
         provision_hash: { 'default' => { 'provisioner' => 'vagrant', 'images' => ['centos7'] } },
         results: [],
-        params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => Dir.pwd }
+        params: { 'action' => 'provision', 'platform' => 'centos7', 'inventory' => inventory_file }
       },
       {
         provisioner: 'lxd',
@@ -58,7 +61,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
         inventory_vars: nil,
         provision_hash: { 'default' => { 'provisioner' => 'lxd', 'images' => ['images:centos/7'] } },
         results: [],
-        params: { 'action' => 'provision', 'platform' => 'images:centos/7', 'inventory' => Dir.pwd }
+        params: { 'action' => 'provision', 'platform' => 'images:centos/7', 'inventory' => inventory_file }
       }
     ].freeze
 
@@ -76,7 +79,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
           [{ 'uri' => 'some.host', 'facts' => { 'provisioner' => 'docker', 'container_name' => 'foo', 'platform' => 'some.host' } }] }] }
     end
     let(:targets) { ['some.host'] }
-    let(:params) { { 'action' => 'tear_down', 'node_name' => 'some.host', 'inventory' => Dir.pwd } }
+    let(:params) { { 'action' => 'tear_down', 'node_name' => 'some.host', 'inventory' => inventory_file } }
 
     it 'calls function' do
       allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)
@@ -97,7 +100,7 @@ RSpec.describe PuppetLitmus::RakeHelper do
           ] }] }
     end
     let(:targets) { ['one.host'] }
-    let(:params) { { 'action' => 'tear_down', 'node_name' => 'one.host', 'inventory' => Dir.pwd } }
+    let(:params) { { 'action' => 'tear_down', 'node_name' => 'one.host', 'inventory' => inventory_file } }
 
     it 'calls function' do
       allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'provision')).and_return(true)

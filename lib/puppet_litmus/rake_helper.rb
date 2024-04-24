@@ -68,7 +68,7 @@ module PuppetLitmus::RakeHelper
     raise "the provision module was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" unless
       File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'provision'))
 
-    params = { 'action' => 'provision', 'platform' => platform, 'inventory' => Dir.pwd }
+    params = { 'action' => 'provision', 'platform' => platform, 'inventory' => File.join(Dir.pwd, 'spec', 'fixtures', 'litmus_inventory.yaml') }
     params['vars'] = inventory_vars unless inventory_vars.nil?
 
     task_name = provisioner_task(provisioner)
@@ -120,7 +120,7 @@ module PuppetLitmus::RakeHelper
     # how do we know what provisioner to use
     add_platform_field(inventory_hash, node_name)
 
-    params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => Dir.pwd }
+    params = { 'action' => 'tear_down', 'node_name' => node_name, 'inventory' => File.join(Dir.pwd, 'spec', 'fixtures', 'litmus_inventory.yaml') }
     node_facts = facts_from_node(inventory_hash, node_name)
     bolt_result = run_task(provisioner_task(node_facts['provisioner']), 'localhost', params, config: DEFAULT_CONFIG_DATA, inventory: nil)
     raise_bolt_errors(bolt_result, "tear_down of #{node_name} failed.")
