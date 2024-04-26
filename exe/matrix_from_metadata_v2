@@ -41,7 +41,6 @@ ARM_IMAGE_TABLE = {
 }.freeze
 
 DOCKER_PLATFORMS = {
-  'CentOS-6' => 'litmusimage/centos:6',
   'CentOS-7' => 'litmusimage/centos:7',
   'CentOS-8' => 'litmusimage/centos:stream8', # Support officaly moved to Stream8, metadata is being left as is
   'Rocky-8' => 'litmusimage/rockylinux:8',
