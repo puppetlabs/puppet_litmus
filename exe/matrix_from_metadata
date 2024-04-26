@@ -37,7 +37,6 @@ IMAGE_TABLE = {
 }.freeze
 
 DOCKER_PLATFORMS = [
-  'CentOS-6',
   'CentOS-7',
   'CentOS-8',
   'Debian-10',
