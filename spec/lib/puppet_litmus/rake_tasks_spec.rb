@@ -22,6 +22,7 @@ describe 'litmus rake tasks' do
       expect($stdout).to receive(:puts).with('redhat-5-x86_64')
       expect($stdout).to receive(:puts).with('ubuntu-1404-x86_64')
       expect($stdout).to receive(:puts).with('ubuntu-1804-x86_64')
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:metadata'].invoke
     end
   end
@@ -44,7 +45,7 @@ describe 'litmus rake tasks' do
 
       expect_any_instance_of(Object).to receive(:install_module).with(inventory_hash, target_nodes, dummy_tar, args[:module_repository])
       expect($stdout).to receive(:puts).with("Installed '#{dummy_tar}' on #{target_nodes.join(', ')}")
-
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:install_module'].invoke(*args.values)
     end
 
@@ -93,6 +94,7 @@ describe 'litmus rake tasks' do
       expect($stdout).to receive(:puts).with(start_with('Installing \'spec/data/doot.tar.gz\''))
       expect_any_instance_of(Object).to receive(:run_command).twice.and_return([])
       expect($stdout).to receive(:puts).with(start_with('Installed \'spec/data/doot.tar.gz\''))
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:install_modules_from_directory'].invoke('./spec/fixtures/modules')
     end
   end
@@ -103,6 +105,7 @@ describe 'litmus rake tasks' do
       expect(Rake::Task['litmus:provision_list']).to receive(:invoke).with('default')
       expect(Rake::Task['litmus:install_agent']).to receive(:invoke).with('puppet6')
       expect(Rake::Task['litmus:install_module']).to receive(:invoke)
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:provision_install'].invoke('default', 'puppet6')
     end
   end
@@ -126,7 +129,7 @@ describe 'litmus rake tasks' do
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with(any_args).and_return(results)
       allow_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).with(any_args).and_return({})
       allow_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(any_args).and_return(true)
-
+      allow_any_instance_of(Object).to receive(:exit)
       expect { Rake::Task['litmus:provision'].invoke('docker', 'centos:7') }.to output(/#{expected_output}/).to_stdout
     end
   end
@@ -138,6 +141,7 @@ describe 'litmus rake tasks' do
     it 'no key in provision file' do
       allow(File).to receive(:file?).with(any_args).and_return(true)
       expect(YAML).to receive(:load_file).with(provision_file).and_return(provision_hash)
+      allow_any_instance_of(Object).to receive(:exit)
       expect { Rake::Task['litmus:provision_list'].invoke('deet') }.to raise_error(/deet/)
     end
   end
@@ -149,6 +153,7 @@ describe 'litmus rake tasks' do
       stub_const('ENV', ENV.to_hash.merge('TARGET_HOST' => 'some.host'))
       expect_any_instance_of(PuppetLitmus::InventoryManipulation).to receive(:inventory_hash_from_inventory_file).and_return(inventory_hash)
       expect_any_instance_of(PuppetLitmus::RakeHelper).to receive(:check_connectivity?).with(inventory_hash, nil).and_return(true)
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:check_connectivity'].invoke
     end
   end
@@ -157,6 +162,7 @@ describe 'litmus rake tasks' do
     it 'calls spec_prep' do
       expect(Rake::Task['spec_prep']).to receive(:invoke).and_return('')
       expect_any_instance_of(RSpec::Core::RakeTask).to receive(:run_task)
+      allow_any_instance_of(Object).to receive(:exit)
       Rake::Task['litmus:acceptance:localhost'].invoke
     end
   end
