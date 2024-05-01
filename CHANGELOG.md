@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.4.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.4.0) - 2024-05-01
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.3.0...v1.4.0)
+
+### Added
+
+- add amazonlinux litmus images to matrix [#560](https://github.com/puppetlabs/puppet_litmus/pull/560) ([h0tw1r3](https://github.com/h0tw1r3))
+- add supported docker el9 platforms to matrix [#551](https://github.com/puppetlabs/puppet_litmus/pull/551) ([h0tw1r3](https://github.com/h0tw1r3))
+- (maint) add oracle linux 8 [#546](https://github.com/puppetlabs/puppet_litmus/pull/546) ([h0tw1r3](https://github.com/h0tw1r3))
+
+### Fixed
+
+- use dockercli specinfra backend for docker_nodes [#559](https://github.com/puppetlabs/puppet_litmus/pull/559) ([h0tw1r3](https://github.com/h0tw1r3))
+- drop Debian 9 stretch from matrix [#556](https://github.com/puppetlabs/puppet_litmus/pull/556) ([h0tw1r3](https://github.com/h0tw1r3))
+- (BUGFIX) Remove Oracle/Scientific Linux 6 from `matrix_from_metadata_v2` [#555](https://github.com/puppetlabs/puppet_litmus/pull/555) ([david22swan](https://github.com/david22swan))
+- (BUGFIX) Remove CentOS 6 from `matrix_from_metadata` [#553](https://github.com/puppetlabs/puppet_litmus/pull/553) ([david22swan](https://github.com/david22swan))
+- Minor install_module improvements [#550](https://github.com/puppetlabs/puppet_litmus/pull/550) ([h0tw1r3](https://github.com/h0tw1r3))
+- (CAT-1688) - Pin rubocop to `~> 1.50.0` [#541](https://github.com/puppetlabs/puppet_litmus/pull/541) ([LukasAud](https://github.com/LukasAud))
+
 ## [v1.3.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.3.0) - 2023-12-21
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.2.1...v1.3.0)
