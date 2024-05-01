@@ -15,6 +15,13 @@
   ],
   "operatingsystem_support": [
     {
+      "operatingsystem": "AmazonLinux",
+      "operatingsystemrelease": [
+        "2",
+        "2023"
+      ]
+    },
+    {
       "operatingsystem": "CentOS",
       "operatingsystemrelease": [
         "6"

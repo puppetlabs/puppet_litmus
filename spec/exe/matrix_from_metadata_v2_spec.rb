@@ -23,6 +23,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
         [
           'matrix={',
           '"platforms":[',
+          '{"label":"AmazonLinux-2","provider":"docker","image":"litmusimage/amazonlinux:2"},',
+          '{"label":"AmazonLinux-2023","provider":"docker","image":"litmusimage/amazonlinux:2023"},',
           '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"},',
           '{"label":"RedHat-9","provider":"provision_service","image":"rhel-9"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
@@ -39,7 +41,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 14 cells:\n  - Acceptance Test Cells: 12\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 18 cells:\n  - Acceptance Test Cells: 16\n  - Spec Test Cells: 2")
     end
   end
 
@@ -64,6 +66,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
         [
           'matrix={',
           '"platforms":[',
+          '{"label":"AmazonLinux-2","provider":"docker","image":"litmusimage/amazonlinux:2"},',
+          '{"label":"AmazonLinux-2023","provider":"docker","image":"litmusimage/amazonlinux:2023"},',
           '{"label":"RedHat-8","provider":"provision_service","image":"rhel-8"},',
           '{"label":"RedHat-9","provider":"provision_service","image":"rhel-9"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
@@ -79,14 +83,14 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 12 cells:\n  - Acceptance Test Cells: 10\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 16 cells:\n  - Acceptance Test Cells: 14\n  - Spec Test Cells: 2")
     end
   end
 
   context 'with --exclude-platforms \'["ubuntu-18.04","redhat-8"]\'' do
     let(:github_output) { Tempfile.new('github_output') }
     let(:github_output_content) { github_output.read }
-    let(:result) { run_matrix_from_metadata_v2({ '--exclude-platforms' => ['ubuntu-18.04', 'ubuntu-22.04', 'redhat-8', 'redhat-9'] }) }
+    let(:result) { run_matrix_from_metadata_v2({ '--exclude-platforms' => ['amazonlinux-2', 'amazonlinux-2023', 'ubuntu-18.04', 'ubuntu-22.04', 'redhat-8', 'redhat-9'] }) }
 
     before do
       ENV['GITHUB_OUTPUT'] = github_output.path
