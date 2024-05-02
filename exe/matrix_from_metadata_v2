@@ -123,6 +123,12 @@ if ARGV.include?('--provision-service')
   DOCKER_PLATFORMS = {}.freeze
 end
 
+# disable provision service if repository owner is not puppetlabs
+unless ['puppetlabs', nil].include?(ENV.fetch('GITHUB_REPOSITORY_OWNER', nil))
+  IMAGE_TABLE = {}.freeze
+  ARM_IMAGE_TABLE = {}.freeze
+end
+
 metadata_path = ENV['TEST_MATRIX_FROM_METADATA'] || 'metadata.json'
 metadata = JSON.parse(File.read(metadata_path))
 
