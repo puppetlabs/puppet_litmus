@@ -104,8 +104,9 @@ default_options = {
 begin
   Action.init
 
-  # hidden argument to setup puppetlabs org defaults
-  default_options[:'provision-exclude'] = 'provision_service' if ARGV.reject! { |x| x == '--puppetlabs' }.nil?
+  # default disable provision_service if puppetlabs is not the owner
+  default_options[:'provision-exclude'] = 'provision_service' \
+    if ARGV.reject! { |x| x == '--puppetlabs' }.nil? && !['puppetlabs'].include?(ENV.fetch('GITHUB_REPOSITORY_OWNER', nil))
 
   # apply default_options if not overridden on the command line
   default_options.each do |arg, value|
