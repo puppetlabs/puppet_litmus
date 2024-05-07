@@ -95,6 +95,7 @@ options = OpenStruct.new(
 
 default_options = {
   'provision-prefer': 'docker',
+  runner: 'ubuntu-latest',
   output: 'auto',
   matrix: File.join(File.dirname(__FILE__), 'matrix.json'),
   metadata: 'metadata.json'
@@ -142,6 +143,8 @@ begin
     opt.on('--debug', TrueClass, 'Enable debug messages') { |o| options.debug = o }
     opt.on('--quiet', TrueClass, 'Disable notice messages') { |o| options.quiet = o }
     opt.on('--output TYPE', OutputType, "Type of output to generate; auto, github or stdout (default: #{default_options[:output]})\n\n") { |o| options.output = o }
+
+    opt.on('--runner NAME', String, "Default Github action runner (default: #{default_options[:runner]})") { |o| options.runner = o }
 
     opt.on('--puppet-include MAJOR', Integer, 'Select puppet major version') { |o| options.puppet_include << o }
     opt.on('--puppet-exclude MAJOR', Integer, 'Filter puppet major version') { |o| options.puppet_exclude << o }
@@ -277,11 +280,16 @@ options[:metadata]['operatingsystem_support'].each do |os_sup|
         label = (arch.eql?('x86_64') ? platform_key : platform_key + [arch]).join('-')
         next if os_ver_platforms.any? { |h| h[:label] == label }
 
+        runner = options[:matrix]['github_runner'][provisioner]&.reduce(options[:runner]) do |memo, (reg, run)|
+          label.match?(/#{reg}/i) ? run : memo
+        end
+
         os_ver_platforms << {
           label: label,
           provider: provisioner,
           arch: arch,
-          image: image
+          image: image,
+          runner: runner.nil? ? options[:runner] : runner
         }
       end
     end
