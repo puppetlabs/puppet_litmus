@@ -28,6 +28,12 @@ module PuppetLitmus
         host = ENV.fetch('TARGET_HOST', nil)
         set :backend, :dockercli
         set :docker_container, host
+      elsif target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'lxd_nodes')
+        host = ENV.fetch('TARGET_HOST', nil)
+        set :backend, :lxd
+        set :login_shell, true
+        set :lxd_remote, node_config.dig('lxd', 'remote') unless node_config.dig('lxd', 'remote').nil?
+        set :lxd_instance, host
       elsif target_in_group(inventory_hash, ENV.fetch('TARGET_HOST', nil), 'ssh_nodes')
         set :backend, :ssh
         options = Net::SSH::Config.for(host)
