@@ -33,33 +33,49 @@ Install Litmus as a gem by running `gem install puppet_litmus`.
 
 - Note if you choose to override the `litmus_inventory.yaml` location, please ensure that the directory structure you define exists.
 
-## matrix_from_metadata_v2
+## matrix_from_metadata_v3
 
-matrix_from_metadata_v2 tool generates a github action matrix from the supported operating systems listed in the module's metadata.json.
+matrix_from_metadata_v3 tool generates a github action matrix from the supported operating systems listed in the module's metadata.json.
 
 How to use it:
-in the project module root directory run `bundle exec matrix_from_metadata_v2`
+in the project module root directory run `bundle exec matrix_from_metadata_v3`
 
-### --exclude-platforms parameter
+### Optional arguments
 
-matrix_from_metadata_v2 accepts the `--exclude-platforms <JSON array>` argument in order to exclude some platforms from the matrix.
+| argument            | value | default           | description |
+|---------------------|-------|-------------------|-------------|
+| --matrix            | FILE  | built-in          | File containing possible collections and provisioners |
+| --metadata          | FILE  | metadata.json     | File containing module metadata json |
+| --debug             |       |                   | Enable debug messages |
+| --quiet             |       |                   | Disable notice messages |
+| --output            | TYPE  | auto              | Type of output to generate; auto, github or stdout |
+| --runner            | NAME  | ubuntu-latest     | Default Github action runner |
+| --puppet-include    | MAJOR |                   | Select puppet major version |
+| --puppet-exclude    | MAJOR |                   | Filter puppet major version |
+| --platform-include  | REGEX |                   | Select platform |
+| --platform-exclude  | REGEX |                   | Filter platform |
+| --arch-include      | REGEX |                   | Select architecture |
+| --arch-exclude      | REGEX |                   | Filter architecture |
+| --provision-prefer  | NAME  | docker            | Prefer provisioner |
+| --provision-include | NAME  | all               | Select provisioner |
+| --provision-exclude | NAME  | provision_service | Filter provisioner |
 
-For example:
+> Refer to the [built-in matrix.json](https://github.com/puppetlabs/puppet_litmus/blob/main/exe/matrix.json) for a list of supported collection, provisioners, and platforms.
 
-`$: bundle exec matrix_from_metadata_v2 --exclude-platforms '["debian-11","centos-8"]'`
+### Examples
 
-> Note: The option value should be JSON string otherwise it will throw an error.
-> The values provided in the json array are case-insensitive `["debian-11","centos-8"]'` or `["Debian-11","CentOS-8"]'` are treated as being the same.
-
-### --custom-matrix parameter
-
-matrix_from_metadata_v2 accepts the `--custom-matrix /path/to/matrix.json` argument in order to execute your test suite against a custom matrix. This is useful for use cases that do not fit the default matrix generated.
-
-In order to use this new functionality, run:
-
-`$: bundle exec matrix_from_metadata_v2 --custom-matrix matrix.json`
-
-> Note: The file should contain a valid Array of JSON Objects (i.e. see [here](https://github.com/puppetlabs/puppet_litmus/blob/main/docs/custom_matrix.json)), otherwise it will throw an error.
+* Only specific platforms
+  ```sh
+  matrix_from_metadata_v3 --platform-include redhat --platform-include 'ubuntu-(20|22).04'
+  ```
+* Exclude platforms
+  ```sh
+  matrix_from_metadata_v3 --platform-exclude redhat-7 --platform-exclude ubuntu-18.04
+  ```
+* Exclude architecture
+  ```sh
+  matrix_from_metadata_v3 --arch-exclude x86_64
+  ```
 
 ## Documentation
 

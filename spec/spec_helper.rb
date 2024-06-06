@@ -38,6 +38,21 @@ def run_matrix_from_metadata_v2(options = {})
   )
 end
 
+def run_matrix_from_metadata_v3(options = [])
+  command = %w[bundle exec ./exe/matrix_from_metadata_v3]
+  unless options.include? '--metadata'
+    options << '--metadata'
+    options << File.join(File.dirname(__FILE__), 'exe', 'fake_metadata.json')
+  end
+  command += options
+  result = Open3.capture3(*command)
+  OpenStruct.new(
+    stdout: result[0],
+    stderr: result[1],
+    status_code: result[2]
+  )
+end
+
 # This is basically how `configure!` sets up RSpec in tests.
 require 'puppet_litmus'
 RSpec.configure do |config|
