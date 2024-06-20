@@ -70,7 +70,7 @@
             "OracleLinux": {
                 "7": { "x86_64": "litmusimage/oraclelinux:7" },
                 "8": { "x86_64": "litmusimage/oraclelinux:8" },
-                "8": { "x86_64": "litmusimage/oraclelinux:9" }
+                "9": { "x86_64": "litmusimage/oraclelinux:9" }
             },
             "Scientific": {
                 "7": { "x86_64": "litmusimage/scientificlinux:7" }
