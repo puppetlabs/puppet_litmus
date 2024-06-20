@@ -191,7 +191,7 @@ begin
 
   # union regexp option values
   %w[platform arch].each do |c|
-    ["#{c}_exclude".to_sym, "#{c}_include".to_sym].each do |k|
+    [:"#{c}_exclude", :"#{c}_include"].each do |k|
       options[k] = if options[k].empty?
                      nil
                    else

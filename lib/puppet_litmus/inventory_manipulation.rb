@@ -10,11 +10,7 @@ module PuppetLitmus::InventoryManipulation
   # @return [Hash] hash of the litmus_inventory.yaml file.
   def inventory_hash_from_inventory_file(inventory_full_path = nil)
     require 'yaml'
-    inventory_full_path = if inventory_full_path.nil?
-                            "#{Dir.pwd}/spec/fixtures/litmus_inventory.yaml"
-                          else
-                            inventory_full_path
-                          end
+    inventory_full_path = "#{Dir.pwd}/spec/fixtures/litmus_inventory.yaml" if inventory_full_path.nil?
     raise "There is no inventory file at '#{inventory_full_path}'." unless File.exist?(inventory_full_path)
 
     YAML.load_file(inventory_full_path)
@@ -103,7 +99,7 @@ module PuppetLitmus::InventoryManipulation
     output_collector = []
     targets_in_inventory(inventory) do |target|
       vars = target['vars']
-      roles = [(vars['role'] || vars['roles'])].flatten
+      roles = [vars['role'] || vars['roles']].flatten
       roles = roles.map(&:downcase)
       output_collector << target['uri'] if roles.include? role.downcase
     end

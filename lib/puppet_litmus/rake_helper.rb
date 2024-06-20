@@ -83,12 +83,9 @@ module PuppetLitmus::RakeHelper
     inventory_vars = provision_hash[key]['vars']
     # Splat the params into environment variables to pass to the provision task but only in this runspace
     provision_hash[key]['params']&.each { |k, value| ENV[k.upcase] = value.to_s }
-    results = []
-
-    provision_hash[key]['images'].each do |image|
-      results << provision(provisioner, image, inventory_vars)
+    provision_hash[key]['images'].map do |image|
+      provision(provisioner, image, inventory_vars)
     end
-    results
   end
 
   def tear_down_nodes(targets, inventory_hash)
@@ -160,11 +157,11 @@ module PuppetLitmus::RakeHelper
   def configure_path(inventory_hash)
     results = []
     # fix the path on ssh_nodes
-    unless inventory_hash['groups'].select { |group| group['name'] == 'ssh_nodes' && !group['targets'].empty? }.empty?
+    unless inventory_hash['groups'].none? { |group| group['name'] == 'ssh_nodes' && !group['targets'].empty? }
       results << run_command('echo PATH="$PATH:/opt/puppetlabs/puppet/bin" > /etc/environment',
                              'ssh_nodes', config: nil, inventory: inventory_hash)
     end
-    unless inventory_hash['groups'].select { |group| group['name'] == 'winrm_nodes' && !group['targets'].empty? }.empty?
+    unless inventory_hash['groups'].none? { |group| group['name'] == 'winrm_nodes' && !group['targets'].empty? }
       results << run_command('[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files\Puppet Labs\Puppet\bin;C:\Program Files (x86)\Puppet Labs\Puppet\bin", "Machine")',
                              'winrm_nodes', config: nil, inventory: inventory_hash)
     end
