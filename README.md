@@ -18,13 +18,9 @@ Litmus is a command line tool that allows you to run acceptance tests against Pu
 Litmus allows you to:
 
 - Provision targets to test against
-
 - Install a Puppet agent
-
 - Install a module
-
 - Run tests
-
 - Tear down the infrastructure
 
 Litmus also facilitates parallel test runs and running tests in isolation. Each step is standalone, allowing other operations between test runs, such as debugging or configuration updates on the test targets.
