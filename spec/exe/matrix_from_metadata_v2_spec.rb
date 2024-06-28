@@ -125,4 +125,43 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 2")
     end
   end
+
+  context 'without arguments and GITHUB_REPOSITORY_OWNER is not puppetlabs' do
+    let(:github_output) { Tempfile.new('github_output') }
+    let(:github_output_content) { github_output.read }
+    let(:result) { run_matrix_from_metadata_v2 }
+
+    before do
+      ENV['GITHUB_OUTPUT'] = github_output.path
+      ENV['GITHUB_REPOSITORY_OWNER'] = 'aforkuser'
+    end
+
+    it 'run successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'generates the matrix' do
+      expect(result.stdout).to include('::warning::Cannot find image for CentOS-6')
+      expect(result.stdout).to include('::warning::Cannot find image for Ubuntu-14.04')
+      expect(github_output_content).to include(
+        [
+          'matrix={',
+          '"platforms":[',
+          '{"label":"AmazonLinux-2","provider":"docker","image":"litmusimage/amazonlinux:2"},',
+          '{"label":"AmazonLinux-2023","provider":"docker","image":"litmusimage/amazonlinux:2023"},',
+          '{"label":"Ubuntu-18.04","provider":"docker","image":"litmusimage/ubuntu:18.04"},',
+          '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"}',
+          '],',
+          '"collection":[',
+          '"puppet7-nightly","puppet8-nightly"',
+          ']',
+          '}'
+        ].join
+      )
+      expect(github_output_content).to include(
+        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+      )
+      expect(result.stdout).to include("Created matrix with 10 cells:\n  - Acceptance Test Cells: 8\n  - Spec Test Cells: 2")
+    end
+  end
 end
