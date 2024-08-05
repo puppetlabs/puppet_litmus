@@ -36,6 +36,7 @@ IMAGE_TABLE = {
 }.freeze
 
 ARM_IMAGE_TABLE = {
+  'Debian-12-arm' => 'debian-12-arm64',
   'RedHat-9-arm' => 'rhel-9-arm64',
   'Ubuntu-22.04-arm' => 'ubuntu-2204-lts-arm64'
 }.freeze
@@ -108,11 +109,15 @@ if ARGV.include?('--provision-service')
   # NOTE: that the below are the only available images for the provision service
   updated_platforms = {
     'AlmaLinux-8' => 'almalinux-cloud/almalinux-8',
+    'AlmaLinux-9' => 'almalinux-cloud/almalinux-9',
     'CentOS-7' => 'centos-7',
     'CentOS-8' => 'centos-stream-8',
+    'CentOS-9' => 'centos-stream-9',
     'Rocky-8' => 'rocky-linux-cloud/rocky-linux-8',
+    'Rocky-9' => 'rocky-linux-cloud/rocky-linux-9',
     'Debian-10' => 'debian-10',
     'Debian-11' => 'debian-11',
+    'Debian-12' => 'debian-12',
     'Ubuntu-20.04' => 'ubuntu-2004-lts',
     'Ubuntu-22.04' => 'ubuntu-2204-lts'
   }
