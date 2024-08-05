@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.5.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.5.0) - 2024-08-05
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.4.0...v1.5.0)
+
+### Added
+
+- (FEAT) - Add debian 12 & alma/centos/rocky 9 to matrix_from_metadata v2 & v3 [#572](https://github.com/puppetlabs/puppet_litmus/pull/572) ([jordanbreen28](https://github.com/jordanbreen28))
+- automatically filter provision_service from matrix [#563](https://github.com/puppetlabs/puppet_litmus/pull/563) ([h0tw1r3](https://github.com/h0tw1r3))
+- pass full inventory path to task [#552](https://github.com/puppetlabs/puppet_litmus/pull/552) ([h0tw1r3](https://github.com/h0tw1r3))
+- (feature) matrix from metadata v3 [#549](https://github.com/puppetlabs/puppet_litmus/pull/549) ([h0tw1r3](https://github.com/h0tw1r3))
+- lxd provisioner support [#544](https://github.com/puppetlabs/puppet_litmus/pull/544) ([h0tw1r3](https://github.com/h0tw1r3))
+
 ## [v1.4.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.4.0) - 2024-05-01
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.3.0...v1.4.0)
@@ -115,6 +127,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.36.1...v1.0.0.rc.1)
 
 ### Changed
+
 - (CONT-806) Add Ruby 3.2 support [#485](https://github.com/puppetlabs/puppet_litmus/pull/485) ([GSPatton](https://github.com/GSPatton))
 
 ### Added
@@ -346,6 +359,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v0.23.1...v0.24.0)
 
 ### Changed
+
 - Remove puppet5 from matrix_from_metadata script and update puppet6 and puppet7 versions [#386](https://github.com/puppetlabs/puppet_litmus/pull/386) ([carabasdaniel](https://github.com/carabasdaniel))
 
 ## [v0.23.1](https://github.com/puppetlabs/puppet_litmus/tree/v0.23.1) - 2021-02-08
@@ -523,6 +537,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.13.1...0.14.0)
 
 ### Changed
+
 - (feat) move to v2 of bolt inventory file [#233](https://github.com/puppetlabs/puppet_litmus/pull/233) ([tphoney](https://github.com/tphoney))
 
 ### Added
@@ -606,6 +621,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.9.1...0.10.0)
 
 ### Changed
+
 - (FM-8513) Better handling of errors and changes [#185](https://github.com/puppetlabs/puppet_litmus/pull/185) ([florindragos](https://github.com/florindragos))
 - (FM-8456) set inventory vars when provisioning [#184](https://github.com/puppetlabs/puppet_litmus/pull/184) ([tphoney](https://github.com/tphoney))
 
@@ -792,6 +808,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.0.1...0.1.0)
 
 ### Changed
+
 - (FM-7470) change method names, use upload_file [#91](https://github.com/puppetlabs/puppet_litmus/pull/91) ([tphoney](https://github.com/tphoney))
 
 ### Added
