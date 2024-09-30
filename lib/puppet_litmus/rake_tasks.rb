@@ -157,7 +157,7 @@ namespace :litmus do
       end
 
       # add puppet-agent feature to successful nodes
-      inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
+      inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', targets[0])
     end
 
     # update the inventory with the puppet-agent feature set per node
