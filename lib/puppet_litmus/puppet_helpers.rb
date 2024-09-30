@@ -279,7 +279,7 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = search_for_target(target_option, inventory_hash)
     end
 
-    bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash, log_level = :trace)
+    bolt_result = run_task(task_name, target_node_name, params, config: config_data, inventory: inventory_hash, :log_level => :trace)
     result_obj = {
       exit_code: 0,
       stdout: nil,
