@@ -128,6 +128,7 @@ namespace :litmus do
     Rake::Task['spec_prep'].invoke
 
     results = install_agent(args[:collection], targets, inventory_hash)
+    target_index = 0
     results.each do |result|
       command_to_run = "bolt task run puppet_agent::install --targets #{result['target']} --inventoryfile spec/fixtures/litmus_inventory.yaml --modulepath #{DEFAULT_CONFIG_DATA['modulepath']}"
       raise "Failed on #{result['target']}\n#{result}\ntry running '#{command_to_run}'" if result['status'] != 'success'
@@ -157,7 +158,8 @@ namespace :litmus do
       end
 
       # add puppet-agent feature to successful nodes
-      inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', result['target'])
+      inventory_hash = add_feature_to_node(inventory_hash, 'puppet-agent', targets[target_index])
+      target_index += 1
     end
 
     # update the inventory with the puppet-agent feature set per node
