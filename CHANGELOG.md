@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.5.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.5.1) - 2024-10-03
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.5.0...v1.5.1)
+
+### Fixed
+
+- (CAT-2052) Pass target container URI instead of container SHA ID to add_feature_to_node() method [#574](https://github.com/puppetlabs/puppet_litmus/pull/574) ([shubhamshinde360](https://github.com/shubhamshinde360))
+
 ## [v1.5.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.5.0) - 2024-08-05
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.4.0...v1.5.0)
