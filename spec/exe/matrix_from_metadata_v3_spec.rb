@@ -202,4 +202,42 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
     end
   end
+
+  context 'with --pe-include' do
+    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--pe-include']) }
+    let(:matrix) do
+      [
+        'matrix={',
+        '"platforms":[',
+        '{"label":"AmazonLinux-2","provider":"docker","arch":"x86_64","image":"litmusimage/amazonlinux:2","runner":"ubuntu-20.04"},',
+        '{"label":"AmazonLinux-2023","provider":"docker","arch":"x86_64","image":"litmusimage/amazonlinux:2023","runner":"ubuntu-20.04"},',
+        '{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:18.04","runner":"ubuntu-20.04"},',
+        '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"}',
+        '],',
+        '"collection":[',
+        '"puppet7-nightly","puppet8-nightly"',
+        ']',
+        '}'
+      ].join
+    end
+
+    it 'run successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'generates the matrix with PE LTS versions' do
+      expect(result.stdout).to include(
+        '::warning::CentOS-6 no provisioner found',
+        '::warning::Ubuntu-14.04 no provisioner found',
+        '::group::matrix',
+        '::group::spec_matrix'
+      )
+      expect(github_output_content).to include(
+        '"collection":["2023.8.0-puppet_enterprise","2021.7.9-puppet_enterprise","puppet7-nightly","puppet8-nightly"'
+      )
+      expect(github_output_content).to include(
+        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+      )
+    end
+  end
 end
