@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v1.6.0](https://github.com/puppetlabs/puppet_litmus/tree/v1.6.0) - 2024-10-25
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.5.1...v1.6.0)
+
+### Added
+
+- (feat) - Add Ubuntu-24.04 to matrix_from_metadata v2 and v3 [#577](https://github.com/puppetlabs/puppet_litmus/pull/577) ([shubhamshinde360](https://github.com/shubhamshinde360))
+- (FEAT) Add PE to matrix_from_metadata_v3 [#576](https://github.com/puppetlabs/puppet_litmus/pull/576) ([coreymbe](https://github.com/coreymbe))
+
 ## [v1.5.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.5.1) - 2024-10-03
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.5.0...v1.5.1)
