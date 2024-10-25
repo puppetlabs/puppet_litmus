@@ -38,7 +38,8 @@ IMAGE_TABLE = {
 ARM_IMAGE_TABLE = {
   'Debian-12-arm' => 'debian-12-arm64',
   'RedHat-9-arm' => 'rhel-9-arm64',
-  'Ubuntu-22.04-arm' => 'ubuntu-2204-lts-arm64'
+  'Ubuntu-22.04-arm' => 'ubuntu-2204-lts-arm64',
+  'Ubuntu-24.04-arm' => 'ubuntu-2404-lts-arm64'
 }.freeze
 
 DOCKER_PLATFORMS = {
@@ -60,7 +61,8 @@ DOCKER_PLATFORMS = {
   'Scientific-7' => 'litmusimage/scientificlinux:7',
   'Ubuntu-18.04' => 'litmusimage/ubuntu:18.04',
   'Ubuntu-20.04' => 'litmusimage/ubuntu:20.04',
-  'Ubuntu-22.04' => 'litmusimage/ubuntu:22.04'
+  'Ubuntu-22.04' => 'litmusimage/ubuntu:22.04',
+  'Ubuntu-24.04' => 'litmusimage/ubuntu:24.04'
 }.freeze
 
 # This table uses the latest version in each collection for accurate
@@ -119,7 +121,8 @@ if ARGV.include?('--provision-service')
     'Debian-11' => 'debian-11',
     'Debian-12' => 'debian-12',
     'Ubuntu-20.04' => 'ubuntu-2004-lts',
-    'Ubuntu-22.04' => 'ubuntu-2204-lts'
+    'Ubuntu-22.04' => 'ubuntu-2204-lts',
+    'Ubuntu-24.04' => 'ubuntu-2404-lts'
   }
   updated_list = IMAGE_TABLE.dup.clone
   updated_list.merge!(updated_platforms)

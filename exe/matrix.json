@@ -40,7 +40,8 @@
             },
             "Ubuntu": {
                 "20.04": { "x86_64": "ubuntu-2004-lts" },
-                "22.04": { "x86_64": "ubuntu-2204-lts", "arm": "ubuntu-2204-lts-arm64" }
+                "22.04": { "x86_64": "ubuntu-2204-lts", "arm": "ubuntu-2204-lts-arm64" },
+                "24.04": { "x86_64": "ubuntu-2404-lts", "arm": "ubuntu-2404-lts-arm64" }
             },
             "Windows": {
                 "2016": { "x86_64": "windows-2016" },
@@ -82,7 +83,8 @@
             "Ubuntu": {
                 "18.04": { "x86_64": "litmusimage/ubuntu:18.04" },
                 "20.04": { "x86_64": "litmusimage/ubuntu:20.04" },
-                "22.04": { "x86_64": "litmusimage/ubuntu:22.04" }
+                "22.04": { "x86_64": "litmusimage/ubuntu:22.04" },
+                "24.04": { "x86_64": "litmusimage/ubuntu:24.04" }
             }
         }
     },
