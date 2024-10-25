@@ -147,6 +147,8 @@ begin
 
     opt.on('--runner NAME', String, "Default Github action runner (default: #{default_options[:runner]})") { |o| options.runner = o }
 
+    opt.on('--pe-include', TrueClass, 'Include Puppet Enterprise LTS') { |o| options.pe_include = o }
+
     opt.on('--puppet-include MAJOR', Integer, 'Select puppet major version') { |o| options.puppet_include << o }
     opt.on('--puppet-exclude MAJOR', Integer, 'Filter puppet major version') { |o| options.puppet_exclude << o }
 
@@ -219,6 +221,27 @@ options[:metadata]['requirements']&.each do |req|
     break
   end
 
+  gem_req = Gem::Requirement.create(puppet_version_reqs)
+
+  # Add PE LTS to the collection matrix
+  if options[:pe_include]
+    require 'puppet_forge'
+
+    PuppetForge.user_agent = 'Puppet/Litmus'
+
+    forge_conn = PuppetForge::Connection.make_connection('https://forge.puppet.com')
+    pe_tracks = forge_conn.get('/private/versions/pe')
+    lts_tracklist = pe_tracks.body.select { |ver| ver[:lts] == true }
+
+    lts_tracklist.each do |track|
+      if gem_req.satisfied_by?(Gem::Version.new(track[:versions][0][:puppet].to_s))
+        matrix[:collection] << "#{track[:latest]}-puppet_enterprise"
+      else
+        Action.debug("PE #{track[:latest]} (puppet v#{track[:versions][0][:puppet]}) outside requirements #{puppet_version_reqs}")
+      end
+    end
+  end
+
   options[:matrix]['collections'].each do |collection|
     next unless options[:puppet_include].each do |major|
       break if major != collection['puppet'].to_i
@@ -235,7 +258,6 @@ options[:metadata]['requirements']&.each do |req|
 
     # Test against the "largest" puppet version in a collection, e.g. `7.9999` to allow puppet requirements with a non-zero lower bound on minor/patch versions.
     # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
-    gem_req = Gem::Requirement.create(puppet_version_reqs)
     next unless gem_req.satisfied_by?(Gem::Version.new("#{collection['puppet'].to_i}.9999"))
 
     matrix[:collection] << "puppet#{collection['puppet'].to_i}-nightly"
