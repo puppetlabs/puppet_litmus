@@ -88,9 +88,9 @@ module PuppetLitmus
         endpoint.path = '/wsman'
 
         opts = {
-          user: user,
+          user:,
           password: pass,
-          endpoint: endpoint,
+          endpoint:,
           operation_timeout: 300
         }
 
