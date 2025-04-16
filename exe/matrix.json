@@ -1,10 +1,6 @@
 {
     "collections": [
         {
-            "puppet": 7.24,
-            "ruby": 2.7
-        },
-        {
             "puppet": 8.0,
             "ruby": 3.2
         }
@@ -90,7 +86,7 @@
     },
     "github_runner": {
         "docker": {
-            "^(AmazonLinux-2|(CentOS|OracleLinux|Scientific)-7|Ubuntu-18|Debian-10)": "ubuntu-20.04"
+            "^(AmazonLinux-2|(CentOS|OracleLinux|Scientific)-7|Ubuntu-18|Debian-10)": "ubuntu-22.04"
         }
     }
 }

@@ -308,10 +308,10 @@ options[:metadata]['operatingsystem_support'].each do |os_sup|
         end
 
         os_ver_platforms << {
-          label: label,
+          label:,
           provider: provisioner,
-          arch: arch,
-          image: image,
+          arch:,
+          image:,
           runner: runner.nil? ? options[:runner] : runner
         }
       end
@@ -330,7 +330,7 @@ Action.group('matrix', matrix, pretty: true).group('spec_matrix', spec_matrix, p
 Action.error('no supported puppet versions') if matrix[:collection].empty?
 
 if Action.type == 'stdout'
-  $stdout.puts JSON.generate({ matrix: matrix, spec_matrix: spec_matrix })
+  $stdout.puts JSON.generate({ matrix:, spec_matrix: })
 else
   Action.set_output('matrix', matrix).set_output('spec_matrix', spec_matrix)
 end

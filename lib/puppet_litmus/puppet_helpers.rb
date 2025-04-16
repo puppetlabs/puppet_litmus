@@ -20,8 +20,8 @@ module PuppetLitmus::PuppetHelpers
   # @return [Boolean] The result of the 2 apply manifests.
   def idempotent_apply(manifest, opts = {})
     manifest_file_location = create_manifest_file(manifest)
-    apply_manifest(nil, **opts, catch_failures: true, manifest_file_location: manifest_file_location)
-    apply_manifest(nil, **opts, catch_changes: true, manifest_file_location: manifest_file_location)
+    apply_manifest(nil, **opts, catch_failures: true, manifest_file_location:)
+    apply_manifest(nil, **opts, catch_changes: true, manifest_file_location:)
   end
 
   # Applies a manifest. returning the result of that apply. Mimics the apply_manifest from beaker
@@ -230,7 +230,7 @@ module PuppetLitmus::PuppetHelpers
       target_node_name = search_for_target(target_option, inventory_hash)
     end
 
-    bolt_result = upload_file(source, destination, target_node_name, options: options, config: nil, inventory: inventory_hash)
+    bolt_result = upload_file(source, destination, target_node_name, options:, config: nil, inventory: inventory_hash)
 
     result_obj = {
       exit_code: 0,
