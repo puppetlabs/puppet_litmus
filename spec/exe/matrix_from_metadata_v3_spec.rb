@@ -30,7 +30,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -63,7 +63,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -103,7 +103,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -142,7 +142,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -175,7 +175,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '"platforms":[',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -215,7 +215,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppet8-nightly"',
+        '"puppet8"',
         ']',
         '}'
       ].join
@@ -233,7 +233,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::spec_matrix'
       )
       expect(github_output_content).to include(
-        '"collection":["2023.8.0-puppet_enterprise","2021.7.9-puppet_enterprise","puppet8-nightly"'
+        '"collection":["2023.8.0-puppet_enterprise","2021.7.9-puppet_enterprise","puppet8"'
       )
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'

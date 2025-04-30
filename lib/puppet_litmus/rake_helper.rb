@@ -129,11 +129,11 @@ module PuppetLitmus::RakeHelper
 
   def install_agent(collection, targets, inventory_hash)
     include ::BoltSpec::Run
-    params = if collection.nil?
-               {}
-             else
-               { 'collection' => collection }
-             end
+    puppet_version = ENV.fetch('PUPPET_VERSION', nil)
+    params = {}
+    params['collection'] = collection  if collection
+    params['version'] = puppet_version if puppet_version
+
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" \
       unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
 
