@@ -33,7 +33,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppet7-nightly","puppet8-nightly"',
+          '"puppet7","puppet8"',
           ']',
           '}'
         ].join
@@ -75,7 +75,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppet7-nightly","puppet8-nightly"',
+          '"puppet7","puppet8"',
           ']',
           '}'
         ].join
@@ -114,7 +114,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppet7-nightly","puppet8-nightly"',
+          '"puppet7","puppet8"',
           ']',
           '}'
         ].join
@@ -153,7 +153,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"}',
           '],',
           '"collection":[',
-          '"puppet7-nightly","puppet8-nightly"',
+          '"puppet7","puppet8"',
           ']',
           '}'
         ].join
