@@ -4,7 +4,7 @@ require 'bolt_spec/run'
 require 'puppet_litmus/version'
 
 # helper methods for the litmus rake tasks
-module PuppetLitmus::RakeHelper
+module PuppetLitmus::RakeHelper # rubocop:disable Metrics/ModuleLength
   # DEFAULT_CONFIG_DATA should be frozen for our safety, but it needs to work around https://github.com/puppetlabs/bolt/pull/1696
   DEFAULT_CONFIG_DATA = { 'modulepath' => File.join(Dir.pwd, 'spec', 'fixtures', 'modules') } # .freeze # rubocop:disable Style/MutableConstant
   SUPPORTED_PROVISIONERS = %w[abs docker docker_exp lxd provision_service vagrant vmpooler].freeze
@@ -130,12 +130,17 @@ module PuppetLitmus::RakeHelper
   def install_agent(collection, targets, inventory_hash)
     include ::BoltSpec::Run
     puppet_version = ENV.fetch('PUPPET_VERSION', nil)
+    forge_token = ENV.fetch('PUPPET_FORGE_TOKEN', nil)
     params = {}
+    params['password'] = forge_token if forge_token
     params['collection'] = collection  if collection
     params['version'] = puppet_version if puppet_version
 
     raise "puppet_agent was not found in #{DEFAULT_CONFIG_DATA['modulepath']}, please amend the .fixtures.yml file" \
       unless File.directory?(File.join(DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent'))
+
+    raise 'puppetcore agent installs require a valid PUPPET_FORGE_TOKEN set in the env.' \
+        if collection =~ /\Apuppetcore.*/ && !forge_token
 
     # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
     bolt_result = run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
