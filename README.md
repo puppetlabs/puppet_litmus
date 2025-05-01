@@ -29,7 +29,9 @@ Install Litmus as a gem by running `gem install puppet_litmus`.
 
 - Note if you choose to override the `litmus_inventory.yaml` location, please ensure that the directory structure you define exists.
 
-## Install a specific puppet agent version
+## Agent installs
+
+### Install a specific puppet agent version
 
 To install a specific version of the puppet agent, you can export the `PUPPET_VERSION` env var, like below:
 ```
@@ -37,6 +39,13 @@ export PUPPET_VERSION=8.8.1
 ```
 
 When set, the `litmus:install_agent` rake task will install the specified version. The default is `latest`.
+
+## Installing puppetcore agents
+
+To install a puppetcore puppet agent through the `litmus:install_agent` rake task, you need to export your Forge API key as an env var, like below:
+```
+export PUPPET_FORGE_TOKEN='<your_forge_api_key>'
+```
 
 ## matrix_from_metadata_v3
 
