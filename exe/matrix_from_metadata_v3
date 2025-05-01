@@ -260,7 +260,7 @@ options[:metadata]['requirements']&.each do |req|
     # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
     next unless gem_req.satisfied_by?(Gem::Version.new("#{collection['puppet'].to_i}.9999"))
 
-    matrix[:collection] << "puppet#{collection['puppet'].to_i}"
+    matrix[:collection] << "puppetcore#{collection['puppet'].to_i}"
 
     spec_matrix[:include] << {
       puppet_version: "~> #{collection['puppet']}",
