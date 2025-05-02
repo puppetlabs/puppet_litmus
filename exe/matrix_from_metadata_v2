@@ -217,7 +217,7 @@ if metadata.key?('requirements') && metadata['requirements'].length.positive?
       # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
       next unless Gem::Requirement.create(reqs).satisfied_by?(Gem::Version.new("#{collection[:puppet_maj_version]}.9999"))
 
-      matrix[:collection] << "puppet#{collection[:puppet_maj_version]}"
+      matrix[:collection] << "puppetcore#{collection[:puppet_maj_version]}"
 
       include_version = {
         8 => "~> #{collection[:puppet_maj_version]}.0",
