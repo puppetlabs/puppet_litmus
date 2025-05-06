@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.0.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.0.0) - 2025-05-06
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.6.1...v2.0.0)
+
+### Changed
+
+- feat: use puppetcore by default in matrix_from_metadata [#586](https://github.com/puppetlabs/puppet_litmus/pull/586) ([jordanbreen28](https://github.com/jordanbreen28))
+- breaking: mark matrix_from_metadata_v2 as deprecated in output [#584](https://github.com/puppetlabs/puppet_litmus/pull/584) ([jordanbreen28](https://github.com/jordanbreen28))
+- breaking: remove deprecated matrix_from_metadata (v1) [#583](https://github.com/puppetlabs/puppet_litmus/pull/583) ([jordanbreen28](https://github.com/jordanbreen28))
+- (CAT-2286) Remove Ruby 2.x/Puppet 7.x Support [#581](https://github.com/puppetlabs/puppet_litmus/pull/581) ([LukasAud](https://github.com/LukasAud))
+
+### Added
+
+- feat: add puppetcore agent installation support [#585](https://github.com/puppetlabs/puppet_litmus/pull/585) ([jordanbreen28](https://github.com/jordanbreen28))
+
 ## [v1.6.1](https://github.com/puppetlabs/puppet_litmus/tree/v1.6.1) - 2024-12-11
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.6.0...v1.6.1)
