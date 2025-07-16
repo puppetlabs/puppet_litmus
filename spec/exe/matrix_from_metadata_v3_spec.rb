@@ -233,7 +233,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::spec_matrix'
       )
       expect(github_output_content).to include(
-        '"collection":["2023.8.3-puppet_enterprise","2021.7.9-puppet_enterprise","puppetcore8"'
+        '"collection":["2023.8.4-puppet_enterprise","2021.7.9-puppet_enterprise","puppetcore8"'
       )
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
