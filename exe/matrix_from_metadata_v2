@@ -231,7 +231,14 @@ end
 
 puts '::warning::matrix_from_metadata_v2 is now deprecated and will be removed in puppet_litmus v3, please migrate to matrix_from_metadata_v3.'
 # Set to defaults (all collections) if no matches are found
-matrix[:collection] = COLLECTION_TABLE.map { |collection| "puppet#{collection[:puppet_maj_version]}-nightly" } if matrix[:collection].empty?
+if matrix[:collection].empty?
+  COLLECTION_TABLE.map do |collection|
+    version = collection[:puppet_maj_version]
+    prefix = version == 7 ? 'puppet' : 'puppetcore'
+    "#{prefix}#{version}-nightly"
+  end
+end
+
 # Just to make sure there aren't any duplicates
 matrix[:platforms] = matrix[:platforms].uniq.sort_by { |a| a[:label] } unless ARGV.include?('--custom-matrix')
 matrix[:collection] = matrix[:collection].uniq.sort
