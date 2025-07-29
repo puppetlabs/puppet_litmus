@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.1.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.1.0) - 2025-07-29
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.0.0...v2.1.0)
+
+### Added
+
+- (FEAT) Update matrix_from_metadata_v3 to target puppetcore nightly [#592](https://github.com/puppetlabs/puppet_litmus/pull/592) ([david22swan](https://github.com/david22swan))
+- (PA-7608) Use artifactory URL for puppetcore nightlies [#591](https://github.com/puppetlabs/puppet_litmus/pull/591) ([skyamgarp](https://github.com/skyamgarp))
+
 ## [v2.0.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.0.0) - 2025-05-06
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v1.6.1...v2.0.0)
