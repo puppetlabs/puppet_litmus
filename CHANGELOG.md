@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.2.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.2.0) - 2025-07-30
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.1.0...v2.2.0)
+
+### Added
+
+- (FEAT) Set nightly puppetcore builds as an option rather than default [#594](https://github.com/puppetlabs/puppet_litmus/pull/594) ([david22swan](https://github.com/david22swan))
+
 ## [v2.1.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.1.0) - 2025-07-29
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.0.0...v2.1.0)
