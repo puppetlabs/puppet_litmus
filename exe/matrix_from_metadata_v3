@@ -161,6 +161,8 @@ begin
     opt.on('--provision-prefer NAME', String, "Prefer provisioner (default: #{default_options[:'provision-prefer']})") { |o| options.provision_prefer.push(*o.split(',')) }
     opt.on('--provision-include NAME', String, 'Select provisioner (default: all)') { |o| options.provision_include.push(*o.split(',')) }
     opt.on('--provision-exclude NAME', String, "Filter provisioner (default: #{default_options[:'provision-exclude'] || 'none'})") { |o| options.provision_exclude.push(*o.split(',')) }
+
+    opt.on('--nightly', TrueClass, 'Enable nightly builds') { |o| options.nightly = o }
   end.parse!
 
   Action.config(debug: true) if options[:debug]
@@ -262,7 +264,11 @@ options[:metadata]['requirements']&.each do |req|
 
     version = collection['puppet'].to_i
     prefix = 'puppetcore'
-    matrix[:collection] << "#{prefix}#{version}-nightly"
+    matrix[:collection] << if options[:nightly]
+                             "#{prefix}#{version}-nightly"
+                           else
+                             "#{prefix}#{version}"
+                           end
 
     spec_matrix[:include] << {
       puppet_version: "~> #{collection['puppet']}",

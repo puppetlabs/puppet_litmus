@@ -73,6 +73,7 @@ in the project module root directory run `bundle exec matrix_from_metadata_v3`
 | --provision-prefer  | NAME  | docker            | Prefer provisioner |
 | --provision-include | NAME  | all               | Select provisioner |
 | --provision-exclude | NAME  | provision_service | Filter provisioner |
+| --nightly           |       |                   | Install from the nightly puppetcore images |
 
 > Refer to the [built-in matrix.json](https://github.com/puppetlabs/puppet_litmus/blob/main/exe/matrix.json) for a list of supported collection, provisioners, and platforms.
 
@@ -89,6 +90,10 @@ in the project module root directory run `bundle exec matrix_from_metadata_v3`
 * Exclude architecture
   ```sh
   matrix_from_metadata_v3 --arch-exclude x86_64
+  ```
+* Run against the nightly puppetcore images
+  ```sh
+  matrix_from_metadata_v3 --nightly
   ```
 
 ## Documentation
