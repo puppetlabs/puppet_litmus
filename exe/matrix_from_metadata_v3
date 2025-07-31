@@ -163,6 +163,7 @@ begin
     opt.on('--provision-exclude NAME', String, "Filter provisioner (default: #{default_options[:'provision-exclude'] || 'none'})") { |o| options.provision_exclude.push(*o.split(',')) }
 
     opt.on('--nightly', TrueClass, 'Enable nightly builds') { |o| options.nightly = o }
+    opt.on('--latest-agent', TrueClass, 'Return the latest agent build as part of the matrix') { |o| options.latest_agent = o }
   end.parse!
 
   Action.config(debug: true) if options[:debug]
@@ -262,13 +263,31 @@ options[:metadata]['requirements']&.each do |req|
     # This assumes that such a boundary will always allow the latest actually existing puppet version of a release stream, trading off simplicity vs accuracy here.
     next unless gem_req.satisfied_by?(Gem::Version.new("#{collection['puppet'].to_i}.9999"))
 
+    # # If requested, return the latest agent version for the collection's puppet version
+    # # If not requested, return the value latest
+    agent_version = if options[:latest_agent] && collection['puppet'] != 'nightly'
+                      require 'net/http'
+                      require 'json'
+                      require 'uri'
+
+                      uri = URI('https://forgeapi.puppet.com/private/versions/puppet-agent')
+                      response = Net::HTTP.get_response(uri)
+                      json_data = JSON.parse(response.body)
+                      all_versions = json_data.keys
+                      versionx = all_versions.select { |v| v.start_with?("#{collection['puppet'].to_i}.") }
+                      versionx.sort_by { |v| Gem::Version.new(v) }.last # rubocop:disable Style/RedundantSort
+                    else
+                      'latest'
+                    end
+
     version = collection['puppet'].to_i
     prefix = 'puppetcore'
-    matrix[:collection] << if options[:nightly]
-                             "#{prefix}#{version}-nightly"
-                           else
-                             "#{prefix}#{version}"
-                           end
+    group = if options[:nightly]
+              "#{prefix}#{version}-nightly"
+            else
+              "#{prefix}#{version}"
+            end
+    matrix[:collection] << { collection: group, version: agent_version }
 
     spec_matrix[:include] << {
       puppet_version: "~> #{collection['puppet']}",
