@@ -169,6 +169,8 @@ begin
   Action.config(debug: true) if options[:debug]
   Action.config(notice: false) if options[:quiet] && !options[:debug]
 
+  raise OptionParser::InvalidArgument, 'latest-agent and pe-include are mutually exclusive options' if options[:latest_agent] && options[:pe_include]
+
   # validate provisioners
   options[:provision_include].select! do |p|
     options[:matrix]['provisioners'].key?(p) or raise OptionParser::InvalidArgument, "--provision-include '#{p}' not found in provisioners"
@@ -276,8 +278,6 @@ options[:metadata]['requirements']&.each do |req|
                       all_versions = json_data.keys
                       versionx = all_versions.select { |v| v.start_with?("#{collection['puppet'].to_i}.") }
                       versionx.sort_by { |v| Gem::Version.new(v) }.last # rubocop:disable Style/RedundantSort
-                    else
-                      'latest'
                     end
 
     version = collection['puppet'].to_i
@@ -287,7 +287,21 @@ options[:metadata]['requirements']&.each do |req|
             else
               "#{prefix}#{version}"
             end
-    matrix[:collection] << { collection: group, version: agent_version }
+    matrix[:collection] << if options[:latest_agent] && collection['puppet'] != 'nightly'
+                             require 'net/http'
+                             require 'json'
+                             require 'uri'
+
+                             uri = URI('https://forgeapi.puppet.com/private/versions/puppet-agent')
+                             response = Net::HTTP.get_response(uri)
+                             json_data = JSON.parse(response.body)
+                             all_versions = json_data.keys
+                             versionx = all_versions.select { |v| v.start_with?("#{collection['puppet'].to_i}.") }
+                             versionx.sort_by { |v| Gem::Version.new(v) }.last # rubocop:disable Style/RedundantSort
+                             { collection: group, version: agent_version }
+                           else
+                             group
+                           end
 
     spec_matrix[:include] << {
       puppet_version: "~> #{collection['puppet']}",
