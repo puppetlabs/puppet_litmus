@@ -74,6 +74,7 @@ in the project module root directory run `bundle exec matrix_from_metadata_v3`
 | --provision-include | NAME  | all               | Select provisioner |
 | --provision-exclude | NAME  | provision_service | Filter provisioner |
 | --nightly           |       |                   | Install from the nightly puppetcore images |
+| --latest-agent      |       |                   | Return the latest agent version as part of the matrix. Note: This changes how the collection is returned |
 
 > Refer to the [built-in matrix.json](https://github.com/puppetlabs/puppet_litmus/blob/main/exe/matrix.json) for a list of supported collection, provisioners, and platforms.
 

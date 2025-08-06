@@ -280,4 +280,25 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
     end
   end
+
+  context 'with argument --latest-agent' do
+    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--latest-agent']) }
+
+    it 'run successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'generates the matrix' do
+      expect(result.stdout).to include(
+        '::warning::CentOS-6 no provisioner found',
+        '::warning::Ubuntu-14.04 no provisioner found',
+        '::group::matrix',
+        '::group::spec_matrix'
+      )
+      expect(github_output_content).to match(/{"collection":"puppetcore8","version":"\d+\.\d+\.\d+"}/)
+      expect(github_output_content).to include(
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+      )
+    end
+  end
 end
