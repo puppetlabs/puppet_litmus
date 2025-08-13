@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.3.1](https://github.com/puppetlabs/puppet_litmus/tree/v2.3.1) - 2025-08-13
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.3.0...v2.3.1)
+
+### Fixed
+
+- (CAT-2427) Address 9th gen auth failures [#600](https://github.com/puppetlabs/puppet_litmus/pull/600) ([LukasAud](https://github.com/LukasAud))
+
 ## [v2.3.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.3.0) - 2025-08-06
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.2.1...v2.3.0)
