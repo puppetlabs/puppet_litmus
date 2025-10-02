@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   EOF
   spec.summary = 'Providing a simple command line tool for puppet content creators, to enable simple and complex test deployments.'
   spec.required_ruby_version = Gem::Requirement.new('>= 3.1.0')
-  spec.add_runtime_dependency 'bolt', '~> 4.0'
+  spec.add_runtime_dependency 'bolt', '>= 4.0', '< 6.0'
   spec.add_runtime_dependency 'docker-api', '>= 1.34', '< 3.0.0'
   spec.add_runtime_dependency 'parallel'
   spec.add_runtime_dependency 'puppet-modulebuilder', '>= 0.3.0'
