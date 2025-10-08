@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.4.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.4.0) - 2025-10-08
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.3.2...v2.4.0)
+
+### Added
+
+- (CAT-2463) Support bolt 5.0 [#608](https://github.com/puppetlabs/puppet_litmus/pull/608) ([gavindidrichsen](https://github.com/gavindidrichsen))
+
 ## [v2.3.2](https://github.com/puppetlabs/puppet_litmus/tree/v2.3.2) - 2025-08-13
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.3.1...v2.3.2)
