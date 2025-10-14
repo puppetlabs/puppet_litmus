@@ -130,7 +130,8 @@ module PuppetLitmus::RakeHelper # rubocop:disable Metrics/ModuleLength
   def install_agent(collection, targets, inventory_hash)
     include ::BoltSpec::Run
     puppet_version = ENV.fetch('PUPPET_VERSION', nil)
-    forge_token = ENV.fetch('PUPPET_FORGE_TOKEN', nil)
+    # Skip forge token assignation when pointing to private collection endpoints as it is only accesible via VPN and it fails when credentials are passed.
+    forge_token = ENV.fetch('PUPPET_FORGE_TOKEN', nil) unless collection.include?('puppetcore8-nightly')
     params = {}
     params['password'] = forge_token if forge_token
     params['collection'] = collection  if collection
