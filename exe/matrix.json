@@ -76,6 +76,9 @@
             "Scientific": {
                 "7": { "x86_64": "litmusimage/scientificlinux:7" }
             },
+            "SLES": {
+                "15": { "x86_64": "litmusimage/sles:15" }
+            },
             "Ubuntu": {
                 "18.04": { "x86_64": "litmusimage/ubuntu:18.04" },
                 "20.04": { "x86_64": "litmusimage/ubuntu:20.04" },
@@ -86,7 +89,7 @@
     },
     "github_runner": {
         "docker": {
-            "^(AmazonLinux-2|(CentOS|OracleLinux|Scientific)-7|(AlmaLinux|OracleLinux|Rocky|CentOS)-9|AlmaLinux-8|Fedora-36|Ubuntu-18|Debian-10)": "ubuntu-22.04"
+            "^(AmazonLinux-2|(CentOS|OracleLinux|Scientific)-7|(AlmaLinux|OracleLinux|Rocky|CentOS)-9|AlmaLinux-8|Fedora-36|SLES-15|Ubuntu-18|Debian-10)":  "ubuntu-22.04"
         }
     }
 }
