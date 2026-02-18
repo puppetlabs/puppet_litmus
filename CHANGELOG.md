@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.4.2](https://github.com/puppetlabs/puppet_litmus/tree/v2.4.2) - 2025-12-08
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.4.1...v2.4.2)
+
+### Fixed
+
+- (CAT-2476) Address SLES agent installation failure [#613](https://github.com/puppetlabs/puppet_litmus/pull/613) ([LukasAud](https://github.com/LukasAud))
+
 ## [v2.4.1](https://github.com/puppetlabs/puppet_litmus/tree/v2.4.1) - 2025-10-14
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.4.0...v2.4.1)

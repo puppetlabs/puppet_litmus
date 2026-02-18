@@ -143,8 +143,19 @@ module PuppetLitmus::RakeHelper # rubocop:disable Metrics/ModuleLength
     raise 'puppetcore agent installs require a valid PUPPET_FORGE_TOKEN set in the env.' \
         if collection =~ /\Apuppetcore.*/ && !forge_token
 
+    # Fix for SLES systems - ensure credentials file exists before agent installation
+    targets.each do |target|
+      node_facts = facts_from_node(inventory_hash, target)
+      next unless node_facts && node_facts['platform'] =~ /sles/i
+
+      result = run_command('touch /etc/zypp/credentials.d/PuppetcoreCreds',
+                           target, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+      raise_bolt_errors(result, "Failed to create Puppet credentials file on SLES target #{target}.")
+    end
+
     # using boltspec, when the runner is called it changes the inventory_hash dropping the version field. The clone works around this
     bolt_result = run_task('puppet_agent::install', targets, params, config: DEFAULT_CONFIG_DATA, inventory: inventory_hash.clone)
+
     targets.each do |target|
       params = {
         'path' => '/opt/puppetlabs/bin'
