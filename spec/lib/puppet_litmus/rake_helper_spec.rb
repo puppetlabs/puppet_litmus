@@ -132,32 +132,32 @@ RSpec.describe PuppetLitmus::RakeHelper do
     end
     let(:targets) { ['some.host'] }
     let(:token) { 'some_token' }
-    let(:params) { { 'collection' => 'puppet6', 'password' => token } }
+    let(:params) { { 'collection' => 'puppet8', 'password' => token } }
 
     it 'calls function' do
       allow(ENV).to receive(:fetch).with('PUPPET_VERSION', nil).and_return(nil)
       allow(ENV).to receive(:fetch).with('PUPPET_FORGE_TOKEN', nil).and_return(token)
       allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: described_class::DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
-      install_agent('puppet6', targets, inventory_hash)
+      install_agent('puppet8', targets, inventory_hash)
     end
 
     it 'adds puppet version' do
-      params = { 'collection' => 'puppet7', 'version' => '7.35.0' }
-      allow(ENV).to receive(:fetch).with('PUPPET_VERSION', nil).and_return('7.35.0')
+      params = { 'collection' => 'puppet8', 'version' => '8.0.0' }
+      allow(ENV).to receive(:fetch).with('PUPPET_VERSION', nil).and_return('8.0.0')
       allow(ENV).to receive(:fetch).with('PUPPET_FORGE_TOKEN', nil).and_return(nil)
       allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: described_class::DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
-      install_agent('puppet7', targets, inventory_hash)
+      install_agent('puppet8', targets, inventory_hash)
     end
 
     it 'fails for puppetcore if no token supplied' do
-      params = { 'collection' => 'puppetcore7' }
+      params = { 'collection' => 'puppetcore8' }
       allow(ENV).to receive(:fetch).with('PUPPET_VERSION', nil).and_return(nil)
       allow(ENV).to receive(:fetch).with('PUPPET_FORGE_TOKEN', nil).and_return(nil)
       allow(File).to receive(:directory?).with(File.join(described_class::DEFAULT_CONFIG_DATA['modulepath'], 'puppet_agent')).and_return(true)
       allow_any_instance_of(BoltSpec::Run).to receive(:run_task).with('puppet_agent::install', targets, params, config: described_class::DEFAULT_CONFIG_DATA, inventory: inventory_hash).and_return([])
-      expect { install_agent('puppetcore7', targets, inventory_hash) }.to raise_error(RuntimeError, /puppetcore agent installs require a valid PUPPET_FORGE_TOKEN set in the env\./)
+      expect { install_agent('puppetcore8', targets, inventory_hash) }.to raise_error(RuntimeError, /puppetcore agent installs require a valid PUPPET_FORGE_TOKEN set in the env\./)
     end
   end
 

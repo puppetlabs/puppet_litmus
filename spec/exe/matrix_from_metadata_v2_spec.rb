@@ -33,15 +33,15 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppetcore7","puppetcore8"',
+          '"puppetcore8"',
           ']',
           '}'
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 18 cells:\n  - Acceptance Test Cells: 16\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 9 cells:\n  - Acceptance Test Cells: 8\n  - Spec Test Cells: 1")
     end
   end
 
@@ -75,15 +75,15 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppetcore7","puppetcore8"',
+          '"puppetcore8"',
           ']',
           '}'
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 16 cells:\n  - Acceptance Test Cells: 14\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 8 cells:\n  - Acceptance Test Cells: 7\n  - Spec Test Cells: 1")
     end
   end
 
@@ -114,15 +114,15 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
           '],',
           '"collection":[',
-          '"puppetcore7","puppetcore8"',
+          '"puppetcore8"',
           ']',
           '}'
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 3 cells:\n  - Acceptance Test Cells: 2\n  - Spec Test Cells: 1")
     end
   end
 
@@ -153,15 +153,15 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"}',
           '],',
           '"collection":[',
-          '"puppetcore7","puppetcore8"',
+          '"puppetcore8"',
           ']',
           '}'
         ].join
       )
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 7.24","ruby_version":2.7},{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 10 cells:\n  - Acceptance Test Cells: 8\n  - Spec Test Cells: 2")
+      expect(result.stdout).to include("Created matrix with 5 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 1")
     end
   end
 end

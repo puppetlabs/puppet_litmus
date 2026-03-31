@@ -1,5 +1,9 @@
 source 'https://rubygems.org'
 
+source 'https://rubygems-puppetcore.puppet.com' do
+  gem 'bolt', '>= 5.0', '< 6.0'
+end
+
 gemspec
 
 group :test do

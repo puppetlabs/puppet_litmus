@@ -11,6 +11,7 @@ on:
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  BUNDLE_RUBYGEMS__RUBYGEMS__PUPPETCORE__PUPPET__COM: ${{ secrets.PUPPET_FORGE_TOKEN }}
 
 jobs:
 
@@ -20,6 +21,7 @@ jobs:
       matrix:
         ruby_version:
           - '3.2'
+          - '4.0'
     name: "spec (ruby ${{ matrix.ruby_version }})"
     uses: "puppetlabs/cat-github-actions/.github/workflows/gem_ci.yml@main"
     secrets: "inherit"
