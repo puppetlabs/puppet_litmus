@@ -38,14 +38,14 @@ def run_matrix_from_metadata_v2(options = {})
   )
 end
 
-def run_matrix_from_metadata_v3(options = [])
+def run_matrix_from_metadata_v3(options = [], env: {})
   command = %w[bundle exec ./exe/matrix_from_metadata_v3]
   unless options.include? '--metadata'
     options << '--metadata'
     options << File.join(File.dirname(__FILE__), 'exe', 'fake_metadata.json')
   end
   command += options
-  result = Open3.capture3(*command)
+  result = Open3.capture3(env, *command)
   OpenStruct.new(
     stdout: result[0],
     stderr: result[1],
