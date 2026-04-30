@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.4.3](https://github.com/puppetlabs/puppet_litmus/tree/v2.4.3) - 2026-04-30
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.4.2...v2.4.3)
+
+### Added
+
+- (CAT-2491) Add SLES 15 Docker provisioning support [#612](https://github.com/puppetlabs/puppet_litmus/pull/612) ([LukasAud](https://github.com/LukasAud))
+
+### Fixed
+
+- (CAT-2588) Enable public puppet fall back [#618](https://github.com/puppetlabs/puppet_litmus/pull/618) ([LukasAud](https://github.com/LukasAud))
+
 ## [v2.4.2](https://github.com/puppetlabs/puppet_litmus/tree/v2.4.2) - 2025-12-08
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.4.1...v2.4.2)
