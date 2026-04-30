@@ -301,6 +301,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
     end
 
     it 'falls back to public puppet collection' do
+      result
       expect(github_output_content).to include('"collection":["puppet8"]')
     end
   end
