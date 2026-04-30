@@ -232,9 +232,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::matrix',
         '::group::spec_matrix'
       )
-      expect(github_output_content).to include(
-        /"collection":\["\d{4}\.\d\.\d-puppet_enterprise","\d{4}\.\d\.\d-puppet_enterprise","puppetcore8"/
-      )
+      expect(github_output_content).to match(/"collection":\["\d{4}\.\d\.\d-puppet_enterprise","\d{4}\.\d\.\d-puppet_enterprise","puppetcore8"/)
+
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
@@ -242,7 +241,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
   end
 
   context 'with argument --nightly' do
-    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--nightly']) }
+    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--nightly'], env: { 'PUPPET_FORGE_TOKEN' => 'fake_token' }) }
     let(:matrix) do
       [
         'matrix={',
@@ -281,6 +280,31 @@ RSpec.describe 'matrix_from_metadata_v3' do
     end
   end
 
+  context 'with --nightly and no PUPPET_FORGE_TOKEN' do
+    let(:result) { run_matrix_from_metadata_v3(['--nightly'], env: { 'PUPPET_FORGE_TOKEN' => nil }) }
+
+    it 'run successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'falls back to public puppet collection with a warning' do
+      expect(result.stdout).to include('--nightly ignored: PUPPET_FORGE_TOKEN is not set, falling back to public puppet collection')
+      expect(github_output_content).to include('"collection":["puppet8"]')
+    end
+  end
+
+  context 'without PUPPET_FORGE_TOKEN' do
+    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs'], env: { 'PUPPET_FORGE_TOKEN' => nil }) }
+
+    it 'run successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'falls back to public puppet collection' do
+      expect(github_output_content).to include('"collection":["puppet8"]')
+    end
+  end
+
   context 'with argument --latest-agent' do
     let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--latest-agent']) }
 
@@ -296,6 +320,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::spec_matrix'
       )
       expect(github_output_content).to match(/{"collection":"puppetcore8","version":"\d+\.\d+\.\d+"}/)
+
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
