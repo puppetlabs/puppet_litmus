@@ -58,6 +58,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"RedHat-8","provider":"provision_service","arch":"x86_64","image":"rhel-8","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9","provider":"provision_service","arch":"x86_64","image":"rhel-9","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9-arm","provider":"provision_service","arch":"arm","image":"rhel-9-arm64","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10","provider":"provision_service","arch":"x86_64","image":"rhel-10","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10-arm","provider":"provision_service","arch":"arm","image":"rhel-10-arm64","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},',
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
@@ -98,6 +100,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"RedHat-8","provider":"provision_service","arch":"x86_64","image":"rhel-8","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9","provider":"provision_service","arch":"x86_64","image":"rhel-9","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9-arm","provider":"provision_service","arch":"arm","image":"rhel-9-arm64","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10","provider":"provision_service","arch":"x86_64","image":"rhel-10","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10-arm","provider":"provision_service","arch":"arm","image":"rhel-10-arm64","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},',
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
@@ -138,6 +142,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"RedHat-8","provider":"provision_service","arch":"x86_64","image":"rhel-8","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9","provider":"provision_service","arch":"x86_64","image":"rhel-9","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9-arm","provider":"provision_service","arch":"arm","image":"rhel-9-arm64","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10","provider":"provision_service","arch":"x86_64","image":"rhel-10","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10-arm","provider":"provision_service","arch":"arm","image":"rhel-10-arm64","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
@@ -167,8 +173,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
     end
   end
 
-  context 'with --platform-exclude "ubuntu-(18.04|22.04)" --platform-exclude "redhat-[89]"' do
-    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--platform-exclude', '(amazonlinux|ubuntu)-(2|18.04|22.04|2023)', '--platform-exclude', 'redhat-[89]']) }
+  context 'with --platform-exclude "ubuntu-(18.04|22.04)" --platform-exclude "redhat-(8|9|10)"' do
+    let(:result) { run_matrix_from_metadata_v3(['--puppetlabs', '--platform-exclude', '(amazonlinux|ubuntu)-(2|18.04|22.04|2023)', '--platform-exclude', 'redhat-(8|9|10)']) }
     let(:matrix) do
       [
         'matrix={',
@@ -191,6 +197,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::warning::Ubuntu-14.04 no provisioner found',
         '::notice::platform-exclude filtered RedHat-8',
         '::notice::platform-exclude filtered RedHat-9',
+        '::notice::platform-exclude filtered RedHat-10',
         '::notice::platform-exclude filtered Ubuntu-18.04',
         '::notice::platform-exclude filtered Ubuntu-22.04',
         '::group::matrix',
@@ -251,6 +258,8 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"RedHat-8","provider":"provision_service","arch":"x86_64","image":"rhel-8","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9","provider":"provision_service","arch":"x86_64","image":"rhel-9","runner":"ubuntu-latest"},',
         '{"label":"RedHat-9-arm","provider":"provision_service","arch":"arm","image":"rhel-9-arm64","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10","provider":"provision_service","arch":"x86_64","image":"rhel-10","runner":"ubuntu-latest"},',
+        '{"label":"RedHat-10-arm","provider":"provision_service","arch":"arm","image":"rhel-10-arm64","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},',
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"},',
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
