@@ -281,12 +281,12 @@ options[:metadata]['requirements']&.each do |req|
                     end
 
     version = collection['puppet'].to_i
-    prefix = 'puppetcore'
-    group = if options[:nightly]
-              "#{prefix}#{version}-nightly"
-            else
-              "#{prefix}#{version}"
-            end
+    forge_token = ENV.fetch('PUPPET_FORGE_TOKEN', nil)
+    prefix = forge_token ? 'puppetcore' : 'puppet'
+    nightly = options[:nightly] && forge_token
+    Action.warning('--nightly ignored: PUPPET_FORGE_TOKEN is not set, falling back to public puppet collection') \
+      if options[:nightly] && !forge_token
+    group = nightly ? "#{prefix}#{version}-nightly" : "#{prefix}#{version}"
     matrix[:collection] << if options[:latest_agent] && collection['puppet'] != 'nightly'
                              require 'net/http'
                              require 'json'
