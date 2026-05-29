@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.6.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.6.0) - 2026-05-29
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.5.0...v2.6.0)
+
+### Added
+
+- (PA-8527) Add RHEL-10 support to provision_service matrix [#621](https://github.com/puppetlabs/puppet_litmus/pull/621) ([SugatD](https://github.com/SugatD))
+- (PA-8419) Add Debian 13 support to provisioner matrix [#617](https://github.com/puppetlabs/puppet_litmus/pull/617) ([imaqsood](https://github.com/imaqsood))
+
 ## [v2.5.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.5.0) - 2026-04-30
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.4.2...v2.5.0)
