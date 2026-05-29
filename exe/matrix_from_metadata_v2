@@ -57,6 +57,7 @@ DOCKER_PLATFORMS = {
   'Debian-10' => 'litmusimage/debian:10',
   'Debian-11' => 'litmusimage/debian:11',
   'Debian-12' => 'litmusimage/debian:12',
+  'Debian-13' => 'litmusimage/debian:13',
   'OracleLinux-7' => 'litmusimage/oraclelinux:7',
   'OracleLinux-8' => 'litmusimage/oraclelinux:8',
   'OracleLinux-9' => 'litmusimage/oraclelinux:9',
@@ -122,6 +123,7 @@ if ARGV.include?('--provision-service')
     'Debian-10' => 'debian-10',
     'Debian-11' => 'debian-11',
     'Debian-12' => 'debian-12',
+    'Debian-13' => 'debian-13',
     'Ubuntu-20.04' => 'ubuntu-2004-lts',
     'Ubuntu-22.04' => 'ubuntu-2204-lts',
     'Ubuntu-24.04' => 'ubuntu-2404-lts'
