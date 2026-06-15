@@ -287,21 +287,25 @@ options[:metadata]['requirements']&.each do |req|
     Action.warning('--nightly ignored: PUPPET_FORGE_TOKEN is not set, falling back to public puppet collection') \
       if options[:nightly] && !forge_token
     group = nightly ? "#{prefix}#{version}-nightly" : "#{prefix}#{version}"
-    matrix[:collection] << if options[:latest_agent] && collection['puppet'] != 'nightly'
-                             require 'net/http'
-                             require 'json'
-                             require 'uri'
 
-                             uri = URI('https://forgeapi.puppet.com/private/versions/puppet-agent')
-                             response = Net::HTTP.get_response(uri)
-                             json_data = JSON.parse(response.body)
-                             all_versions = json_data.keys
-                             versionx = all_versions.select { |v| v.start_with?("#{collection['puppet'].to_i}.") }
-                             versionx.sort_by { |v| Gem::Version.new(v) }.last # rubocop:disable Style/RedundantSort
-                             { collection: group, version: agent_version }
-                           else
-                             group
-                           end
+    # puppet 9+ is only published via puppetcore; skip it when falling back to the public collection
+    if forge_token || version < 9
+      matrix[:collection] << if options[:latest_agent] && collection['puppet'] != 'nightly'
+                               require 'net/http'
+                               require 'json'
+                               require 'uri'
+
+                               uri = URI('https://forgeapi.puppet.com/private/versions/puppet-agent')
+                               response = Net::HTTP.get_response(uri)
+                               json_data = JSON.parse(response.body)
+                               all_versions = json_data.keys
+                               versionx = all_versions.select { |v| v.start_with?("#{collection['puppet'].to_i}.") }
+                               versionx.sort_by { |v| Gem::Version.new(v) }.last # rubocop:disable Style/RedundantSort
+                               { collection: group, version: agent_version }
+                             else
+                               group
+                             end
+    end
 
     spec_matrix[:include] << {
       puppet_version: "~> #{collection['puppet']}",
