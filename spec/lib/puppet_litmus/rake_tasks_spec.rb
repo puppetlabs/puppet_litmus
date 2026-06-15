@@ -77,7 +77,7 @@ describe 'litmus rake tasks' do
   end
 
   context 'with litmus:install_modules_from_directory' do
-    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'nodes' => [{ 'uri' => 'some.host' }] }] } }
+    let(:inventory_hash) { { 'groups' => [{ 'name' => 'ssh_nodes', 'targets' => [{ 'uri' => 'some.host' }] }] } }
     let(:target_dir) { File.join(Dir.pwd, 'spec/fixtures/modules') }
     let(:dummy_tar) { 'spec/data/doot.tar.gz' }
 
