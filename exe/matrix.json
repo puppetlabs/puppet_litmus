@@ -3,6 +3,10 @@
         {
             "puppet": 8.0,
             "ruby": 3.2
+        },
+        {
+            "puppet": 9.0,
+            "ruby": 4.0
         }
     ],
     "provisioners": {

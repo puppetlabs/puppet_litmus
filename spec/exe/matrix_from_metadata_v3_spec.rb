@@ -30,7 +30,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04","provider":"docker","arch":"x86_64","image":"litmusimage/ubuntu:22.04","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppetcore8"',
+        '"puppetcore8","puppetcore9"',
         ']',
         '}'
       ].join
@@ -41,7 +41,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::spec_matrix'
       )
       expect(github_output_content).to include(matrix)
-      expect(github_output_content).to include('spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}')
+      expect(github_output_content).to include('spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}')
     end
   end
 
@@ -65,7 +65,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppetcore8"',
+        '"puppetcore8","puppetcore9"',
         ']',
         '}'
       ].join
@@ -84,7 +84,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
       expect(github_output_content).to include(matrix)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -107,7 +107,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppetcore8"',
+        '"puppetcore8","puppetcore9"',
         ']',
         '}'
       ].join
@@ -126,7 +126,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
       expect(github_output_content).to include(matrix)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -148,7 +148,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppetcore8"',
+        '"puppetcore8","puppetcore9"',
         ']',
         '}'
       ].join
@@ -168,7 +168,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
       expect(github_output_content).to include(matrix)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -181,7 +181,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '"platforms":[',
         '],',
         '"collection":[',
-        '"puppetcore8"',
+        '"puppetcore8","puppetcore9"',
         ']',
         '}'
       ].join
@@ -205,7 +205,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
       expect(github_output_content).to include(matrix)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -239,10 +239,9 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::matrix',
         '::group::spec_matrix'
       )
-      expect(github_output_content).to match(/"collection":\["\d{4}\.\d\.\d-puppet_enterprise","\d{4}\.\d\.\d-puppet_enterprise","puppetcore8"/)
-
+      expect(github_output_content).to match(/"collection":\[(?:"\d{4}\.\d\.\d-puppet_enterprise",)+"puppetcore8","puppetcore9"/)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -265,7 +264,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '{"label":"Ubuntu-22.04-arm","provider":"provision_service","arch":"arm","image":"ubuntu-2204-lts-arm64","runner":"ubuntu-latest"}',
         '],',
         '"collection":[',
-        '"puppetcore8-nightly"',
+        '"puppetcore8-nightly","puppetcore9-nightly"',
         ']',
         '}'
       ].join
@@ -284,7 +283,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
       expect(github_output_content).to include(matrix)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end
@@ -330,9 +329,9 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::spec_matrix'
       )
       expect(github_output_content).to match(/{"collection":"puppetcore8","version":"\d+\.\d+\.\d+"}/)
-
+      expect(github_output_content).to match(/{"collection":"puppetcore9","version":("\d+\.\d+\.\d+"|null)}/)
       expect(github_output_content).to include(
-        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
+        'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
     end
   end

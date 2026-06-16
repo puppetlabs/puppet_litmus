@@ -275,7 +275,7 @@ RSpec.describe PuppetLitmus::PuppetHelpers do
         expect(self).to receive(:target_in_inventory?).and_return(true)
         expect(self).to receive(:run_task).with(task_name, 'some.host', params, config: config_data, inventory: inventory_hash).and_return(result_structured_task_success)
         method_result = run_bolt_task(task_name, params, opts: {})
-        expect(method_result.stdout).to eq('{"key1"=>"foo", "key2"=>"bar"}')
+        expect(method_result.stdout).to eq({ 'key1' => 'foo', 'key2' => 'bar' }.to_s)
         expect(method_result.result['key1']).to eq('foo')
         expect(method_result.result['key2']).to eq('bar')
       end

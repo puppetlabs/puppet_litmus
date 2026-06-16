@@ -42,11 +42,10 @@ module PuppetLitmus::InventoryManipulation
   # @param targets [Array]
   # @return [Array] array of targets.
   def find_targets(inventory_hash, targets)
-    if targets.nil?
-      inventory_hash.to_s.scan(/uri"=>"(\S*)"/).flatten
-    else
-      [targets]
-    end
+    return [targets] unless targets.nil?
+    return [] unless inventory_hash['groups']
+
+    targets_in_inventory(inventory_hash) { |target| target['uri'] }
   end
 
   # Recursively find and iterate over the groups in an inventory. If no block is passed

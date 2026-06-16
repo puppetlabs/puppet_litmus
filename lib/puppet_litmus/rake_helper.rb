@@ -133,7 +133,7 @@ module PuppetLitmus::RakeHelper # rubocop:disable Metrics/ModuleLength
     # Skip forge token assignation when pointing to private collection endpoints as it is only accesible via VPN and it fails when credentials are passed.
     forge_token = ENV.fetch('PUPPET_FORGE_TOKEN', nil)
     params = {}
-    params['password'] = forge_token if forge_token && !collection.include?('puppetcore8-nightly')
+    params['password'] = forge_token unless !forge_token || (collection.start_with?('puppetcore') && collection.end_with?('-nightly'))
     params['collection'] = collection  if collection
     params['version'] = puppet_version if puppet_version
 
