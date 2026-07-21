@@ -340,7 +340,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
     let(:result) do
       run_matrix_from_metadata_v3(
         ['--collection-platform-exclude', '9:ubuntu-18.04'],
-        env: { 'PUPPET_FORGE_TOKEN' => 'fake' },
+        env: { 'PUPPET_FORGE_TOKEN' => 'fake' }
       )
     end
 
@@ -353,7 +353,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '"exclude":[' \
         '{"platforms":{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64",' \
         '"image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},' \
-        '"collection":"puppetcore9"}]',
+        '"collection":"puppetcore9"}]'
       )
     end
 
