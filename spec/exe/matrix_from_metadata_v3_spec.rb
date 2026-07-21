@@ -349,6 +349,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
     end
 
     it 'emits a matrix exclude for only the matching platform x collection' do
+      result
       expect(github_output_content).to include(
         '"exclude":[' \
         '{"platforms":{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64",' \
@@ -360,6 +361,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
     it 'keeps the platform and the collection usable in other combinations' do
       # Ubuntu-18.04 is still a platform and puppetcore9 is still a collection;
       # only the single pair is excluded (so Ubuntu-18.04 still runs on puppetcore8).
+      result
       expect(github_output_content).to include('{"label":"Ubuntu-18.04","provider":"docker",')
       expect(github_output_content).to include('"collection":["puppetcore8","puppetcore9"]')
     end
