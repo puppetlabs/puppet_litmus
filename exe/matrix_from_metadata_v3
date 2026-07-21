@@ -86,6 +86,7 @@ options = OpenStruct.new(
   puppet_include: [],
   platform_exclude: [],
   platform_include: [],
+  collection_platform_exclude: [],
   arch_include: [],
   arch_exclude: [],
   provision_prefer: [],
@@ -154,6 +155,16 @@ begin
 
     opt.on('--platform-include REGEX', Regexp, 'Select platform') { |o| options.platform_include << o }
     opt.on('--platform-exclude REGEX', Regexp, 'Filter platform') { |o| options.platform_exclude << o }
+
+    opt.on('--collection-platform-exclude SPEC', String,
+           'Filter a platform for one puppet major only, as MAJOR:PLATFORM_REGEX (e.g. 9:ubuntu-20.04). ' \
+           'Emitted as a GitHub Actions matrix exclude so the platform stays in other collections. Repeatable.') do |o|
+      major, regex = o.split(':', 2)
+      raise OptionParser::InvalidArgument, "--collection-platform-exclude '#{o}' must be MAJOR:PLATFORM_REGEX" \
+        if regex.nil? || regex.empty? || major !~ /\A\d+\z/
+
+      options.collection_platform_exclude << { major: major.to_i, platform: Regexp.new(regex, Regexp::IGNORECASE) }
+    end
 
     opt.on('--arch-include REGEX', Regexp, 'Select architecture') { |o| options.arch_include << o }
     opt.on('--arch-exclude REGEX', Regexp, 'Filter architecture') { |o| options.arch_exclude << o }
@@ -368,6 +379,29 @@ options[:metadata]['operatingsystem_support'].each do |os_sup|
       matrix[:platforms].push(*os_ver_platforms)
     end
   end
+end
+
+# Exclude specific platform x collection combinations (e.g. an OS a given puppet
+# major ships no agent package for, such as ubuntu-20.04 on puppet 9). The platform
+# and collection remain valid on their own, so this is emitted as a GitHub Actions
+# matrix `exclude` that only drops the matching combinations.
+unless options[:collection_platform_exclude].empty?
+  exclude = []
+  matrix[:collection].each do |coll|
+    coll_name = coll.is_a?(Hash) ? coll[:collection] : coll
+    major = coll_name.to_s[/\d+/]&.to_i
+    next if major.nil?
+
+    matrix[:platforms].each do |platform|
+      next unless options[:collection_platform_exclude].any? do |spec|
+        spec[:major] == major && platform[:label].match?(spec[:platform])
+      end
+
+      Action.notice("collection-platform-exclude filtered #{platform[:label]} x #{coll_name}")
+      exclude << { platforms: platform, collection: coll }
+    end
+  end
+  matrix[:exclude] = exclude unless exclude.empty?
 end
 
 Action.group('matrix', matrix, pretty: true).group('spec_matrix', spec_matrix, pretty: true) if Action.type == 'github' && Action.notice

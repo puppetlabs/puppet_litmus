@@ -335,4 +335,48 @@ RSpec.describe 'matrix_from_metadata_v3' do
       )
     end
   end
+
+  context 'with --collection-platform-exclude' do
+    let(:result) do
+      run_matrix_from_metadata_v3(
+        ['--collection-platform-exclude', '9:ubuntu-18.04'],
+        env: { 'PUPPET_FORGE_TOKEN' => 'fake' },
+      )
+    end
+
+    it 'runs successfully' do
+      expect(result.status_code).to eq 0
+    end
+
+    it 'emits a matrix exclude for only the matching platform x collection' do
+      expect(github_output_content).to include(
+        '"exclude":[' \
+        '{"platforms":{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64",' \
+        '"image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},' \
+        '"collection":"puppetcore9"}]',
+      )
+    end
+
+    it 'keeps the platform and the collection usable in other combinations' do
+      # Ubuntu-18.04 is still a platform and puppetcore9 is still a collection;
+      # only the single pair is excluded (so Ubuntu-18.04 still runs on puppetcore8).
+      expect(github_output_content).to include('{"label":"Ubuntu-18.04","provider":"docker",')
+      expect(github_output_content).to include('"collection":["puppetcore8","puppetcore9"]')
+    end
+
+    it 'logs the exclusion' do
+      expect(result.stdout).to include('::notice::collection-platform-exclude filtered Ubuntu-18.04 x puppetcore9')
+    end
+  end
+
+  context 'with an invalid --collection-platform-exclude spec' do
+    let(:result) do
+      run_matrix_from_metadata_v3(['--collection-platform-exclude', 'ubuntu-18.04'])
+    end
+
+    it 'fails with a helpful error' do
+      expect(result.status_code).not_to eq 0
+      expect(result.stdout).to include("--collection-platform-exclude 'ubuntu-18.04' must be MAJOR:PLATFORM_REGEX")
+    end
+  end
 end
