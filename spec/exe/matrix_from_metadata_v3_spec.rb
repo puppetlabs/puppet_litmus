@@ -239,7 +239,7 @@ RSpec.describe 'matrix_from_metadata_v3' do
         '::group::matrix',
         '::group::spec_matrix'
       )
-      expect(github_output_content).to match(/"collection":\[(?:"\d{4}\.\d\.\d-puppet_enterprise",)+"puppetcore8","puppetcore9"/)
+      expect(github_output_content).to match(/"collection":\[(?:"\d{4}\.\d+\.\d+-puppet_enterprise",)+"puppetcore8","puppetcore9"/)
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2},{"puppet_version":"~> 9.0","ruby_version":4.0}]}'
       )
