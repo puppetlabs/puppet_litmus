@@ -168,7 +168,7 @@ begin
       rescue RegexpError => e
         raise OptionParser::InvalidArgument, "--collection-platform-exclude '#{o}' has an invalid PLATFORM_REGEX: #{e.message}"
       end
-      options.collection_platform_exclude << { major: major.to_i, platform: platform }
+      options.collection_platform_exclude << { major: major.to_i, platform: }
     end
 
     opt.on('--arch-include REGEX', Regexp, 'Select architecture') { |o| options.arch_include << o }
