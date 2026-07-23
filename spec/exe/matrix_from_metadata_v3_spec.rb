@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'json'
 
 RSpec.describe 'matrix_from_metadata_v3' do
   let(:github_output) { Tempfile.new('github_output') }
@@ -350,11 +351,13 @@ RSpec.describe 'matrix_from_metadata_v3' do
 
     it 'emits a matrix exclude for only the matching platform x collection' do
       result
-      expect(github_output_content).to include(
-        '"exclude":[' \
-        '{"platforms":{"label":"Ubuntu-18.04","provider":"docker","arch":"x86_64",' \
-        '"image":"litmusimage/ubuntu:18.04","runner":"ubuntu-22.04"},' \
-        '"collection":"puppetcore9"}]'
+      matrix = JSON.parse(github_output_content[/^matrix=(.+)$/, 1])
+      expect(matrix['exclude']).to contain_exactly(
+        'platforms' => {
+          'label' => 'Ubuntu-18.04', 'provider' => 'docker', 'arch' => 'x86_64',
+          'image' => 'litmusimage/ubuntu:18.04', 'runner' => 'ubuntu-22.04'
+        },
+        'collection' => 'puppetcore9'
       )
     end
 

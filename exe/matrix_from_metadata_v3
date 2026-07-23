@@ -163,7 +163,12 @@ begin
       raise OptionParser::InvalidArgument, "--collection-platform-exclude '#{o}' must be MAJOR:PLATFORM_REGEX" \
         if regex.nil? || regex.empty? || major !~ /\A\d+\z/
 
-      options.collection_platform_exclude << { major: major.to_i, platform: Regexp.new(regex, Regexp::IGNORECASE) }
+      begin
+        platform = Regexp.new(regex, Regexp::IGNORECASE)
+      rescue RegexpError => e
+        raise OptionParser::InvalidArgument, "--collection-platform-exclude '#{o}' has an invalid PLATFORM_REGEX: #{e.message}"
+      end
+      options.collection_platform_exclude << { major: major.to_i, platform: platform }
     end
 
     opt.on('--arch-include REGEX', Regexp, 'Select architecture') { |o| options.arch_include << o }
