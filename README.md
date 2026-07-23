@@ -68,6 +68,7 @@ in the project module root directory run `bundle exec matrix_from_metadata_v3`
 | --puppet-exclude    | MAJOR |                   | Filter puppet major version |
 | --platform-include  | REGEX |                   | Select platform |
 | --platform-exclude  | REGEX |                   | Filter platform |
+| --collection-platform-exclude | MAJOR:REGEX | | Filter a platform for one puppet major only, emitted as a GitHub Actions matrix exclude so the platform stays in other collections. Repeatable |
 | --arch-include      | REGEX |                   | Select architecture |
 | --arch-exclude      | REGEX |                   | Filter architecture |
 | --provision-prefer  | NAME  | docker            | Prefer provisioner |
@@ -87,6 +88,10 @@ in the project module root directory run `bundle exec matrix_from_metadata_v3`
 * Exclude platforms
   ```sh
   matrix_from_metadata_v3 --platform-exclude redhat-7 --platform-exclude ubuntu-18.04
+  ```
+* Exclude a platform for one puppet major only (kept in other collections). E.g. ubuntu-20.04 has no Puppet 9 agent but is valid on Puppet 8:
+  ```sh
+  matrix_from_metadata_v3 --nightly --collection-platform-exclude 9:ubuntu-20.04
   ```
 * Exclude architecture
   ```sh
