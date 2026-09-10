@@ -41,7 +41,7 @@
                 "15":  { "x86_64": "sles-15" }
             },
             "Ubuntu": {
-                "20.04": { "x86_64": "ubuntu-2004-lts" },
+                "20.04": { "x86_64": "ubuntu-os-pro-cloud/ubuntu-pro-2004-lts" },
                 "22.04": { "x86_64": "ubuntu-2204-lts", "arm": "ubuntu-2204-lts-arm64" },
                 "24.04": { "x86_64": "ubuntu-2404-lts", "arm": "ubuntu-2404-lts-arm64" }
             },
