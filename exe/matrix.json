@@ -91,7 +91,8 @@
                 "18.04": { "x86_64": "litmusimage/ubuntu:18.04" },
                 "20.04": { "x86_64": "litmusimage/ubuntu:20.04" },
                 "22.04": { "x86_64": "litmusimage/ubuntu:22.04" },
-                "24.04": { "x86_64": "litmusimage/ubuntu:24.04" }
+                "24.04": { "x86_64": "litmusimage/ubuntu:24.04" },
+                "26.04": { "x86_64": "litmusimage/ubuntu:26.04" }
             }
         }
     },
