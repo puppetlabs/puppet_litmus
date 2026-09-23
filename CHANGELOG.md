@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
-## [v2.8.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.8.0) - 2026-08-17
+## [v2.8.1](https://github.com/puppetlabs/puppet_litmus/tree/v2.8.1) - 2026-09-23
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.8.0...v2.8.1)
+
+### Fixed
+
+- Add Ubuntu 26.04 docker support to provisioner matrix [#630](https://github.com/puppetlabs/puppet_litmus/pull/630) ([LukasAud](https://github.com/LukasAud))
+
+## [v2.8.0](https://github.com/puppetlabs/puppet_litmus/tree/v2.8.0) - 2026-08-18
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.7.0...v2.8.0)
 
@@ -900,6 +908,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 ## [0.4.0](https://github.com/puppetlabs/puppet_litmus/tree/0.4.0) - 2019-05-30
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/0.3.1...0.4.0)
+
+### Added
+
+- (FM-8072) add noop flag detection to apply_manifest [#119](https://github.com/puppetlabs/puppet_litmus/pull/119) ([ThoughtCrhyme](https://github.com/ThoughtCrhyme))
 
 ### Fixed
 
