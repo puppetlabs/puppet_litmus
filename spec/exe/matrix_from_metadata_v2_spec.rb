@@ -32,7 +32,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
           '{"label":"Ubuntu-18.04","provider":"docker","image":"litmusimage/ubuntu:18.04"},',
           '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"},',
-          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
+          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"},',
+          '{"label":"Ubuntu-26.04","provider":"docker","image":"litmusimage/ubuntu:26.04"}',
           '],',
           '"collection":[',
           '"puppetcore8"',
@@ -43,7 +44,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 11 cells:\n  - Acceptance Test Cells: 10\n  - Spec Test Cells: 1")
+      expect(result.stdout).to include("Created matrix with 12 cells:\n  - Acceptance Test Cells: 11\n  - Spec Test Cells: 1")
     end
   end
 
@@ -76,7 +77,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"RedHat-9","provider":"provision_service","image":"rhel-9"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
           '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"},',
-          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
+          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"},',
+          '{"label":"Ubuntu-26.04","provider":"docker","image":"litmusimage/ubuntu:26.04"}',
           '],',
           '"collection":[',
           '"puppetcore8"',
@@ -87,7 +89,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 10 cells:\n  - Acceptance Test Cells: 9\n  - Spec Test Cells: 1")
+      expect(result.stdout).to include("Created matrix with 11 cells:\n  - Acceptance Test Cells: 10\n  - Spec Test Cells: 1")
     end
   end
 
@@ -117,7 +119,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"RedHat-10","provider":"provision_service","image":"rhel-10"},',
           '{"label":"RedHat-10-arm","provider":"provision_service","image":"rhel-10-arm64"},',
           '{"label":"RedHat-9-arm","provider":"provision_service","image":"rhel-9-arm64"},',
-          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"}',
+          '{"label":"Ubuntu-22.04-arm","provider":"provision_service","image":"ubuntu-2204-lts-arm64"},',
+          '{"label":"Ubuntu-26.04","provider":"docker","image":"litmusimage/ubuntu:26.04"}',
           '],',
           '"collection":[',
           '"puppetcore8"',
@@ -128,7 +131,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 5 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 1")
+      expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 5\n  - Spec Test Cells: 1")
     end
   end
 
@@ -156,7 +159,8 @@ RSpec.describe 'matrix_from_metadata_v2' do
           '{"label":"AmazonLinux-2","provider":"docker","image":"litmusimage/amazonlinux:2"},',
           '{"label":"AmazonLinux-2023","provider":"docker","image":"litmusimage/amazonlinux:2023"},',
           '{"label":"Ubuntu-18.04","provider":"docker","image":"litmusimage/ubuntu:18.04"},',
-          '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"}',
+          '{"label":"Ubuntu-22.04","provider":"docker","image":"litmusimage/ubuntu:22.04"},',
+          '{"label":"Ubuntu-26.04","provider":"docker","image":"litmusimage/ubuntu:26.04"}',
           '],',
           '"collection":[',
           '"puppetcore8"',
@@ -167,7 +171,7 @@ RSpec.describe 'matrix_from_metadata_v2' do
       expect(github_output_content).to include(
         'spec_matrix={"include":[{"puppet_version":"~> 8.0","ruby_version":3.2}]}'
       )
-      expect(result.stdout).to include("Created matrix with 5 cells:\n  - Acceptance Test Cells: 4\n  - Spec Test Cells: 1")
+      expect(result.stdout).to include("Created matrix with 6 cells:\n  - Acceptance Test Cells: 5\n  - Spec Test Cells: 1")
     end
   end
 end
