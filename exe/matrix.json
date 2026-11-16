@@ -43,7 +43,7 @@
             "Ubuntu": {
                 "20.04": { "x86_64": "ubuntu-os-pro-cloud/ubuntu-pro-2004-lts" },
                 "22.04": { "x86_64": "ubuntu-2204-lts", "arm": "ubuntu-2204-lts-arm64" },
-                "24.04": { "x86_64": "ubuntu-2404-lts", "arm": "ubuntu-2404-lts-arm64" }
+                "24.04": { "x86_64": "ubuntu-os-cloud/ubuntu-2404-lts-amd64", "arm": "ubuntu-2404-lts-arm64" }
             },
             "Windows": {
                 "2016": { "x86_64": "windows-2016" },
