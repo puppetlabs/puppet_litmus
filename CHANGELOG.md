@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [v2.8.2](https://github.com/puppetlabs/puppet_litmus/tree/v2.8.2) - 2026-11-16
+
+[Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.8.1...v2.8.2)
+
+### Fixed
+
+- (CAT-2971) Use ubuntu-2404-lts-amd64 for Ubuntu 24.04 x86_64 [#634](https://github.com/puppetlabs/puppet_litmus/pull/634) ([david22swan](https://github.com/david22swan))
+
 ## [v2.8.1](https://github.com/puppetlabs/puppet_litmus/tree/v2.8.1) - 2026-09-23
 
 [Full Changelog](https://github.com/puppetlabs/puppet_litmus/compare/v2.8.0...v2.8.1)
